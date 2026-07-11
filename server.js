@@ -1,13 +1,13 @@
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const app = express();
 
-// Serve static files from current directory
-app.use(express.static(path.join(__dirname)));
+// Read the HTML file once at startup
+const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
 
-// Root route serves index.html
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.type('text/html').send(html);
 });
 
 const PORT = process.env.PORT || 3000;
