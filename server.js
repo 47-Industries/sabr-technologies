@@ -1,16 +1,15 @@
-const express = require('express');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const app = express();
 
-// Read the HTML file once at startup
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
 
-app.get('/', (req, res) => {
-  res.type('text/html').send(html);
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log('Sabr Technologies site live on port', PORT);
+server.listen(PORT, () => {
+  console.log('Sabr Technologies live on port', PORT);
 });
