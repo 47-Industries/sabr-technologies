@@ -2,14 +2,39 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
+const MIME = {
+  '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8',
+  '.mjs':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8',
+  '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png',
+  '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.gif':'image/gif',
+  '.ico':'image/x-icon', '.mp3':'audio/mpeg', '.wav':'audio/wav', '.ogg':'audio/ogg',
+  '.woff':'font/woff', '.woff2':'font/woff2', '.ttf':'font/ttf',
+  '.glb':'model/gltf-binary', '.gltf':'model/gltf+json'
+};
+const ROOT = __dirname;
 
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(html);
+  let urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+  if (urlPath === '/' || urlPath === '') urlPath = '/index.html';
+  const filePath = path.normalize(path.join(ROOT, urlPath));
+  // prevent path traversal
+  if (!filePath.startsWith(ROOT)) { res.writeHead(403); return res.end('Forbidden'); }
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      // SPA/anchor fallback: serve index.html for unknown non-asset routes
+      if (!path.extname(filePath)) {
+        return fs.readFile(path.join(ROOT, 'index.html'), (e2, idx) => {
+          if (e2) { res.writeHead(404); return res.end('Not found'); }
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(idx);
+        });
+      }
+      res.writeHead(404); return res.end('Not found');
+    }
+    const type = MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+    res.writeHead(200, { 'Content-Type': type });
+    res.end(data);
+  });
 });
-
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log('Sabr Technologies live on port', PORT);
-});
+server.listen(PORT, () => console.log('Sabr Technologies live on port', PORT));
