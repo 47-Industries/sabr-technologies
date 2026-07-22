@@ -276,7 +276,7 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
         <h1 class="reveal">Birth your own<br><span class="acc">synthetic intelligence</span></h1>
         <div id="greet" class="reveal d1"></div>
         <button class="cta1 reveal d2" id="birth-btn" onclick="copyInstall()">Birth Your SI</button>
-        <div id="install-cmd" class="reveal d2">
+        <div id="install-cmd" class="reveal d2" style="display:none">
             <code id="install-line">curl -sL http://2.25.174.126:8500/landing-assets/bootstrap.sh | bash</code>
             <button id="copy-cmd" onclick="copyInstall()" title="Copy install command">Copy</button>
         </div>
@@ -486,7 +486,7 @@ setTimeout(() => {
 function copyInstall(){
   var cmd = document.getElementById('install-line').textContent.trim();
   var btn = document.getElementById('copy-cmd');
-  function done(){ if(btn){ var o=btn.textContent; btn.textContent='Copied ✓'; setTimeout(function(){btn.textContent=o;},1800);} }
+  function done(){ var b=document.getElementById('birth-btn')||btn; if(b){ var o=b.textContent; b.textContent='Command copied ✓'; setTimeout(function(){b.textContent=o;},1800);} }
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(cmd).then(done).catch(fallback);
   } else { fallback(); }
@@ -506,7 +506,7 @@ import { NeuralDust } from '/js/particles.js?v=4';
 
 // Hide the dashboard-only chrome (sector pills, graph button, monitors)
 const _hide = document.createElement('style');
-_hide.textContent = '#region-labels,#graph-view-btn,#cognition-monitor,#quantum-indicator{display:none!important;}';
+_hide.textContent = '#graph-view-btn,#cognition-monitor,#quantum-indicator{display:none!important;}';
 document.head.appendChild(_hide);
 
 const box = document.getElementById('brain-box');
@@ -521,34 +521,36 @@ function gaussian(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.rand
 let brain, dust, lastTime = performance.now();
 try {
   brain = new Brain3D(box);
-  dust  = new NeuralDust(brain.scene, 450);
+  dust  = new NeuralDust(brain.scene, 2000);
 
   // Synthetic neuron clouds — small gaussian blob per region at origin;
   // Brain3D's initNeurons applies each region's anatomical layout itself.
   const positions = {};
   for (const name of REGIONS){
     const pts = [];
-    for (let i=0;i<460;i++) pts.push([gaussian()*0.11, gaussian()*0.11, gaussian()*0.11]);
-    positions[name] = { center:[0,0,0], count:460, spread:0.11, positions:pts };
+    for (let i=0;i<720;i++) pts.push([gaussian()*0.11, gaussian()*0.11, gaussian()*0.11]);
+    positions[name] = { center:[0,0,0], count:720, spread:0.11, positions:pts };
   }
   brain.initNeurons(positions);
 
   // Firing simulator — baseline oscillation + random bursts + a travelling
   // focus of attention sweeping the regions, so arcs spawn and it breathes.
+  const CORE = ['thalamus','basal_ganglia','default_mode_network','insula','amygdala','hippocampus','anterior_cingulate'];
   const phase = {}, base = {};
-  REGIONS.forEach((n,i)=>{ phase[n]=Math.random()*6.283; base[n]=0.03+Math.random()*0.03; });
+  REGIONS.forEach((n,i)=>{ phase[n]=Math.random()*6.283; base[n]=0.42+Math.random()*0.12; });
+  CORE.forEach(n=>{ base[n]=0.74+Math.random()*0.14; });          // white-hot deep core
   let t = 0;
   function pushState(dt){
     t += dt;
     const firing = {};
     REGIONS.forEach((n,i)=>{
-      let f = base[n] + 0.03*Math.sin(t*0.8+phase[n]) + 0.02*Math.sin(t*2.3+i);
-      if (Math.random() < 0.022) f += 0.28 + Math.random()*0.34;   // spontaneous burst
-      firing[n] = Math.max(0.012, f);
+      let f = base[n] + 0.10*Math.sin(t*0.8+phase[n]) + 0.06*Math.sin(t*2.3+i);
+      if (Math.random() < 0.06) f += 0.25 + Math.random()*0.40;   // spontaneous burst
+      firing[n] = Math.max(0.05, Math.min(1.0, f));
     });
-    const focus = REGIONS[Math.floor(t*0.9) % REGIONS.length];     // sweeping attention
-    firing[focus] = Math.min(0.7, firing[focus] + 0.22);
-    brain.updateState({ region_firing: firing, neuromodulators:{}, asleep:false });
+    const focus = REGIONS[Math.floor(t*1.4) % REGIONS.length];    // travelling wave of attention
+    firing[focus] = Math.min(1.0, firing[focus] + 0.30);
+    brain.updateState({ region_firing: firing, neuromodulators:{da:0.6,ser:0.55,ach:0.5,ne:0.5}, asleep:false });
   }
 
   (function loop(){
