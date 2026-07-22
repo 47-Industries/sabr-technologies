@@ -501,8 +501,8 @@ function copyInstall(){
 //    driven by a self-contained neural firing simulator (no live socket
 //    needed on the public site). 18 regions, 7 lobe colors, signal arcs,
 //    bloom, constant autorotate. This is the same Brain3D Leon runs on.
-import { Brain3D }   from '/js/brain3d.js';
-import { NeuralDust } from '/js/particles.js';
+import { Brain3D }   from '/js/brain3d.js?v=4';
+import { NeuralDust } from '/js/particles.js?v=4';
 
 // Hide the dashboard-only chrome (sector pills, graph button, monitors)
 const _hide = document.createElement('style');
@@ -521,15 +521,15 @@ function gaussian(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.rand
 let brain, dust, lastTime = performance.now();
 try {
   brain = new Brain3D(box);
-  dust  = new NeuralDust(brain.scene, 1600);
+  dust  = new NeuralDust(brain.scene, 450);
 
   // Synthetic neuron clouds — small gaussian blob per region at origin;
   // Brain3D's initNeurons applies each region's anatomical layout itself.
   const positions = {};
   for (const name of REGIONS){
     const pts = [];
-    for (let i=0;i<240;i++) pts.push([gaussian()*0.15, gaussian()*0.15, gaussian()*0.15]);
-    positions[name] = { center:[0,0,0], count:240, spread:0.15, positions:pts };
+    for (let i=0;i<460;i++) pts.push([gaussian()*0.11, gaussian()*0.11, gaussian()*0.11]);
+    positions[name] = { center:[0,0,0], count:460, spread:0.11, positions:pts };
   }
   brain.initNeurons(positions);
 
@@ -543,10 +543,10 @@ try {
     const firing = {};
     REGIONS.forEach((n,i)=>{
       let f = base[n] + 0.03*Math.sin(t*0.8+phase[n]) + 0.02*Math.sin(t*2.3+i);
-      if (Math.random() < 0.010) f += 0.25 + Math.random()*0.30;   // spontaneous burst
+      if (Math.random() < 0.022) f += 0.28 + Math.random()*0.34;   // spontaneous burst
       firing[n] = Math.max(0.012, f);
     });
-    const focus = REGIONS[Math.floor(t*0.45) % REGIONS.length];    // sweeping attention
+    const focus = REGIONS[Math.floor(t*0.9) % REGIONS.length];     // sweeping attention
     firing[focus] = Math.min(0.7, firing[focus] + 0.22);
     brain.updateState({ region_firing: firing, neuromodulators:{}, asleep:false });
   }

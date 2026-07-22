@@ -25,14 +25,18 @@ const server = http.createServer((req, res) => {
       if (!path.extname(filePath)) {
         return fs.readFile(path.join(ROOT, 'index.html'), (e2, idx) => {
           if (e2) { res.writeHead(404); return res.end('Not found'); }
-          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store, no-cache, must-revalidate' });
           res.end(idx);
         });
       }
       res.writeHead(404); return res.end('Not found');
     }
-    const type = MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': type });
+    const ext = path.extname(filePath).toLowerCase();
+    const type = MIME[ext] || 'application/octet-stream';
+    const cache = (ext === '.html' || ext === '')
+      ? 'no-store, no-cache, must-revalidate'
+      : 'public, max-age=3600';
+    res.writeHead(200, { 'Content-Type': type, 'Cache-Control': cache });
     res.end(data);
   });
 });
