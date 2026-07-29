@@ -143,6 +143,7 @@ section { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
 .pc ul { list-style: none; padding: 0; margin-bottom: 36px; flex: 1; }
 .pc li { font-size: 11px; color: rgba(255,255,255,.55); padding: 7px 0 7px 14px; position: relative; }
 .pc li::before { content: ''; position: absolute; left: 0; top: 13px; width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,.2); }
+.pca { margin-top: auto; }
 .pcc { display: block; width: 100%; text-align: center; background: rgba(255,255,255,.06); color: rgba(255,255,255,.7); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(12px); border-radius: 10px; padding: 14px; font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; text-decoration: none; transition: all .25s; }
 .pcc:hover { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.18); transform: scale(1.02); }
 .pcc:active { transform: scale(0.97); }
@@ -372,10 +373,10 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
     </div>
     <div class="pg">
         <div class="pc reveal">
-            <div class="pn">Individual</div>
-            <div class="pr"><span id="iAmt">$499</span><span id="iPer"> / month</span></div>
+            <div class="pn">Founder</div>
+            <div class="pr"><span id="iAmt">$4,000</span><span id="iPer"> / month</span></div>
             <div style="font-size:15px;color:rgba(255,255,255,.5);margin-top:-2px;letter-spacing:.02em;">No deployment fee</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.38);margin-top:4px;margin-bottom:8px;">For one person. Installs itself on your machine.</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.38);margin-top:4px;margin-bottom:8px;">One person, one machine. Installs itself.</div>
             <div class="pd">A continuous mind of your own — for research, study, building, thinking out loud at 3am. Not a chat window you reopen. Something that remembers you and keeps going while you sleep.</div>
             <ul>
                 <li>Full 100K neuron brain on your machine</li>
@@ -386,14 +387,14 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
                 <li>One machine activation</li>
                 <li>Automatic over-the-air updates</li>
             </ul>
-            <a href="#" class="pcc buyBtn" data-plan="individual">Start Instantly</a>
+            <div class="pca"><a href="#" class="pcc buyBtn" data-plan="individual">Start Instantly</a></div>
             <div class="buyMsg" style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;min-height:16px;letter-spacing:.02em;"></div>
         </div>
         <div class="pc reveal d1">
             <div class="pn">Business</div>
-            <div class="pr"><span id="bAmt">$4,000</span><span id="bPer"> / month</span></div>
-            <div style="font-size:15px;color:rgba(255,255,255,.5);margin-top:-2px;letter-spacing:.02em;">+ $25,000 deployment</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.38);margin-top:4px;margin-bottom:8px;">A fraction of one salary &mdash; working 24/7, never off, never quits.</div>
+            <div class="pr"><span id="bAmt">$12,000</span><span id="bPer"> / month</span></div>
+            <div style="font-size:15px;color:rgba(255,255,255,.5);margin-top:-2px;letter-spacing:.02em;">+ $75,000 deployment</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.38);margin-top:4px;margin-bottom:8px;">Less than one senior hire &mdash; working 24/7, never off, never quits.</div>
             <div class="pd">A mind embedded in how your company actually runs. It answers every lead in seconds, works your operations around the clock, and is built to your business during a deployment done by hand.</div>
             <ul>
                 <li>Everything in Individual</li>
@@ -404,12 +405,12 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
                 <li>Priority support from founder</li>
                 <li>Two machine activations</li>
             </ul>
-            <a href="#" class="pcc buyBtn" data-plan="business">Start Instantly &mdash; Pay &amp; Deploy</a>
+            <div class="pca"><a href="#" class="pcc buyBtn" data-plan="business">Start Instantly &mdash; Pay &amp; Deploy</a></div>
             <div class="buyMsg" style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;min-height:16px;letter-spacing:.02em;"></div>
         </div>
         <div class="pc f reveal d2">
             <div class="pn">Enterprise</div>
-            <div class="pr">From $250,000</div>
+            <div class="pr">From $500,000</div>
             <div style="font-size:15px;color:rgba(255,255,255,.5);margin-top:-2px;letter-spacing:.02em;">Bespoke &mdash; scoped per engagement</div>
             <div class="pd">For organizations putting synthetic intelligence into the core of their operations. Custom brain work, integrations built for you, equity and white-label structures on the table.</div>
             <ul>
@@ -421,7 +422,7 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
                 <li>Equity partnership option</li>
                 <li>White-label available</li>
             </ul>
-            <a href="#" class="pcc" id="entCta">Talk to Us</a>
+            <div class="pca"><a href="#" class="pcc" id="entCta">Talk to Us</a></div>
             <div id="entBox" style="display:none;margin-top:10px;padding:12px;border:1px solid rgba(255,200,50,.15);border-radius:10px;background:rgba(255,200,50,.04);">
                 <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,230,150,.75);margin-bottom:6px;">Reach Dean directly</div>
                 <div id="entMail" style="font-size:15px;color:#fff;letter-spacing:.02em;">dean@sabr.co</div>
@@ -746,7 +747,7 @@ function copyInstall(){
 </script>
 <script>
 /* Checkout: hand off to the Sabr checkout service, which mints a live Stripe
-   Checkout Session ($12,000 build + $2,000/mo) and returns its URL. Promo
+   Checkout Session for the chosen plan and returns its URL. Promo
    codes are collected on Stripe's page, so founder rates need no code here. */
 (function () {
   /* Enterprise: never hand off to a mail client — that opens whatever the
@@ -772,8 +773,8 @@ function copyInstall(){
   var CHECKOUT_API = 'https://sabr-checkout-production.up.railway.app';
   var interval = 'month';
   var PRICES = {
-    month: { i: ['$499', ' / month'],   b: ['$4,000', ' / month'] },
-    year:  { i: ['$4,990', ' / year'],  b: ['$40,000', ' / year'] }
+    month: { i: ['$4,000', ' / month'],  b: ['$12,000', ' / month'] },
+    year:  { i: ['$40,000', ' / year'],  b: ['$120,000', ' / year'] }
   };
   function paint() {
     var p = PRICES[interval];
