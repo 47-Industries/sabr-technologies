@@ -379,8 +379,7 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
                 <li>Two machine activations</li>
                 <li>Automatic over-the-air updates</li>
             </ul>
-            <a href="mailto:dean@sabr.co?subject=Leon%20Build%20Call" class="pcc">Book Your Build Call</a>
-            <a href="#" class="pcc" id="buyNow" style="margin-top:10px;">Start Instantly &mdash; Pay &amp; Deploy</a>
+            <a href="#" class="pcc" id="buyNow">Start Instantly &mdash; Pay &amp; Deploy</a>
             <div id="buyMsg" style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;min-height:16px;letter-spacing:.02em;"></div>
         </div>
         <div class="pc f reveal d1">
@@ -396,7 +395,12 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
                 <li>Equity partnership option</li>
                 <li>White-label available</li>
             </ul>
-            <a href="mailto:dean@sabr.co?subject=Enterprise%20SI" class="pcc">Talk to Us</a>
+            <a href="#" class="pcc" id="entCta">Talk to Us</a>
+            <div id="entBox" style="display:none;margin-top:10px;padding:12px;border:1px solid rgba(255,200,50,.15);border-radius:10px;background:rgba(255,200,50,.04);">
+                <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,230,150,.75);margin-bottom:6px;">Reach Dean directly</div>
+                <div id="entMail" style="font-size:15px;color:#fff;letter-spacing:.02em;">dean@sabr.co</div>
+                <a href="#" id="entCopy" style="display:inline-block;margin-top:8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,230,150,.9);text-decoration:none;border-bottom:1px solid rgba(255,200,50,.3);">Copy address</a>
+            </div>
         </div>
     </div>
 </section>
@@ -718,6 +722,26 @@ function copyInstall(){
 /* Checkout: hand off to the Sabr checkout service, which mints a live Stripe
    Checkout Session ($12,000 build + $2,000/mo) and returns its URL. Promo
    codes are collected on Stripe's page, so founder rates need no code here. */
+(function () {
+  /* Enterprise: never hand off to a mail client — that opens whatever the
+     visitor's OS decided, which reads as broken. Reveal the address in-page
+     and let them copy it. */
+  var c = document.getElementById('entCta'),
+      box = document.getElementById('entBox'),
+      cp = document.getElementById('entCopy');
+  if (!c || !box) return;
+  c.addEventListener('click', function (e) {
+    e.preventDefault();
+    box.style.display = 'block';
+    c.textContent = 'Talk to Us \u2014 details below';
+  });
+  if (cp) cp.addEventListener('click', function (e) {
+    e.preventDefault();
+    var done = function () { cp.textContent = 'Copied'; };
+    if (navigator.clipboard) navigator.clipboard.writeText('dean@sabr.co').then(done, done);
+    else done();
+  });
+})();
 (function () {
   var CHECKOUT_API = 'https://sabr-checkout-production.up.railway.app';
   var btn = document.getElementById('buyNow');
