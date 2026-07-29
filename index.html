@@ -119,7 +119,12 @@ section { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
 .step h4 { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
 .step p { font-size: 12px; color: rgba(255,255,255,.55); line-height: 1.8; max-width: 420px; }
 
-.pg { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: rgba(255,255,255,.04); border-radius: 16px; overflow: hidden; margin-top: 48px; }
+.pg { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: rgba(255,255,255,.04); border-radius: 16px; overflow: hidden; margin-top: 48px; }
+.bt { display:flex; justify-content:center; gap:0; margin-top:28px; }
+.bt button { background:rgba(255,255,255,.05); color:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.09); padding:9px 20px; font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; transition:all .25s; font-family:inherit; }
+.bt button:first-child { border-radius:8px 0 0 8px; }
+.bt button:last-child { border-radius:0 8px 8px 0; border-left:none; }
+.bt button.on { background:rgba(143,123,255,.16); color:#fff; border-color:rgba(143,123,255,.35); }
 .pc { padding: 40px 32px; background: rgba(0,0,0,.7); backdrop-filter: blur(16px); display: flex; flex-direction: column; }
 .pc.f { background: rgba(0,0,0,.7); position: relative; overflow: hidden; }
 .pc.f::before {
@@ -361,33 +366,54 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
 <section id="pricing">
     <div class="tag reveal">Investment</div>
     <div class="ttl reveal">One mind. Continuous growth.</div>
+    <div class="bt reveal">
+        <button id="bMonth" class="on">Monthly</button>
+        <button id="bYear">Annual &mdash; 2 months free</button>
+    </div>
     <div class="pg">
         <div class="pc reveal">
-            <div class="pn">Synthetic Intelligence</div>
-            <div class="pr">$2,000<span> / month</span></div>
-            <div style="font-size:15px;color:rgba(255,255,255,.5);margin-top:-2px;letter-spacing:.02em;">+ $12,000 one-time build</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.38);margin-top:4px;margin-bottom:8px;">Less than half the cost of one part-time hire — working 24/7, never off, never quits.</div>
-            <div class="pd">A tireless team member that answers every lead in seconds, runs your operations around the clock, and never quits — for a fraction of one human salary. You don't buy software. You hire a mind that pays for itself.</div>
+            <div class="pn">Individual</div>
+            <div class="pr"><span id="iAmt">$499</span><span id="iPer"> / month</span></div>
+            <div style="font-size:15px;color:rgba(255,255,255,.5);margin-top:-2px;letter-spacing:.02em;">No deployment fee</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.38);margin-top:4px;margin-bottom:8px;">For one person. Installs itself on your machine.</div>
+            <div class="pd">A continuous mind of your own — for research, study, building, thinking out loud at 3am. Not a chat window you reopen. Something that remembers you and keeps going while you sleep.</div>
             <ul>
                 <li>Full 100K neuron brain on your machine</li>
                 <li>All 34 tools and integrations</li>
                 <li>Voice conversation with premium TTS</li>
                 <li>Image, video, and music generation</li>
-                <li>Sub-agent parallel delegation</li>
-                <li>Priority support from founder</li>
-                <li>Onboarding call with Dean</li>
-                <li>Two machine activations</li>
+                <li>Persistent memory across restarts</li>
+                <li>One machine activation</li>
                 <li>Automatic over-the-air updates</li>
             </ul>
-            <a href="#" class="pcc" id="buyNow">Start Instantly &mdash; Pay &amp; Deploy</a>
-            <div id="buyMsg" style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;min-height:16px;letter-spacing:.02em;"></div>
+            <a href="#" class="pcc buyBtn" data-plan="individual">Start Instantly</a>
+            <div class="buyMsg" style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;min-height:16px;letter-spacing:.02em;"></div>
         </div>
-        <div class="pc f reveal d1">
-            <div class="pn">Enterprise</div>
-            <div class="pr">Custom</div>
-            <div class="pd">For teams, agencies, and businesses that want synthetic intelligence integrated into their operations. Custom pricing, equity partnerships, white-label options.</div>
+        <div class="pc reveal d1">
+            <div class="pn">Business</div>
+            <div class="pr"><span id="bAmt">$4,000</span><span id="bPer"> / month</span></div>
+            <div style="font-size:15px;color:rgba(255,255,255,.5);margin-top:-2px;letter-spacing:.02em;">+ $25,000 deployment</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.38);margin-top:4px;margin-bottom:8px;">A fraction of one salary &mdash; working 24/7, never off, never quits.</div>
+            <div class="pd">A mind embedded in how your company actually runs. It answers every lead in seconds, works your operations around the clock, and is built to your business during a deployment done by hand.</div>
             <ul>
-                <li>Everything in Standard</li>
+                <li>Everything in Individual</li>
+                <li>Built to your business during deployment</li>
+                <li>Sub-agent parallel delegation</li>
+                <li>Phone number &mdash; it calls and texts</li>
+                <li>Onboarding call with Dean</li>
+                <li>Priority support from founder</li>
+                <li>Two machine activations</li>
+            </ul>
+            <a href="#" class="pcc buyBtn" data-plan="business">Start Instantly &mdash; Pay &amp; Deploy</a>
+            <div class="buyMsg" style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;min-height:16px;letter-spacing:.02em;"></div>
+        </div>
+        <div class="pc f reveal d2">
+            <div class="pn">Enterprise</div>
+            <div class="pr">From $250,000</div>
+            <div style="font-size:15px;color:rgba(255,255,255,.5);margin-top:-2px;letter-spacing:.02em;">Bespoke &mdash; scoped per engagement</div>
+            <div class="pd">For organizations putting synthetic intelligence into the core of their operations. Custom brain work, integrations built for you, equity and white-label structures on the table.</div>
+            <ul>
+                <li>Everything in Business</li>
                 <li>Multi-user team deployment</li>
                 <li>Custom brain modifications</li>
                 <li>Custom integrations built for you</li>
@@ -744,32 +770,49 @@ function copyInstall(){
 })();
 (function () {
   var CHECKOUT_API = 'https://sabr-checkout-production.up.railway.app';
-  var btn = document.getElementById('buyNow');
-  var msg = document.getElementById('buyMsg');
-  if (!btn) return;
-  var busy = false;
-  function say(t) { if (msg) msg.textContent = t || ''; }
-  btn.addEventListener('click', function (e) {
-    e.preventDefault();
-    if (busy) return;
-    busy = true;
-    var label = btn.textContent;
-    btn.textContent = 'Opening secure checkout\u2026';
-    say('');
-    fetch(CHECKOUT_API + '/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: '{}'
-    }).then(function (r) { return r.json().catch(function () { return {}; }); })
-      .then(function (d) {
-        if (d && d.ok && d.url) { window.location.href = d.url; return; }
-        throw new Error((d && d.error) || 'Checkout is unavailable right now.');
-      })
-      .catch(function (err) {
-        busy = false;
-        btn.textContent = label;
-        say(err.message + ' You can still book a call above.');
-      });
+  var interval = 'month';
+  var PRICES = {
+    month: { i: ['$499', ' / month'],   b: ['$4,000', ' / month'] },
+    year:  { i: ['$4,990', ' / year'],  b: ['$40,000', ' / year'] }
+  };
+  function paint() {
+    var p = PRICES[interval];
+    var m = { iAmt: p.i[0], iPer: p.i[1], bAmt: p.b[0], bPer: p.b[1] };
+    for (var k in m) { var e = document.getElementById(k); if (e) e.textContent = m[k]; }
+    var bm = document.getElementById('bMonth'), by = document.getElementById('bYear');
+    if (bm) bm.className = interval === 'month' ? 'on' : '';
+    if (by) by.className = interval === 'year' ? 'on' : '';
+  }
+  var bm = document.getElementById('bMonth'), by = document.getElementById('bYear');
+  if (bm) bm.addEventListener('click', function () { interval = 'month'; paint(); });
+  if (by) by.addEventListener('click', function () { interval = 'year'; paint(); });
+  paint();
+
+  Array.prototype.forEach.call(document.querySelectorAll('.buyBtn'), function (btn) {
+    var msg = btn.parentNode.querySelector('.buyMsg');
+    var busy = false;
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (busy) return;
+      busy = true;
+      var label = btn.textContent;
+      btn.textContent = 'Opening secure checkout\u2026';
+      if (msg) msg.textContent = '';
+      fetch(CHECKOUT_API + '/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: btn.getAttribute('data-plan'), interval: interval })
+      }).then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (d) {
+          if (d && d.ok && d.url) { window.location.href = d.url; return; }
+          throw new Error((d && d.error) || 'Checkout is unavailable right now.');
+        })
+        .catch(function (err) {
+          busy = false;
+          btn.textContent = label;
+          if (msg) msg.textContent = err.message + ' Email dean@sabr.co and I will set you up by hand.';
+        });
+    });
   });
 })();
 </script>
