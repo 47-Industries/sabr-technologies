@@ -835,9 +835,21 @@ function copyInstall(){
   var mac = !win && /Mac/i.test(navigator.platform);
 
   var el = document.createElement('div');
-  el.setAttribute('style', 'position:fixed;inset:0;z-index:9999;overflow:auto;' +
-    'background:#07070a;color:#f2f2f4;padding:6vh 5vw;font:16px/1.6 -apple-system,' +
-    'BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif');
+  /* top/left/right/bottom as well as inset: older Edge on Windows ignores
+     `inset`, and a fixed box with no offsets collapses to nothing — which
+     looks exactly like the panel flashing and disappearing. Max z-index so
+     no marketing layer can ever bury a customer's license key. */
+  var STYLE = 'position:fixed;inset:0;top:0;left:0;right:0;bottom:0;' +
+    'z-index:2147483647;overflow:auto;background:#07070a;color:#f2f2f4;' +
+    'padding:6vh 5vw;font:16px/1.6 -apple-system,BlinkMacSystemFont,' +
+    '"Segoe UI",Helvetica,Arial,sans-serif';
+  el.setAttribute('style', STYLE);
+  /* Anything that detaches or restyles this panel loses. A buyer must never
+     watch their purchase vanish off the screen. */
+  setInterval(function () {
+    if (!el.parentNode) document.body.appendChild(el);
+    if (el.getAttribute('style') !== STYLE) el.setAttribute('style', STYLE);
+  }, 500);
   el.innerHTML = '<div style="max-width:760px;margin:0 auto">' +
     '<h1 style="font-size:32px;margin:0 0 6px">Payment received.</h1>' +
     '<p id="sbSub" style="opacity:.72;margin:0 0 28px">Preparing your synthetic intelligence…</p>' +
@@ -899,13 +911,26 @@ function copyInstall(){
     });
   }
 
+  /* Survive a reload, a back button, or a flaky connection: once we have
+     delivered the details, they live in this tab. Reopening the URL shows
+     them instantly instead of re-polling and possibly failing. */
+  var CACHE = 'sabr_install_' + sid;
+  try {
+    var saved = sessionStorage.getItem(CACHE);
+    if (saved) { render(JSON.parse(saved)); return; }
+  } catch (e) {}
+
   var tries = 0;
   (function poll() {
     tries++;
     fetch(API + '/install?session_id=' + encodeURIComponent(sid))
       .then(function (r) { return r.json().catch(function () { return {}; }); })
       .then(function (d) {
-        if (d && d.ok && !d.pending) { render(d); return; }
+        if (d && d.ok && !d.pending) {
+          try { sessionStorage.setItem(CACHE, JSON.stringify(d)); } catch (e) {}
+          render(d);
+          return;
+        }
         if (tries < 30) return setTimeout(poll, 2000);
         throw new Error('still provisioning');
       })
