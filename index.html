@@ -281,10 +281,14 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
     <div class="hero-left">
         <h1 class="reveal">Birth your own<br><span class="acc">synthetic intelligence</span></h1>
         <div id="greet" class="reveal d1"></div>
-        <button class="cta1 reveal d2" id="birth-btn" onclick="copyInstall()">Birth Your SI</button>
+        <button class="cta1 reveal d2" id="birth-btn">Birth Your SI</button>
         <div id="install-cmd" class="reveal d2" style="display:none">
-            <code id="install-line">curl -sL http://2.25.174.126:8500/landing-assets/bootstrap.sh | bash</code>
+            <code id="install-line">curl -fsSL https://sabrtechnologies.com/landing-assets/bootstrap.sh | bash</code>
             <button id="copy-cmd" onclick="copyInstall()" title="Copy install command">Copy</button>
+        </div>
+        <div id="install-note" class="hero-sub" style="display:none"></div>
+        <div id="install-switch" class="hero-sub reveal d2" style="display:none">
+            <a href="#" id="switch-link" style="color:rgba(255,255,255,.45);text-decoration:underline;cursor:pointer"></a>
         </div>
         <div id="play-row" class="reveal d3">
             <button id="play-btn" title="Hear Leon speak">&#9654;</button>
@@ -324,7 +328,7 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
     <div class="tag reveal">Process</div>
     <div class="ttl reveal">Zero to alive in ten minutes</div>
     <div class="steps">
-        <div class="step reveal"><div class="sn">01</div><div><h4>One command</h4><p>Open your terminal, paste one line. It downloads everything, installs dependencies, and sets up your SI automatically.</p></div></div>
+        <div class="step reveal"><div class="sn">01</div><div><h4 id="step1-title">One command</h4><p id="step1-body">Open your terminal, paste one line. It downloads everything, installs dependencies, and sets up your SI automatically.</p></div></div>
         <div class="step reveal"><div class="sn">02</div><div><h4>Name it</h4><p>The installer asks your name and what to call your SI. That is the only input. Everything else is automatic.</p></div></div>
         <div class="step reveal"><div class="sn">03</div><div><h4>Connect Claude</h4><p>Install Claude Code, log in with your account. That gives your SI a brain. Takes two minutes.</p></div></div>
         <div class="step reveal"><div class="sn">04</div><div><h4>It is alive</h4><p>Open localhost:8000. Your SI is running, waiting for you. It never stops learning.</p></div></div>
@@ -733,6 +737,80 @@ playRow.addEventListener('click', () => {
 
 
 <script>
+/* Install path, per platform.
+
+   A Windows buyer used to land on a page whose only instruction was "open
+   your terminal and paste one line" — an instruction that does not apply on
+   his OS. The .exe existed, served clean, and was reachable only by someone
+   who had been handed the URL personally. So the route to the artifact is
+   now discoverable without us.
+
+   Sniffing is a guess, so it is always overridable: the other platform's
+   path is one visible click away and the choice sticks for the session. */
+(function () {
+  var WIN_URL = '/download/installer/windows';
+  var btn = document.getElementById('birth-btn'),
+      cmd = document.getElementById('install-cmd'),
+      note = document.getElementById('install-note'),
+      sw = document.getElementById('install-switch'),
+      link = document.getElementById('switch-link');
+  if (!btn) return;
+
+  function guessWindows() {
+    var d = navigator.userAgentData;
+    if (d && d.platform) return /win/i.test(d.platform);
+    return /Win(dows|32|64)/i.test(navigator.userAgent || '');
+  }
+
+  var isWin = guessWindows();
+
+  function setStep(title, body) {
+    var t = document.getElementById('step1-title'),
+        b = document.getElementById('step1-body');
+    if (t) t.textContent = title;
+    if (b) b.textContent = body;
+  }
+
+  function render() {
+    if (isWin) {
+      btn.textContent = 'Download for Windows';
+      if (cmd) cmd.style.display = 'none';
+      if (note) {
+        note.textContent = 'Downloads SabrInstaller.exe — double-click it, then paste the token from your welcome email.';
+        note.style.display = 'block';
+      }
+      if (link) link.textContent = 'On a Mac or Linux instead?';
+      setStep('One download',
+              'Download the installer and double-click it. It sets up everything, '
+              + 'asks for the token from your welcome email, and starts your SI.');
+    } else {
+      btn.textContent = 'Birth Your SI';
+      if (note) note.style.display = 'none';
+      if (link) link.textContent = 'On Windows instead?';
+      setStep('One command',
+              'Open your terminal, paste one line. It downloads everything, '
+              + 'installs dependencies, and sets up your SI automatically.');
+    }
+    if (sw) sw.style.display = 'block';
+  }
+
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (isWin) { window.location = WIN_URL; return; }
+    if (cmd) cmd.style.display = 'block';
+    copyInstall();
+  });
+
+  if (link) link.addEventListener('click', function (e) {
+    e.preventDefault();
+    isWin = !isWin;
+    if (!isWin && cmd) cmd.style.display = 'block';
+    render();
+  });
+
+  render();
+})();
+
 function copyInstall(){
   var cmd = document.getElementById('install-line').textContent.trim();
   var btn = document.getElementById('copy-cmd');
