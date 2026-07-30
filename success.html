@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Payment received — Sabr</title>
+<style>
+  /* A standalone page on purpose. The old delivery screen was an overlay
+     injected on top of the marketing homepage, which meant it shared a DOM
+     with a WebGL canvas, three IntersectionObservers and a scroll-reveal
+     pass that toggle visibility on load — the panel appeared, got restyled,
+     was re-appended by a 500ms self-healing timer, and a buyer watched their
+     receipt blink in and out before it settled (Ethan's Windows machine,
+     2026-07-29). Nothing on this page animates. There is nothing here to
+     fight with. That is the fix. */
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#07070a;color:#f2f2f4}
+  body{font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+       padding:6vh 5vw;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:32px;margin:0 0 6px;font-weight:700}
+  h2{font-size:19px;margin:34px 0 8px;font-weight:600}
+  p{margin:0 0 14px}
+  .dim{opacity:.72}
+  .small{font-size:14px}
+  a{color:#9ecbff}
+  .key{background:#111116;border:1px solid #2c2c36;border-radius:10px;padding:18px;
+       font:600 20px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+       letter-spacing:.06em;word-break:break-all;user-select:all}
+  pre{background:#111116;border:1px solid #26262e;border-radius:8px;padding:16px;
+      overflow:auto;white-space:pre-wrap;word-break:break-all;font-size:13px;margin:0 0 12px}
+  button{font:inherit;font-size:14px;background:none;border:1px solid #3a3a45;color:#f2f2f4;
+         padding:10px 18px;border-radius:7px;cursor:pointer}
+  button:hover{border-color:#5a5a68}
+  .dl{display:inline-block;background:#f2f2f4;color:#07070a;padding:14px 22px;border-radius:8px;
+      text-decoration:none;font-weight:700}
+  .rule{height:1px;background:#1c1c24;margin:34px 0}
+  .warn{border-left:3px solid #ff3b4e;padding-left:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Payment received.</h1>
+  <p class="dim" id="sub">Provisioning your synthetic intelligence…</p>
+  <div id="body"></div>
+</div>
+<script>
+(function () {
+  var API = 'https://sabr-checkout-production.up.railway.app';
+  var q = new URLSearchParams(window.location.search);
+  var sid = q.get('session_id') || '';
+  var sub = document.getElementById('sub');
+  var body = document.getElementById('body');
+
+  var win = /Win/i.test(navigator.platform) || /Windows/i.test(navigator.userAgent);
+  var mac = !win && /Mac/i.test(navigator.platform);
+  var osName = win ? 'Windows' : mac ? 'macOS' : 'Linux';
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  if (!sid) {
+    sub.textContent = 'This page needs the link Stripe sent you back on.';
+    body.innerHTML = '<p>Open the confirmation link from your receipt email, or write to ' +
+      '<a href="mailto:deansabrwork@gmail.com">deansabrwork@gmail.com</a> and you will be set up by hand.</p>';
+    return;
+  }
+
+  function render(d) {
+    var i = d.installers || {};
+    var dl = win ? i.windows : mac ? i.macos : i.linux;
+    sub.textContent = 'Your SI is provisioned' + (d.email ? ' to ' + d.email : '') +
+      '. Two steps and it is alive.';
+
+    var h = '';
+
+    /* The license key is the product. It leads on every OS, and it is the
+       TOKEN — never the curl one-liner. The old page printed install_cmd
+       under the words "your license key", so a Windows buyer pasted an
+       entire `curl … | bash` string into the installer's key field and got
+       "token wasn't recognized". Different artifacts, different jobs. */
+    h += '<h2>1. Your license key</h2>' +
+         '<p class="dim small">The installer asks for exactly this. Copy it now — ' +
+         'this is the one thing worth keeping.</p>' +
+         '<div class="key" id="key">' + esc(d.token) + '</div>' +
+         '<p style="margin-top:12px"><button id="copyKey">Copy key</button></p>';
+
+    h += '<div class="rule"></div><h2>2. Install</h2>';
+
+    if (win) {
+      h += '<p class="dim">You are on Windows. Download the installer and double-click it. ' +
+           'It asks for the key above, then does the rest — no terminal, nothing to set up first.</p>';
+      if (dl) h += '<p><a class="dl" href="' + esc(dl) + '">Download SabrInstaller.exe</a></p>';
+      h += '<p class="dim small">Windows SmartScreen may warn about an unrecognised publisher — ' +
+           'choose More info, then Run anyway. The build is not code-signed yet.</p>';
+    } else {
+      h += '<p class="dim">Paste this one line into a terminal. Your key is already in it.</p>';
+      if (d.install_cmd) {
+        h += '<pre id="cmd">' + esc(d.install_cmd) + '</pre>' +
+             '<p><button id="copyCmd">Copy command</button></p>';
+      }
+      if (dl) h += '<p class="dim small">Prefer a graphical installer? ' +
+        '<a href="' + esc(dl) + '">Download for ' + osName + '</a> — it asks for the key above.</p>';
+    }
+
+    h += '<p class="dim small">Install takes roughly 5 to 10 minutes on a normal connection — ' +
+         'most of it is downloading the brain. It is not frozen.</p>';
+
+    h += '<div class="rule"></div>' +
+         '<p class="dim small">A copy is on the way to your email. If it never lands, this page is ' +
+         'the real thing — screenshot it. Anything at all goes sideways, reply to ' +
+         '<a href="mailto:deansabrwork@gmail.com">deansabrwork@gmail.com</a> and the founder ' +
+         'fixes it personally.</p>';
+
+    body.innerHTML = h;
+
+    function wire(btnId, srcId, label) {
+      var b = document.getElementById(btnId), s = document.getElementById(srcId);
+      if (!b || !s) return;
+      b.addEventListener('click', function () {
+        var t = s.textContent, done = function () { b.textContent = 'Copied'; };
+        if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, done);
+        else done();
+      });
+    }
+    wire('copyKey', 'key');
+    wire('copyCmd', 'cmd');
+  }
+
+  /* Cache the delivered payload so a refresh or a back button shows it
+     instantly. Written only after a successful render, never before. */
+  var CACHE = 'sabr_install_' + sid;
+  try {
+    var saved = sessionStorage.getItem(CACHE);
+    if (saved) { render(JSON.parse(saved)); return; }
+  } catch (e) {}
+
+  var tries = 0;
+  (function poll() {
+    tries++;
+    fetch(API + '/install?session_id=' + encodeURIComponent(sid))
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        if (d && d.ok && !d.pending && d.token) {
+          try { sessionStorage.setItem(CACHE, JSON.stringify(d)); } catch (e) {}
+          render(d);
+          return;
+        }
+        if (tries < 40) return setTimeout(poll, 2000);
+        throw new Error('still provisioning');
+      })
+      .catch(function () {
+        if (tries < 40) return setTimeout(poll, 2000);
+        sub.textContent = 'Your payment went through — the charge is safe.';
+        body.innerHTML = '<p class="warn">Provisioning is taking longer than it should. ' +
+          'Nothing is lost. Email <a href="mailto:deansabrwork@gmail.com">deansabrwork@gmail.com</a> ' +
+          'with this page open and you will be set up by hand, usually within the hour.</p>';
+      });
+  })();
+})();
+</script>
+</body>
+</html>
