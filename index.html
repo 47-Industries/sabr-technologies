@@ -817,6 +817,108 @@ function copyInstall(){
     });
   });
 })();
+
+/* Post-payment. Stripe returns the buyer here with ?paid=1&session_id=...
+   Until now this page ignored both, so a paying customer landed on the
+   marketing homepage and saw absolutely nothing happen — the whole purchase
+   went silent. The install command and the OS-correct installer now appear
+   on the screen in front of them, so delivery never depends on an email
+   arriving. Polls while the webhook is still in flight rather than calling
+   a successful purchase an error. */
+(function () {
+  var q = new URLSearchParams(window.location.search);
+  var sid = q.get('session_id');
+  if (!sid) return;
+  var API = 'https://sabr-checkout-production.up.railway.app';
+
+  var win = /Win/i.test(navigator.platform) || /Windows/i.test(navigator.userAgent);
+  var mac = !win && /Mac/i.test(navigator.platform);
+
+  var el = document.createElement('div');
+  el.setAttribute('style', 'position:fixed;inset:0;z-index:9999;overflow:auto;' +
+    'background:#07070a;color:#f2f2f4;padding:6vh 5vw;font:16px/1.6 -apple-system,' +
+    'BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif');
+  el.innerHTML = '<div style="max-width:760px;margin:0 auto">' +
+    '<h1 style="font-size:32px;margin:0 0 6px">Payment received.</h1>' +
+    '<p id="sbSub" style="opacity:.72;margin:0 0 28px">Preparing your synthetic intelligence…</p>' +
+    '<div id="sbBody"></div></div>';
+  document.body.appendChild(el);
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function render(d) {
+    var i = d.installers || {};
+    var url = win ? i.windows : mac ? i.macos : i.linux;
+    var osName = win ? 'Windows' : mac ? 'macOS' : 'Linux';
+    var h = '';
+    document.getElementById('sbSub').textContent =
+      'Your SI is provisioned' + (d.email ? ' to ' + esc(d.email) : '') + '. Here is how to bring it up.';
+
+    if (win) {
+      /* Windows has no shell for the one-liner. The installer IS the path,
+         so it leads — telling a Windows buyer to paste a curl command is
+         how you lose them in the first thirty seconds. */
+      h += '<h2 style="font-size:20px;margin:0 0 8px">You are on Windows — download the installer</h2>' +
+        '<p style="opacity:.72;margin:0 0 14px">Double-click it. It installs everything and walks you ' +
+        'through naming your SI and connecting it. No terminal needed.</p>';
+      if (url) h += '<p><a href="' + esc(url) + '" style="display:inline-block;background:#f2f2f4;' +
+        'color:#07070a;padding:14px 22px;border-radius:8px;text-decoration:none;font-weight:700">' +
+        'Download SabrInstaller.exe</a></p>';
+      h += '<p style="opacity:.55;font-size:14px;margin:22px 0 6px">Your license key — the installer ' +
+        'will ask for it. Keep it:</p>';
+    } else {
+      h += '<h2 style="font-size:20px;margin:0 0 8px">Paste this into a terminal</h2>';
+    }
+
+    if (d.install_cmd) {
+      h += '<pre id="sbCmd" style="background:#111116;border:1px solid #26262e;border-radius:8px;' +
+        'padding:16px;overflow:auto;white-space:pre-wrap;word-break:break-all;font-size:13px">' +
+        esc(d.install_cmd) + '</pre>' +
+        '<p><button id="sbCopy" style="background:none;border:1px solid #3a3a45;color:#f2f2f4;' +
+        'padding:9px 16px;border-radius:6px;cursor:pointer">Copy</button></p>';
+    }
+    if (!win && url) {
+      h += '<p style="opacity:.72;font-size:14px">Prefer a graphical installer? ' +
+        '<a href="' + esc(url) + '" style="color:#9ecbff">Download for ' + osName + '</a>.</p>';
+    }
+    h += '<p style="opacity:.72;font-size:14px;margin-top:26px">A copy is on its way to your email. ' +
+      'If it does not arrive, this page is the real thing — screenshot it, or reply to ' +
+      '<a href="mailto:deansabrwork@gmail.com" style="color:#9ecbff">deansabrwork@gmail.com</a> ' +
+      'and the founder will set you up personally.</p>';
+    document.getElementById('sbBody').innerHTML = h;
+
+    var cp = document.getElementById('sbCopy');
+    if (cp) cp.addEventListener('click', function () {
+      var t = document.getElementById('sbCmd').textContent;
+      var done = function () { cp.textContent = 'Copied'; };
+      if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, done); else done();
+    });
+  }
+
+  var tries = 0;
+  (function poll() {
+    tries++;
+    fetch(API + '/install?session_id=' + encodeURIComponent(sid))
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        if (d && d.ok && !d.pending) { render(d); return; }
+        if (tries < 30) return setTimeout(poll, 2000);
+        throw new Error('still provisioning');
+      })
+      .catch(function () {
+        if (tries < 30) return setTimeout(poll, 2000);
+        document.getElementById('sbSub').textContent = 'Your payment went through.';
+        document.getElementById('sbBody').innerHTML =
+          '<p>Provisioning is taking longer than expected. Nothing is lost — email ' +
+          '<a href="mailto:deansabrwork@gmail.com" style="color:#9ecbff">deansabrwork@gmail.com</a> ' +
+          'and you will be set up by hand within the hour.</p>';
+      });
+  })();
+})();
 </script>
 </body>
 </html>
