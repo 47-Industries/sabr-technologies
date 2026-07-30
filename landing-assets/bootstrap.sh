@@ -63,6 +63,15 @@ banner
 OS="$(uname)"
 ARCH="$(uname -m)"
 
+# ── Release pin ────────────────────────────────────────────────
+# The digest of the release this script installs, pinned HERE and nowhere
+# else. This script reaches the customer over HTTPS with its own HTTPS
+# sidecar, so it is the trust anchor; a digest fetched from beside the
+# tarball would only prove the payload arrived intact from whoever sent
+# it, which is not the same as proving we sent it. Written by
+# build_release.sh — never edit by hand, and never fetch it at runtime.
+EXPECTED_RELEASE_SHA256="fded70edbe948e61282e73e78e9acab09cd07f015172cd66d51a14ff77183906"
+
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
 # block is self-healing and arch-aware: it detects Apple Silicon vs Intel on
@@ -280,29 +289,39 @@ DL_URLS=(
   "https://sabr-technologies-production.up.railway.app/landing-assets/leon-brain-release.tar.gz"
   "http://2.25.174.126:8500/landing-assets/leon-brain-release.tar.gz"
 )
+# A tarball may arrive from any source above; it is trusted only if it
+# matches the digest pinned in THIS script. That makes the plain-HTTP
+# fallback merely rude instead of dangerous: a hostile network can waste
+# the download, it cannot substitute the mind. There is deliberately NO
+# degrade path — an integrity check that can be skipped is not one, and
+# refusing to install is honest where installing-while-unable-to-verify
+# is not.
+if [ -z "$EXPECTED_RELEASE_SHA256" ]; then
+  die "This installer has no release digest pinned, so it cannot verify what it downloads." \
+      "That means the installer itself was built wrong or edited. Please re-download it:
+    curl -fsSL https://sabrtechnologies.com/landing-assets/bootstrap.sh -o bootstrap.sh
+and check with Sabr before running anything."
+fi
 DL_OK=""
+VERIFY_FAILED=""
 for DL_URL in "${DL_URLS[@]}"; do
   for attempt in 1 2 3; do
     if curl -fsSL --connect-timeout 10 "$DL_URL" -o leon-brain.tar.gz \
        && [ -f leon-brain.tar.gz ] && [ "$(wc -c < leon-brain.tar.gz)" -ge 1000 ]; then
-      # ── Integrity check ──
-      # Fetch the sha256 sidecar from the SAME source. If present, a mismatch
-      # means a truncated/corrupt/stale download — reject it and retry the next
-      # source instead of extracting garbage. If the sidecar 404s (older server
-      # that predates this), we degrade to the size sanity check, never brick.
-      WANT="$(curl -fsSL --connect-timeout 8 "${DL_URL}.sha256" 2>/dev/null | awk '{print $1}')"
-      if [ -n "$WANT" ]; then
-        GOT="$( (sha256sum leon-brain.tar.gz 2>/dev/null || shasum -a 256 leon-brain.tar.gz 2>/dev/null) | awk '{print $1}')"
-        if [ "$WANT" = "$GOT" ]; then
-          DL_OK="1"; break
-        else
-          say "  ${Y}checksum mismatch (corrupt download) — retrying...${N}"
-          rm -f leon-brain.tar.gz
-        fi
-      else
-        # No sidecar available from this source; accept on size check alone.
+      GOT="$( (sha256sum leon-brain.tar.gz 2>/dev/null || shasum -a 256 leon-brain.tar.gz 2>/dev/null) | awk '{print $1}')"
+      if [ -z "$GOT" ]; then
+        rm -f leon-brain.tar.gz
+        die "This machine has no sha256 tool, so the download cannot be verified." \
+            "Install coreutils (Linux: apt install coreutils) or use a Mac/Linux box with shasum, then re-run."
+      fi
+      if [ "$GOT" = "$EXPECTED_RELEASE_SHA256" ]; then
+        say "${G}[OK]${N} Download verified against the pinned release digest."
         DL_OK="1"; break
       fi
+      say "  ${Y}digest mismatch from this source — discarding and trying the next...${N}"
+      VERIFY_FAILED="1"
+      rm -f leon-brain.tar.gz
+      break
     fi
     say "  ${Y}source unreachable, attempt $attempt — retrying...${N}"
     sleep 2
@@ -310,6 +329,13 @@ for DL_URL in "${DL_URLS[@]}"; do
   [ -n "$DL_OK" ] && break
 done
 if [ -z "$DL_OK" ]; then
+  if [ -n "$VERIFY_FAILED" ]; then
+    die "The downloaded brain did not match the digest this installer expects, so nothing was installed." \
+        "Every source that answered served bytes we could not verify. This is either a
+stale mirror or an interfered-with download — either way it will not be run.
+Expected: $EXPECTED_RELEASE_SHA256
+Please contact dean@sabrtechnologies.com before retrying."
+  fi
   die "Download failed from all sources." "tried: ${DL_URLS[*]}"
 fi
 # ── Stop any previously-installed SI before replacing it ──────────────
