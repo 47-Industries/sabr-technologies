@@ -268,12 +268,26 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
 #copy-cmd{cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:.04em;color:#fff;background:linear-gradient(120deg,rgba(255,59,78,.28),rgba(61,123,255,.28));border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:11px 16px;transition:transform .15s,background .15s;}
 #copy-cmd:hover{transform:translateY(-1px);background:linear-gradient(120deg,rgba(255,59,78,.45),rgba(61,123,255,.45));}
 #copy-cmd:active{transform:scale(.96);}
+
+.dl-wrap{max-width:640px;margin:36px auto 0;text-align:center;}
+.dl-primary{display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-width:280px;padding:18px 40px;font-size:13px;letter-spacing:.06em;text-decoration:none;}
+.dl-note{margin-top:14px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.55);min-height:1em;}
+.dl-all{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:28px;}
+.dl-all a{flex:1 1 170px;padding:14px 16px;border-radius:12px;text-decoration:none;
+  border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);
+  color:rgba(255,255,255,.82);font-size:13px;font-weight:600;transition:.18s;}
+.dl-all a span{display:block;margin-top:3px;font-size:11px;font-weight:400;color:rgba(255,255,255,.42);}
+.dl-all a:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.06);transform:translateY(-2px);}
+.dl-all a.is-you{border-color:rgba(61,123,255,.5);background:rgba(61,123,255,.08);}
+.dl-time{margin-top:18px;font-size:11px;color:rgba(255,255,255,.35);}
+@media(max-width:520px){.dl-primary{min-width:0;width:100%;padding:16px 20px;}.dl-all a{flex:1 1 100%;}}
 </style>
 
 </head>
 <body>
 
-<nav><div class="logo">Sabr Technologies</div><div class="nlinks"><a href="#features">Features</a><a href="#how">How It Works</a><a href="#recommendations">Reviews</a><a href="#pricing">Pricing</a><a href="#about">About</a><a href="mailto:deansabrwork@gmail.com">Contact</a></div></nav>
+<nav><div class="logo">Sabr Technologies</div><div class="nlinks"><a href="#features">Features</a><a href="#download">Download</a><a href="#how">How It Works</a><a href="#recommendations">Reviews</a><a href="#pricing">Pricing</a><a href="#about">About</a><a href="mailto:deansabrwork@gmail.com">Contact</a></div></nav>
 
 <div class="hero">
     <div id="brain-box"></div>
@@ -281,11 +295,10 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
     <div class="hero-left">
         <h1 class="reveal">Birth your own<br><span class="acc">synthetic intelligence</span></h1>
         <div id="greet" class="reveal d1"></div>
-        <button class="cta1 reveal d2" id="birth-btn" onclick="copyInstall()">Birth Your SI</button>
-        <div id="install-cmd" class="reveal d2" style="display:none">
-            <code id="install-line">curl -sL http://2.25.174.126:8500/landing-assets/bootstrap.sh | bash</code>
-            <button id="copy-cmd" onclick="copyInstall()" title="Copy install command">Copy</button>
-        </div>
+        <!-- The hero CTA sends people to the download section, never to a
+             terminal command. A buyer must be able to finish this without
+             ever opening a shell. -->
+        <button class="cta1 reveal d2" id="birth-btn" onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})">Birth Your SI</button>
         <div id="play-row" class="reveal d3">
             <button id="play-btn" title="Hear Leon speak">&#9654;</button>
             <span id="play-label">Click to let me introduce myself</span>
@@ -320,11 +333,34 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
     </div>
 </section>
 <div class="div"></div>
+<section id="download">
+    <div class="tag reveal">Download</div>
+    <div class="ttl reveal">Get it for your machine</div>
+    <div class="dsc reveal">One file. Double-click it. No terminal, no Python, nothing to install first.</div>
+
+    <div class="reveal dl-wrap">
+      <a id="dlPrimary" class="cta1 dl-primary" href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller.exe" download>
+        <span id="dlPrimaryText">Download</span>
+      </a>
+      <div id="dlNote" class="dl-note"></div>
+
+      <!-- Every platform stays visible. Detection is a convenience, never a gate:
+           if the sniff is wrong, or the visitor is downloading on one machine to
+           install on another, they must still have a working path. -->
+      <div class="dl-all">
+        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller.exe" download data-os="win">Windows <span>.exe</span></a>
+        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos.zip" download data-os="mac">macOS <span>.zip &middot; Apple Silicon</span></a>
+        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/sabr-installer" download data-os="linux">Linux <span>binary</span></a>
+      </div>
+      <div class="dl-time">Install takes about 10 minutes start to finish.</div>
+    </div>
+</section>
+<div class="div"></div>
 <section id="how">
     <div class="tag reveal">Process</div>
     <div class="ttl reveal">Zero to alive in ten minutes</div>
     <div class="steps">
-        <div class="step reveal"><div class="sn">01</div><div><h4>One command</h4><p>Open your terminal, paste one line. It downloads everything, installs dependencies, and sets up your SI automatically.</p></div></div>
+        <div class="step reveal"><div class="sn">01</div><div><h4>One download</h4><p>Download the installer for your machine above and double-click it. It unpacks everything and sets up your SI automatically. No terminal.</p></div></div>
         <div class="step reveal"><div class="sn">02</div><div><h4>Name it</h4><p>The installer asks your name and what to call your SI. That is the only input. Everything else is automatic.</p></div></div>
         <div class="step reveal"><div class="sn">03</div><div><h4>Connect Claude</h4><p>Install Claude Code, log in with your account. That gives your SI a brain. Takes two minutes.</p></div></div>
         <div class="step reveal"><div class="sn">04</div><div><h4>It is alive</h4><p>Open localhost:8000. Your SI is running, waiting for you. It never stops learning.</p></div></div>
@@ -733,18 +769,9 @@ playRow.addEventListener('click', () => {
 
 
 <script>
-function copyInstall(){
-  var cmd = document.getElementById('install-line').textContent.trim();
-  var btn = document.getElementById('copy-cmd');
-  function done(){ if(btn){ var o=btn.textContent; btn.textContent='Copied \u2713'; setTimeout(function(){btn.textContent=o;},1800);} }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(cmd).then(done).catch(fallback);
-  } else { fallback(); }
-  function fallback(){
-    var t=document.createElement('textarea'); t.value=cmd; document.body.appendChild(t); t.select();
-    try{document.execCommand('copy');}catch(e){} document.body.removeChild(t); done();
-  }
-}
+/* copyInstall() removed 2026-08-01 along with the hero curl one-liner.
+   Nothing on this page hands a buyer a terminal command any more — the CTA
+   scrolls to the download section and they get a file to double-click. */
 </script>
 <script>
 /* Checkout: hand off to the Sabr checkout service, which mints a live Stripe
@@ -832,6 +859,62 @@ function copyInstall(){
   var sid = q.get('session_id');
   if (!sid) return;
   window.location.replace('/success.html?session_id=' + encodeURIComponent(sid));
+})();
+</script>
+<script>
+(function(){
+  // Pick the most likely build from the UA. Deliberately conservative: when we
+  // cannot tell, the button says "Choose your platform" and points at the
+  // explicit list rather than guessing wrong and handing someone a binary
+  // their machine cannot run.
+  var ua = (navigator.userAgent || '') + ' ' + (navigator.platform || '');
+  var B = "https://github.com/47-Industries/sabr-installers/releases/latest/download";
+  var os = null;
+  // Mobile FIRST. An iPhone UA contains "Mac OS X" and Android's contains
+  // "Linux", so a naive desktop sniff hands a phone user a desktop installer.
+  var isMobile = /iPhone|iPad|iPod|Android|Mobile|Silk|Kindle/i.test(ua)
+                 && !/iPad.*Macintosh/i.test(ua);
+  // iPadOS 13+ in its default desktop mode reports a UA identical to a Mac —
+  // no "iPad" string at all — so the regex above cannot see it. A real Mac
+  // reports maxTouchPoints 0; a touch iPad reports 5. Without this an iPad
+  // visitor is handed a macOS .zip they can never open.
+  if (!isMobile && /Mac/i.test(ua) && (navigator.maxTouchPoints || 0) > 1) isMobile = true;
+  if (isMobile) os = 'mobile';
+  else if (/Win/i.test(ua)) os = 'win';
+  else if (/Mac/i.test(ua)) os = 'mac';
+  else if (/Linux|X11|CrOS/i.test(ua)) os = 'linux';
+
+  var map = {
+    win:   { label: 'Download for Windows', href: B + '/SabrInstaller.exe', note: '' },
+    mac:   { label: 'Download for macOS',   href: B + '/SabrInstaller-macos.zip',
+             note: 'Apple Silicon (M1\u2013M4). First launch: macOS will ask you to confirm \u2014 System Settings \u203a Privacy &amp; Security \u203a Open Anyway.' },
+    linux: { label: 'Download for Linux',   href: B + '/sabr-installer', note: 'Make it executable, then run it.' }
+  };
+
+  var btn  = document.getElementById('dlPrimary');
+  var txt  = document.getElementById('dlPrimaryText');
+  var note = document.getElementById('dlNote');
+  if (!btn || !txt) return;
+
+  if (os === 'mobile') {
+    // Not a failure state, just the wrong device. Say so plainly.
+    txt.textContent = 'Open this on your computer';
+    btn.href = '#download';
+    btn.removeAttribute('download');
+    if (note) note.textContent = 'Your SI runs on a desktop or laptop \u2014 Windows, macOS or Linux. Links below if you want them now.';
+  } else if (os && map[os]) {
+    txt.textContent = map[os].label;
+    btn.href = map[os].href;
+    if (note) note.innerHTML = map[os].note;
+    var mine = document.querySelector('.dl-all a[data-os="' + os + '"]');
+    if (mine) mine.classList.add('is-you');
+  } else {
+    // Unknown platform: do not guess. Send them to the explicit list.
+    txt.textContent = 'Choose your platform';
+    btn.href = '#download';
+    btn.removeAttribute('download');
+    if (note) note.textContent = "Couldn't detect your system \u2014 pick one below.";
+  }
 })();
 </script>
 </body>
