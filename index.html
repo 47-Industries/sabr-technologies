@@ -287,6 +287,26 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
             <button id="copy-cmd" onclick="copyInstall()" title="Copy install command">Copy</button>
         </div>
         <div id="install-note" class="hero-sub" style="display:none"></div>
+        <!-- Windows flags new unsigned downloads before our code ever runs, so
+             the buyer sees an OS error with no relationship to their purchase.
+             Until the installer is code-signed this has to be said ON the page:
+             a person who just paid should never have to ask whether their
+             purchase is broken. Shown only on the Windows path. -->
+        <details id="win-blocked" class="hero-sub" style="display:none;margin-top:8px">
+            <summary style="cursor:pointer;color:rgba(255,255,255,.45)">Windows blocked it? Fixed in under a minute.</summary>
+            <div style="color:rgba(255,255,255,.45);line-height:1.7;margin-top:8px">
+                Windows guards new downloads it hasn&rsquo;t seen before. That is Windows
+                being careful, not a problem with your purchase.<br><br>
+                <b>If it won&rsquo;t open:</b> right-click the file &rarr; <b>Properties</b> &rarr;
+                tick <b>Unblock</b> at the bottom &rarr; <b>OK</b>, then open it again.<br>
+                <b>If a blue &ldquo;Windows protected your PC&rdquo; screen appears:</b> click
+                <b>More info</b>, then <b>Run anyway</b>.<br><br>
+                Still stuck? Delete the download, get it again from this page (not
+                GitHub), and retry &mdash; or write to
+                <a href="mailto:dean@sabrtechnologies.com" style="color:rgba(255,255,255,.6)">dean@sabrtechnologies.com</a>
+                and we&rsquo;ll get on a call.
+            </div>
+        </details>
         <div id="install-switch" class="hero-sub reveal d2" style="display:none">
             <a href="#" id="switch-link" style="color:rgba(255,255,255,.45);text-decoration:underline;cursor:pointer"></a>
         </div>
@@ -753,6 +773,7 @@ playRow.addEventListener('click', () => {
       cmd = document.getElementById('install-cmd'),
       note = document.getElementById('install-note'),
       sw = document.getElementById('install-switch'),
+      blocked = document.getElementById('win-blocked'),
       link = document.getElementById('switch-link');
   if (!btn) return;
 
@@ -780,12 +801,14 @@ playRow.addEventListener('click', () => {
         note.style.display = 'block';
       }
       if (link) link.textContent = 'On a Mac or Linux instead?';
+      if (blocked) blocked.style.display = 'block';
       setStep('One download',
               'Download the installer and double-click it. It sets up everything, '
               + 'asks for the token from your welcome email, and starts your SI.');
     } else {
       btn.textContent = 'Birth Your SI';
       if (note) note.style.display = 'none';
+      if (blocked) blocked.style.display = 'none';
       if (link) link.textContent = 'On Windows instead?';
       setStep('One command',
               'Open your terminal, paste one line. It downloads everything, '
