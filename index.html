@@ -273,21 +273,27 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
 .dl-primary{display:inline-flex;align-items:center;justify-content:center;gap:10px;
   min-width:280px;padding:18px 40px;font-size:13px;letter-spacing:.06em;text-decoration:none;}
 .dl-note{margin-top:14px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.55);min-height:1em;}
-.dl-all{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:28px;}
-.dl-all a{flex:1 1 170px;padding:14px 16px;border-radius:12px;text-decoration:none;
+.dl-all{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:24px;}
+.dl-all a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  min-height:74px;padding:14px 10px;border-radius:10px;text-decoration:none;text-align:center;
   border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);
-  color:rgba(255,255,255,.82);font-size:13px;font-weight:600;transition:.18s;}
-.dl-all a span{display:block;margin-top:3px;font-size:11px;font-weight:400;color:rgba(255,255,255,.42);}
+  color:rgba(255,255,255,.82);font-size:13px;font-weight:600;line-height:1.2;transition:.18s;}
+.dl-all a b{font-weight:600;}
+.dl-all a span{font-size:11px;font-weight:400;color:rgba(255,255,255,.42);}
 .dl-all a:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.06);transform:translateY(-2px);}
 .dl-all a.is-you{border-color:rgba(61,123,255,.5);background:rgba(61,123,255,.08);}
 .dl-time{margin-top:18px;font-size:11px;color:rgba(255,255,255,.35);}
-@media(max-width:520px){.dl-primary{min-width:0;width:100%;padding:16px 20px;}.dl-all a{flex:1 1 100%;}}
+.dl-license{margin-top:20px;font-size:12px;line-height:1.65;color:rgba(255,255,255,.62);}
+.dl-license b{color:rgba(255,255,255,.88);font-weight:600;}
+.dl-mac{margin-top:10px;font-size:11px;line-height:1.6;color:rgba(255,255,255,.4);}
+@media(max-width:760px){.dl-all{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:520px){.dl-primary{min-width:0;width:100%;padding:16px 20px;}}
 </style>
 
 </head>
 <body>
 
-<nav><div class="logo">Sabr Technologies</div><div class="nlinks"><a href="#features">Features</a><a href="#download">Download</a><a href="#how">How It Works</a><a href="#recommendations">Reviews</a><a href="#pricing">Pricing</a><a href="#about">About</a><a href="mailto:deansabrwork@gmail.com">Contact</a></div></nav>
+<nav><div class="logo">Sabr Technologies</div><div class="nlinks"><a href="#features">Features</a><a href="#download">Download</a><a href="#recommendations">Reviews</a><a href="#pricing">Pricing</a><a href="#about">About</a><a href="mailto:deansabrwork@gmail.com">Contact</a></div></nav>
 
 <div class="hero">
     <div id="brain-box"></div>
@@ -348,23 +354,17 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
            if the sniff is wrong, or the visitor is downloading on one machine to
            install on another, they must still have a working path. -->
       <div class="dl-all">
-        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller.exe" download data-os="win">Windows <span>.exe</span></a>
-        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos.zip" download data-os="mac">macOS <span>.zip &middot; Apple Silicon</span></a>
-        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos-intel.zip" download data-os="mac-intel">macOS <span>.zip &middot; Intel</span></a>
-        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/sabr-installer" download data-os="linux">Linux <span>binary</span></a>
+        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/sabr-installer" download data-os="linux"><b>Linux</b><span>binary</span></a>
+        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller.exe" download data-os="win"><b>Windows</b><span>.exe</span></a>
+        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos.zip" download data-os="mac"><b>macOS</b><span>Apple Silicon &middot; .zip</span></a>
+        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos-intel.zip" download data-os="mac-intel"><b>macOS</b><span>Intel &middot; .zip</span></a>
       </div>
+      <!-- The quarantine note also rides map.mac.note in the detect script, but
+           that only fires for a visitor we sniffed as macOS. Someone on Linux
+           downloading for a Mac must still see it, so it lives here too. -->
+      <div class="dl-mac">macOS builds are not signed yet. First launch, macOS will ask you to confirm &mdash; System Settings &rsaquo; Privacy &amp; Security &rsaquo; Open Anyway.</div>
+      <div class="dl-license"><b>Free to download. Activation is not.</b> The installer asks for a license token on first run, and that token is issued after payment.</div>
       <div class="dl-time">Install takes about 10 minutes start to finish.</div>
-    </div>
-</section>
-<div class="div"></div>
-<section id="how">
-    <div class="tag reveal">Process</div>
-    <div class="ttl reveal">Zero to alive in ten minutes</div>
-    <div class="steps">
-        <div class="step reveal"><div class="sn">01</div><div><h4>One download</h4><p>Download the installer for your machine above and double-click it. It unpacks everything and sets up your SI automatically. No terminal.</p></div></div>
-        <div class="step reveal"><div class="sn">02</div><div><h4>Name it</h4><p>The installer asks your name and what to call your SI. That is the only input. Everything else is automatic.</p></div></div>
-        <div class="step reveal"><div class="sn">03</div><div><h4>Connect Claude</h4><p>Install Claude Code, log in with your account. That gives your SI a brain. Takes two minutes.</p></div></div>
-        <div class="step reveal"><div class="sn">04</div><div><h4>It is alive</h4><p>Open localhost:8000. Your SI is running, waiting for you. It never stops learning.</p></div></div>
     </div>
 </section>
 <div class="div"></div>
