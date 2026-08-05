@@ -350,6 +350,7 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
       <div class="dl-all">
         <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller.exe" download data-os="win">Windows <span>.exe</span></a>
         <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos.zip" download data-os="mac">macOS <span>.zip &middot; Apple Silicon</span></a>
+        <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos-intel.zip" download data-os="mac-intel">macOS <span>.zip &middot; Intel</span></a>
         <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/sabr-installer" download data-os="linux">Linux <span>binary</span></a>
       </div>
       <div class="dl-time">Install takes about 10 minutes start to finish.</div>
@@ -887,7 +888,7 @@ playRow.addEventListener('click', () => {
   var map = {
     win:   { label: 'Download for Windows', href: B + '/SabrInstaller.exe', note: '' },
     mac:   { label: 'Download for macOS',   href: B + '/SabrInstaller-macos.zip',
-             note: 'Apple Silicon (M1\u2013M4). First launch: macOS will ask you to confirm \u2014 System Settings \u203a Privacy &amp; Security \u203a Open Anyway.' },
+             note: 'Apple Silicon (M1\u2013M4). On an older Intel Mac, use the Intel .zip below instead \u2014 this build will not launch there. First launch: macOS will ask you to confirm \u2014 System Settings \u203a Privacy &amp; Security \u203a Open Anyway.' },
     linux: { label: 'Download for Linux',   href: B + '/sabr-installer', note: 'Make it executable, then run it.' }
   };
 
