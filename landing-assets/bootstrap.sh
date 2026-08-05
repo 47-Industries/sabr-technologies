@@ -201,10 +201,27 @@ if [ -n "$AVAIL_KB" ] && [ "$AVAIL_KB" -lt 2000000 ]; then
       "Free up some space, then re-run this installer."
 fi
 
-# ── Minimum Python version — the brain needs 3.9+; older only fails later ──
-if ! "$PY" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3,9) else 1)'; then
-  die "Python $PYVER is too old — the SI needs Python 3.9 or newer." "  Mac:   brew install python@3.12
-  Linux: sudo apt-get install -y python3.12 python3.12-venv
+# ── Minimum Python version — B11 ──────────────────────────────────────
+# 3.11, and it is derived, not chosen. Requires-Python read from installed
+# dist metadata on a working system:
+#     numpy  2.4.6   >=3.11   <- binding
+#     scipy  1.17.1  >=3.11   <- binding
+#     fastapi, uvicorn, requests, aiohttp, Pillow, dotenv, multipart >=3.10
+#     anthropic, pydantic, faster-whisper, mss                       >=3.9
+# numpy and scipy set the floor. This check previously enforced 3.9, which
+# let an install start on 3.9 or 3.10 and then die deep in a pip build with
+# an error that never names the cause — the failure this check exists to
+# prevent. The source itself does not need 3.11: no match statements and no
+# bare PEP-604 unions outside modules with 'from __future__ import
+# annotations'. It is a dependency fact, not a syntax fact.
+if ! "$PY" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3,11) else 1)'; then
+  die "Python $PYVER is too old — the SI needs Python 3.11 or newer." "  numpy and scipy both require Python >= 3.11. Installing on $PYVER
+  fails partway through pip with a build error that does not name the
+  real cause, so we stop here instead.
+
+  Mac:     brew install python@3.13
+  Windows: https://python.org/downloads/  (tick 'Add python.exe to PATH')
+  Linux:   sudo apt-get install -y python3.13 python3.13-venv
   Then re-run this installer."
 fi
 
@@ -279,23 +296,34 @@ say ""
 say "Downloading brain..."
 INSTALL_DIR="$HOME/leon-brain"
 cd "$HOME" || die "Cannot cd to HOME ($HOME)"
-# Download from the lightweight license/static server on :8500 — it is rock
-# solid (serves in ~25ms). The old :8000/download fallback was the BRAIN API,
-# which has no download route and blocks under load, so it just hung 8s. We now
-# retry the working :8500 endpoint instead of falling through to a dead port.
-# Two independent sources: Railway (primary, CDN-fronted) then the VPS (fallback).
-# So a single box going down no longer kills every install on the planet.
+# TLS ONLY. There used to be a third entry here —
+# http://2.25.174.126:8500/... — and because the list is tried in order with
+# no floor, a network that merely blocked the two TLS hosts would quietly
+# downgrade the install to an 80MB mind arriving unencrypted from a bare IP.
+# The digest pinned below always made that safe from substitution, but safe
+# is not the same as acceptable, and a corporate network that blocks bare-IP
+# HTTP outright would have failed the install anyway, at the very last step
+# and for a reason no customer could read. So the entry is gone and the loop
+# refuses any non-TLS URL: a hard, early, legible failure instead of a
+# silent downgrade.
+#
+# Both remaining mirrors were verified serving the real artifact on
+# 2026-08-05, against the local release file:
+#   sabrtechnologies.com  80828470 bytes, sha256 fded70ed… — byte-identical
+#                         to EXPECTED_RELEASE_SHA256 below
+#   railway               gzip, same artifact (the older comment here claimed
+#                         Railway 404s for this path; that is no longer true)
 DL_URLS=(
+  "https://sabrtechnologies.com/landing-assets/leon-brain-release.tar.gz"
   "https://sabr-technologies-production.up.railway.app/landing-assets/leon-brain-release.tar.gz"
-  "http://2.25.174.126:8500/landing-assets/leon-brain-release.tar.gz"
 )
 # A tarball may arrive from any source above; it is trusted only if it
-# matches the digest pinned in THIS script. That makes the plain-HTTP
-# fallback merely rude instead of dangerous: a hostile network can waste
-# the download, it cannot substitute the mind. There is deliberately NO
-# degrade path — an integrity check that can be skipped is not one, and
-# refusing to install is honest where installing-while-unable-to-verify
-# is not.
+# matches the digest pinned in THIS script. Transport and integrity are two
+# separate guarantees and this script now insists on both: TLS says the bytes
+# were not read or rewritten in flight, the digest says they are the bytes we
+# published. There is deliberately NO degrade path for either — an integrity
+# check that can be skipped is not one, and refusing to install is honest
+# where installing-while-unable-to-verify is not.
 if [ -z "$EXPECTED_RELEASE_SHA256" ]; then
   die "This installer has no release digest pinned, so it cannot verify what it downloads." \
       "That means the installer itself was built wrong or edited. Please re-download it:
@@ -304,7 +332,19 @@ and check with Sabr before running anything."
 fi
 DL_OK=""
 VERIFY_FAILED=""
+NON_TLS_SKIPPED=""
 for DL_URL in "${DL_URLS[@]}"; do
+  # Refused, not demoted to last place. This is the guard that keeps the
+  # removed bare-IP entry from creeping back in during a hurried edit: a
+  # non-TLS source is never tried, however few sources remain.
+  case "$DL_URL" in
+    https://*) ;;
+    *)
+      say "  ${Y}refusing a source that is not HTTPS: ${DL_URL}${N}"
+      NON_TLS_SKIPPED="1"
+      continue
+      ;;
+  esac
   for attempt in 1 2 3; do
     if curl -fsSL --connect-timeout 10 "$DL_URL" -o leon-brain.tar.gz \
        && [ -f leon-brain.tar.gz ] && [ "$(wc -c < leon-brain.tar.gz)" -ge 1000 ]; then
@@ -336,7 +376,18 @@ stale mirror or an interfered-with download — either way it will not be run.
 Expected: $EXPECTED_RELEASE_SHA256
 Please contact dean@sabrtechnologies.com before retrying."
   fi
-  die "Download failed from all sources." "tried: ${DL_URLS[*]}"
+  if [ -n "$NON_TLS_SKIPPED" ]; then
+    die "Download failed: no HTTPS source answered." \
+        "One or more sources in this installer are plain HTTP and were refused
+rather than used — the brain is not delivered over an unencrypted link.
+Tried: ${DL_URLS[*]}
+If you are on a network that blocks outbound HTTPS to sabrtechnologies.com,
+download the release on another connection, or contact
+dean@sabrtechnologies.com."
+  fi
+  die "Download failed from all sources." "tried: ${DL_URLS[*]}
+Both sources are HTTPS and neither answered. Check your connection, or
+contact dean@sabrtechnologies.com if this keeps happening."
 fi
 # ── Stop any previously-installed SI before replacing it ──────────────
 # Reinstalling over a still-running brain leaves the old process holding
@@ -350,11 +401,64 @@ if [ -d "$INSTALL_DIR" ]; then
   command -v fuser >/dev/null 2>&1 && fuser -k 8000/tcp 2>/dev/null || true
   sleep 1
 fi
-[ -d leon-brain ] && rm -rf leon-brain
-tar xzf leon-brain.tar.gz || die "Extraction failed (corrupt tarball?)"
+# ── B4: VALIDATE THEN SWAP. Never delete-then-hope. ───────────────────
+# This used to be `rm -rf leon-brain` followed by `tar xzf`. The delete ran
+# AFTER the download but BEFORE extraction, pip, or any verification — so any
+# failure past that line left the owner with nothing, and took .env (dashboard
+# key, SI name, owner name) and brain_state/ (everything the SI has learned)
+# with it. Reinstalling to FIX a problem was the act that destroyed the
+# instance, and the second install is exactly when that bites.
+#
+# Now: extract beside the old one, prove the payload is real, carry the
+# identity across, swap, and keep the previous tree until the new one has been
+# stood up. Nothing is removed until something better exists.
+STAGE_DIR="$HOME/.leon-brain-staging.$$"
+BACKUP_DIR=""
+rm -rf "$STAGE_DIR"
+mkdir -p "$STAGE_DIR" || die "Cannot create staging dir ($STAGE_DIR)"
+tar xzf leon-brain.tar.gz -C "$STAGE_DIR" || {
+  rm -rf "$STAGE_DIR"
+  die "Extraction failed (corrupt tarball?) — your existing install is untouched."
+}
+# The tarball's top level is leon-brain/. Prove it before trusting it.
+if [ ! -d "$STAGE_DIR/leon-brain" ] || [ ! -f "$STAGE_DIR/leon-brain/run.py" ]; then
+  rm -rf "$STAGE_DIR"
+  die "Extracted tree is not a brain (no run.py) — refusing to replace a working install."
+fi
+
+if [ -d "$INSTALL_DIR" ]; then
+  # Carry identity and memory forward BEFORE the swap. Losing these is losing
+  # the instance: .env holds the dashboard key and the SI's name, brain_state/
+  # holds everything it remembers.
+  for keep in .env brain_state; do
+    if [ -e "$INSTALL_DIR/$keep" ]; then
+      cp -a "$INSTALL_DIR/$keep" "$STAGE_DIR/leon-brain/" 2>/dev/null \
+        && say "  ${G}kept${N} $keep" \
+        || say "  ${Y}[WARN]${N} could not carry $keep forward"
+    fi
+  done
+  BACKUP_DIR="$HOME/.leon-brain-previous.$$"
+  rm -rf "$BACKUP_DIR"
+  mv "$INSTALL_DIR" "$BACKUP_DIR" || {
+    rm -rf "$STAGE_DIR"
+    die "Could not move the existing install aside — nothing changed."
+  }
+fi
+
+if ! mv "$STAGE_DIR/leon-brain" "$INSTALL_DIR"; then
+  # Swap failed. Put the old one back rather than leaving the user with none.
+  [ -n "$BACKUP_DIR" ] && mv "$BACKUP_DIR" "$INSTALL_DIR" 2>/dev/null
+  rm -rf "$STAGE_DIR"
+  die "Could not install the new tree — the previous install was restored."
+fi
+rm -rf "$STAGE_DIR"
 rm -f leon-brain.tar.gz
-say "${G}[OK]${N} Extracted to ~/leon-brain/"
-cd "$INSTALL_DIR" || die "Extracted dir missing"
+if [ -n "$BACKUP_DIR" ]; then
+  say "${G}[OK]${N} Previous install kept at $BACKUP_DIR"
+  say "     Delete it once the new one is confirmed working."
+fi
+say "${G}[OK]${N} Installed to ~/leon-brain/"
+cd "$INSTALL_DIR" || die "Install dir missing after swap"
 
 # ── Tenant identity ────────────────────────────────────────────
 # A buyer's install command carries these as an env prefix:
@@ -438,10 +542,19 @@ spin_start "Installing packages (1-2 minutes)..."
 "$VPYTHON" -m pip install $PIPFLAGS --quiet --upgrade pip >/tmp/leon_pip.log 2>&1
 # CORE deps — the brain CANNOT think or serve without these. If any fail,
 # the install is genuinely unusable, so we die with the real reason.
+# B12: EXACT pins. Every version below was resolved with importlib.metadata
+# from the interpreter actually running a healthy brain — not PyPI latest,
+# not guessed. Unpinned, a breaking release of any one of these silently
+# breaks every new install worldwide with no change on our side.
+# pyperclip and screeninfo stay unpinned: they are NOT installed on the
+# reference system, so there is no observed version to pin, and neither is
+# imported anywhere in brain/, server/ or sensory/ (0 hits for `import`).
 "$VPYTHON" -m pip install $PIPFLAGS --quiet \
-      numpy scipy fastapi "uvicorn[standard]" websockets \
-      python-multipart python-dotenv Pillow mss psutil anthropic \
-      requests aiohttp pyperclip screeninfo >>/tmp/leon_pip.log 2>&1
+      numpy==2.4.6 scipy==1.17.1 fastapi==0.136.3 "uvicorn[standard]==0.49.0" \
+      websockets==10.4 python-multipart==0.0.32 python-dotenv==1.2.2 \
+      Pillow==12.2.0 mss==10.2.0 psutil==7.2.2 anthropic==0.105.2 \
+      requests==2.34.2 aiohttp==3.14.1 \
+      pyperclip screeninfo >>/tmp/leon_pip.log 2>&1
 PIP_RC=$?
 spin_stop
 [ $PIP_RC -ne 0 ] && die "pip install failed." "$(cat /tmp/leon_pip.log)"
