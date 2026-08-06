@@ -97,6 +97,27 @@
       if (dl) h += '<p><a class="dl" href="' + esc(dl) + '">Download SabrInstaller.exe</a></p>';
       h += '<p class="dim small">Windows SmartScreen may warn about an unrecognised publisher — ' +
            'choose More info, then Run anyway. The build is not code-signed yet.</p>';
+    } else if (mac) {
+      /* A Mac buyer is not a terminal buyer. The old page led with a
+         `curl … | bash` one-liner and buried the app download in a
+         footnote — and offered ONE mac link, though Apple Silicon and
+         Intel are genuinely different binaries (arm64 vs x86_64). An
+         Intel Mac handed the arm64 build cannot execute it at all. So:
+         graphical first, both chips offered, terminal demoted. */
+      h += '<p class="dim">You are on a Mac. Download the installer, unzip it, then ' +
+           '<strong>right-click the app and choose Open</strong> — not double-click. ' +
+           'It asks for the key above and does the rest.</p>';
+      if (i.macos) h += '<p><a class="dl" href="' + esc(i.macos) + '">Download for Apple Silicon (M1–M4)</a></p>';
+      if (i.macos_intel) h += '<p><a class="dl" href="' + esc(i.macos_intel) + '">Download for Intel Mac</a></p>';
+      h += '<p class="dim small">Not sure which? Apple menu, About This Mac. If it names an ' +
+           'M chip, take Apple Silicon. macOS will say the developer is unidentified — that is ' +
+           'expected, the build is not notarised yet. Right-click, Open, then Open again.</p>';
+      if (d.install_cmd) {
+        h += '<p class="dim small" style="margin-top:18px">Prefer the terminal? This one line does ' +
+             'the same thing, key already in it.</p>' +
+             '<pre id="cmd">' + esc(d.install_cmd) + '</pre>' +
+             '<p><button id="copyCmd">Copy command</button></p>';
+      }
     } else {
       h += '<p class="dim">Paste this one line into a terminal. Your key is already in it.</p>';
       if (d.install_cmd) {
@@ -105,6 +126,18 @@
       }
       if (dl) h += '<p class="dim small">Prefer a graphical installer? ' +
         '<a href="' + esc(dl) + '">Download for ' + osName + '</a> — it asks for the key above.</p>';
+    }
+
+    /* Browser sniffing is a guess, and a wrong guess on this page costs a
+       paying customer their install. Always offer every platform. */
+    var others = [];
+    if (!win && i.windows) others.push('<a href="' + esc(i.windows) + '">Windows</a>');
+    if (!mac && i.macos) others.push('<a href="' + esc(i.macos) + '">Mac (Apple Silicon)</a>');
+    if (!mac && i.macos_intel) others.push('<a href="' + esc(i.macos_intel) + '">Mac (Intel)</a>');
+    if ((win || mac) && i.linux) others.push('<a href="' + esc(i.linux) + '">Linux</a>');
+    if (others.length) {
+      h += '<p class="dim small" style="margin-top:18px">Installing on a different machine? ' +
+           others.join(' &nbsp;·&nbsp; ') + ' — same key works on any of them.</p>';
     }
 
     h += '<p class="dim small">Install takes roughly 5 to 10 minutes on a normal connection — ' +
