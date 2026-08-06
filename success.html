@@ -37,6 +37,20 @@
       text-decoration:none;font-weight:700}
   .rule{height:1px;background:#1c1c24;margin:34px 0}
   .warn{border-left:3px solid #ff3b4e;padding-left:14px}
+  /* Always all four, always real buttons — a wrong OS guess used to hide
+     the other three behind a small text link, which is how a Windows
+     buyer on Dean's Linux box only ever saw a terminal one-liner. Detected
+     OS gets a lighter border + a small tag; nothing is ever hidden. */
+  .dl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 6px}
+  .dl-grid a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+      background:#111116;border:1px solid #2c2c36;border-radius:8px;padding:16px 8px;
+      text-decoration:none;color:#f2f2f4;text-align:center}
+  .dl-grid a:hover{border-color:#5a5a68}
+  .dl-grid a.rec{border-color:#5a5a68}
+  .dl-grid a b{font-size:15px;font-weight:700}
+  .dl-grid a span{font-size:12px;opacity:.6}
+  .dl-grid a .tag{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.55}
+  @media(max-width:520px){.dl-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -55,7 +69,6 @@
 
   var win = /Win/i.test(navigator.platform) || /Windows/i.test(navigator.userAgent);
   var mac = !win && /Mac/i.test(navigator.platform);
-  var osName = win ? 'Windows' : mac ? 'macOS' : 'Linux';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -72,7 +85,6 @@
 
   function render(d) {
     var i = d.installers || {};
-    var dl = win ? i.windows : mac ? i.macos : i.linux;
     sub.textContent = 'Your SI is provisioned' + (d.email ? ' to ' + d.email : '') +
       '. Two steps and it is alive.';
 
@@ -89,55 +101,48 @@
          '<div class="key" id="key">' + esc(d.token) + '</div>' +
          '<p style="margin-top:12px"><button id="copyKey">Copy key</button></p>';
 
-    h += '<div class="rule"></div><h2>2. Install</h2>';
+    h += '<div class="rule"></div><h2>2. Install</h2>' +
+         '<p class="dim">Pick your platform. The key above works with any of them — ' +
+         'a guessed OS used to hide the other three behind a small text link, which is ' +
+         'exactly wrong the moment the guess is wrong.</p>';
 
-    if (win) {
-      h += '<p class="dim">You are on Windows. Download the installer and double-click it. ' +
-           'It asks for the key above, then does the rest — no terminal, nothing to set up first.</p>';
-      if (dl) h += '<p><a class="dl" href="' + esc(dl) + '">Download SabrInstaller.exe</a></p>';
-      h += '<p class="dim small">Windows SmartScreen may warn about an unrecognised publisher — ' +
-           'choose More info, then Run anyway. The build is not code-signed yet.</p>';
-    } else if (mac) {
-      /* A Mac buyer is not a terminal buyer. The old page led with a
-         `curl … | bash` one-liner and buried the app download in a
-         footnote — and offered ONE mac link, though Apple Silicon and
-         Intel are genuinely different binaries (arm64 vs x86_64). An
-         Intel Mac handed the arm64 build cannot execute it at all. So:
-         graphical first, both chips offered, terminal demoted. */
-      h += '<p class="dim">You are on a Mac. Download the installer, unzip it, then ' +
-           '<strong>right-click the app and choose Open</strong> — not double-click. ' +
-           'It asks for the key above and does the rest.</p>';
-      if (i.macos) h += '<p><a class="dl" href="' + esc(i.macos) + '">Download for Apple Silicon (M1–M4)</a></p>';
-      if (i.macos_intel) h += '<p><a class="dl" href="' + esc(i.macos_intel) + '">Download for Intel Mac</a></p>';
-      h += '<p class="dim small">Not sure which? Apple menu, About This Mac. If it names an ' +
-           'M chip, take Apple Silicon. macOS will say the developer is unidentified — that is ' +
-           'expected, the build is not notarised yet. Right-click, Open, then Open again.</p>';
-      if (d.install_cmd) {
-        h += '<p class="dim small" style="margin-top:18px">Prefer the terminal? This one line does ' +
-             'the same thing, key already in it.</p>' +
-             '<pre id="cmd">' + esc(d.install_cmd) + '</pre>' +
-             '<p><button id="copyCmd">Copy command</button></p>';
-      }
-    } else {
-      h += '<p class="dim">Paste this one line into a terminal. Your key is already in it.</p>';
-      if (d.install_cmd) {
-        h += '<pre id="cmd">' + esc(d.install_cmd) + '</pre>' +
-             '<p><button id="copyCmd">Copy command</button></p>';
-      }
-      if (dl) h += '<p class="dim small">Prefer a graphical installer? ' +
-        '<a href="' + esc(dl) + '">Download for ' + osName + '</a> — it asks for the key above.</p>';
-    }
+    /* ALWAYS all four, ALWAYS real buttons, same order as the main site's
+       download grid: Linux, Windows, Mac Apple Silicon, Mac Intel. The
+       detected OS is marked recommended, never the only one offered —
+       Apple Silicon is the assumed chip for a detected Mac (arch is not
+       sniffable from the browser; M1–M4 is the common case, same
+       assumption index.html's own OS-detect already makes), never Intel. */
+    var GRID = [
+      { key: 'linux',       label: 'Linux',  sub: 'binary',        you: !win && !mac },
+      { key: 'windows',     label: 'Windows', sub: '.exe',          you: win },
+      { key: 'macos',       label: 'macOS',  sub: 'Apple Silicon', you: mac },
+      { key: 'macos_intel', label: 'macOS',  sub: 'Intel',         you: false }
+    ];
+    h += '<div class="dl-grid">';
+    GRID.forEach(function (g) {
+      var href = i[g.key];
+      if (!href) return;
+      h += '<a class="' + (g.you ? 'rec' : '') + '" href="' + esc(href) + '">' +
+           '<b>' + g.label + '</b><span>' + g.sub + '</span>' +
+           (g.you ? '<span class="tag">Recommended</span>' : '') + '</a>';
+    });
+    h += '</div>';
 
-    /* Browser sniffing is a guess, and a wrong guess on this page costs a
-       paying customer their install. Always offer every platform. */
-    var others = [];
-    if (!win && i.windows) others.push('<a href="' + esc(i.windows) + '">Windows</a>');
-    if (!mac && i.macos) others.push('<a href="' + esc(i.macos) + '">Mac (Apple Silicon)</a>');
-    if (!mac && i.macos_intel) others.push('<a href="' + esc(i.macos_intel) + '">Mac (Intel)</a>');
-    if ((win || mac) && i.linux) others.push('<a href="' + esc(i.linux) + '">Linux</a>');
-    if (others.length) {
-      h += '<p class="dim small" style="margin-top:18px">Installing on a different machine? ' +
-           others.join(' &nbsp;·&nbsp; ') + ' — same key works on any of them.</p>';
+    /* Kept attached to their own platform, not merged into one blob — a
+       Windows buyer should never have to read the Mac caveat to find
+       theirs, and vice versa. */
+    h += '<p class="dim small"><strong>Windows:</strong> SmartScreen may warn about an ' +
+         'unrecognised publisher — choose More info, then Run anyway. The build is not ' +
+         'code-signed yet.</p>' +
+         '<p class="dim small"><strong>Mac:</strong> unzip, then right-click the app and ' +
+         'choose Open — not double-click. macOS will say the developer is unidentified; ' +
+         'that is expected, the build is not notarised yet.</p>';
+
+    if (d.install_cmd) {
+      h += '<p class="dim small" style="margin-top:18px">Prefer the terminal? (macOS or ' +
+           'Linux) This one line does the same thing, your key already in it.</p>' +
+           '<pre id="cmd">' + esc(d.install_cmd) + '</pre>' +
+           '<p><button id="copyCmd">Copy command</button></p>';
     }
 
     h += '<p class="dim small">Install takes roughly 5 to 10 minutes on a normal connection — ' +
