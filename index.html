@@ -343,6 +343,11 @@ nav .logo{color:#fff;-webkit-text-fill-color:#fff;background:none;}
       <!-- The quarantine note also rides map.mac.note in the detect script, but
            that only fires for a visitor we sniffed as macOS. Someone on Linux
            downloading for a Mac must still see it, so it lives here too. -->
+      <!-- Windows gets ambushed harder than macOS: SmartScreen is a
+           full-screen wall and "Run anyway" hides behind "More info".
+           Same class as the macOS note on purpose - one style, one
+           visual weight, grid untouched. -->
+      <div class="dl-mac">Windows is not code-signed yet either. SmartScreen will show &ldquo;Windows protected your PC&rdquo; &mdash; click More info, then Run anyway.</div>
       <div class="dl-mac">macOS builds are not signed yet. First launch, macOS will ask you to confirm &mdash; System Settings &rsaquo; Privacy &amp; Security &rsaquo; Open Anyway.</div>
       <div class="dl-license"><b>Free to download. Activation is not.</b> The installer asks for a license token on first run, and that token is issued after payment.</div>
       <div class="dl-time">Install takes about 10 minutes start to finish.</div>
