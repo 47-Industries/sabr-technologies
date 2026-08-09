@@ -849,10 +849,28 @@ playRow.addEventListener('click', () => {
   else if (/Mac/i.test(ua)) os = 'mac';
   else if (/Linux|X11|CrOS/i.test(ua)) os = 'linux';
 
+  // Apple Silicon vs Intel. The UA lies here — Safari and Chrome on an M-series
+  // Mac still report "Intel Mac OS X" — so a UA sniff hands an M4 owner an x86
+  // build that will not launch. The GPU renderer string does not lie: Apple
+  // Silicon reports "Apple M<n>" or "Apple GPU". If WebGL is blocked we keep the
+  // Apple Silicon default (the overwhelming majority of Macs sold since 2020)
+  // and both Mac links stay visible below regardless.
+  if (os === 'mac') {
+    try {
+      var _c = document.createElement('canvas');
+      var _gl = _c.getContext('webgl') || _c.getContext('experimental-webgl');
+      var _d = _gl && _gl.getExtension('WEBGL_debug_renderer_info');
+      var _r = _d ? String(_gl.getParameter(_d.UNMASKED_RENDERER_WEBGL)) : '';
+      if (_r && !/Apple\s*(M\d|GPU)/i.test(_r)) os = 'mac-intel';
+    } catch (e) { /* keep the Apple Silicon default */ }
+  }
+
   var map = {
     win:   { label: 'Download for Windows', href: B + '/SabrInstaller.exe', note: '' },
     mac:   { label: 'Download for macOS',   href: B + '/SabrInstaller-macos.zip',
              note: 'Apple Silicon (M1\u2013M4). On an older Intel Mac, use the Intel .zip below instead \u2014 this build will not launch there. First launch: macOS will ask you to confirm \u2014 System Settings \u203a Privacy &amp; Security \u203a Open Anyway.' },
+    'mac-intel': { label: 'Download for macOS', href: B + '/SabrInstaller-macos-intel.zip',
+             note: 'Intel Mac. On an Apple Silicon (M1\u2013M4) Mac, use the Apple Silicon .zip below instead \u2014 this build will not launch there. First launch: macOS will ask you to confirm \u2014 System Settings \u203a Privacy &amp; Security \u203a Open Anyway.' },
     linux: { label: 'Download for Linux',   href: B + '/sabr-installer', note: 'Make it executable, then run it.' }
   };
 
