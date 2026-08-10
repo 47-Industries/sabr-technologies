@@ -10,7 +10,63 @@
 
 G='\033[38;5;39m'; C='\033[38;5;45m'; Y='\033[0;33m'; R='\033[0;31m'; P='\033[38;5;213m'; N='\033[0m'
 say(){ echo -e "$@"; }
-die(){ spin_stop 2>/dev/null; say "${R}[FAILED]${N} $1"; [ -n "$2" ] && { say "${Y}--- details ---${N}"; echo "$2" | tail -12; }; exit 1; }
+# ROLLBACK PAST THE SWAP POINT.
+# The staging design (below) correctly restores the previous install if the
+# extraction or the swap itself fails. But everything AFTER the swap — venv
+# creation, the core pip install, the import-verify gate — just printed an
+# error and exited, leaving the customer with a half-built tree at
+# ~/leon-brain while their real, working install sat abandoned under a
+# dot-prefixed directory they were never told to look for. A reinstall to fix
+# a small problem could therefore cost them the working SI, which is the exact
+# outcome the staging design exists to prevent. die() now undoes the swap.
+ROLLBACK_ARMED=""
+BACKUP_DIR=""
+INSTALL_DIR_FOR_ROLLBACK=""
+disarm_rollback(){ ROLLBACK_ARMED=""; }
+restore_previous_install(){
+  [ "$ROLLBACK_ARMED" = "1" ] || return 0
+  [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ] || return 0
+  local failed="${INSTALL_DIR_FOR_ROLLBACK}.failed.$$"
+  say ""
+  say "${Y}Putting your previous SI back...${N}"
+  # Keep the broken tree rather than deleting it — it is the only evidence of
+  # what went wrong, and deleting things on a failure path is how installers
+  # earn their reputation.
+  if [ -d "$INSTALL_DIR_FOR_ROLLBACK" ] && ! mv "$INSTALL_DIR_FOR_ROLLBACK" "$failed" 2>/dev/null; then
+    say "${R}[!!]${N} Could not move the failed install aside; your previous one is safe at:"
+    say "     $BACKUP_DIR"
+    return 0
+  fi
+  if mv "$BACKUP_DIR" "$INSTALL_DIR_FOR_ROLLBACK" 2>/dev/null; then
+    ROLLBACK_ARMED=""
+    say "${G}[OK]${N} Your previous SI has been restored, with its memories intact."
+    say "     Nothing you had was lost. The failed attempt is kept at $failed"
+  else
+    say "${R}[!!]${N} Automatic restore did not work. Your previous SI is intact here:"
+    say "     $BACKUP_DIR"
+    say "     Rename that directory to $INSTALL_DIR_FOR_ROLLBACK to get it back."
+  fi
+}
+die(){ spin_stop 2>/dev/null; say "${R}[FAILED]${N} $1"; [ -n "$2" ] && { say "${Y}--- details ---${N}"; echo "$2" | tail -12; }; restore_previous_install; exit 1; }
+
+# Package-manager detection for Linux. Every dependency step below used to
+# hardcode apt-get and simply do nothing — no error, no warning, just a
+# silent no-op — on any distro that doesn't have it (Fedora/RHEL/CentOS via
+# dnf or yum, Arch/Manjaro via pacman, openSUSE via zypper). That silence is
+# the real defect: the customer gets no packages and no explanation, then
+# hits a confusing failure several steps later (venv creation, or a pip
+# build against a missing header) with nothing pointing back at the cause.
+PKG_MGR=""
+detect_pkg_mgr(){
+  if   command -v apt-get &>/dev/null; then PKG_MGR="apt"
+  elif command -v dnf     &>/dev/null; then PKG_MGR="dnf"
+  elif command -v yum     &>/dev/null; then PKG_MGR="yum"
+  elif command -v pacman  &>/dev/null; then PKG_MGR="pacman"
+  elif command -v zypper  &>/dev/null; then PKG_MGR="zypper"
+  else PKG_MGR=""
+  fi
+}
+[ "$(uname)" = "Linux" ] && detect_pkg_mgr
 
 # Pink bouncing progress bar that runs while a slow step works
 TTY=0; [ -t 1 ] && TTY=1
@@ -29,6 +85,46 @@ spin_start(){
 spin_stop(){
   [ -n "$SPIN_PID" ] && { kill "$SPIN_PID" 2>/dev/null; wait "$SPIN_PID" 2>/dev/null; }
   SPIN_PID=""; [ "$TTY" = 1 ] && printf "\r\033[K"
+}
+
+# Portable timeout wrapper. GNU coreutils' `timeout` does not exist on a
+# stock Mac (Homebrew's version is `gtimeout`, and a fresh Mac has no
+# Homebrew yet — that's the machine this function exists for), so this backs
+# a deadline with a plain background watchdog instead: run CMD, race a
+# `sleep $secs` against it, and if the sleep wins, kill CMD (and its direct
+# children — Homebrew's installer forks curl/tar, and a bare `kill` on the
+# parent alone leaves those running with nothing left to report to).
+# Homebrew already bit us once by hanging silently mid-install with only a
+# spinner on screen; every blocking Homebrew call below is wrapped in this
+# rather than trusting it to finish.
+run_timeout(){
+  local secs="$1"; shift
+  # A killed multi-step script (Homebrew's install.sh is one) can still run
+  # a few more lines after its child dies and exit "cleanly" before our
+  # direct signal reaches it — racing the exit code. A flag file the
+  # watchdog writes at the moment it actually intervenes removes the race:
+  # the return value is 124 (the same convention GNU `timeout` uses)
+  # whenever we killed it, full stop, whatever the command's own exit code
+  # happened to be.
+  local flag; flag="$(mktemp 2>/dev/null || echo "/tmp/.sabr_timeout_flag_$$")"
+  rm -f "$flag"
+  "$@" &
+  local cmd_pid=$!
+  ( sleep "$secs"
+    if kill -0 "$cmd_pid" 2>/dev/null; then
+      : > "$flag" 2>/dev/null
+      pkill -TERM -P "$cmd_pid" 2>/dev/null
+      kill -TERM "$cmd_pid" 2>/dev/null
+      sleep 2
+      pkill -KILL -P "$cmd_pid" 2>/dev/null
+      kill -KILL "$cmd_pid" 2>/dev/null
+    fi
+  ) & local watchdog_pid=$!
+  wait "$cmd_pid" 2>/dev/null; local rc=$?
+  kill "$watchdog_pid" 2>/dev/null; wait "$watchdog_pid" 2>/dev/null
+  [ -e "$flag" ] && rc=124
+  rm -f "$flag"
+  return $rc
 }
 
 # ── Branded intro (animated only on a real terminal) ──
@@ -70,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="f26f825fa99391761d14c58ef7e26a43f94d693434c812b2d8483d4c3e90eb60"
+EXPECTED_RELEASE_SHA256="2e52392770997ba47c2832e70d9638f9ff974c73918210ef1fb8ad6dbb26abc1"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -158,13 +254,21 @@ Click Install when prompted, wait for it to finish, then re-run this installer."
     }
 
     # Spinner so the customer always sees motion, never a frozen static line.
+    # 10-minute hard ceiling via run_timeout: this step hung indefinitely once
+    # before with nothing but the spinner on screen to show for it.
     spin_start "Installing Homebrew (this can take a few minutes)..."
-    NONINTERACTIVE=1 /bin/bash /tmp/leon_brew_install.sh \
+    run_timeout 600 env NONINTERACTIVE=1 /bin/bash /tmp/leon_brew_install.sh \
       </dev/null >/tmp/leon_brew.log 2>&1
     BREW_RC=$?
     spin_stop
     [ -n "$SUDO_KEEP" ] && { kill "$SUDO_KEEP" 2>/dev/null; SUDO_KEEP=""; }
 
+    if [ $BREW_RC -eq 124 ]; then
+      die "Homebrew install timed out after 10 minutes — it stalled instead of finishing." \
+          "This is usually a slow/blocked network partway through the install, or an
+installer prompt with nothing to answer it. Re-run on a faster or more open
+connection. $(tail -20 /tmp/leon_brew.log 2>/dev/null)"
+    fi
     if [ $BREW_RC -ne 0 ]; then
       die "Homebrew install failed." "$(tail -20 /tmp/leon_brew.log 2>/dev/null)"
     fi
@@ -182,7 +286,16 @@ Click Install when prompted, wait for it to finish, then re-run this installer."
   # 3) Python 3 -- brew-install if the Mac has none usable.
   if ! command -v python3 &>/dev/null || ! python3 -c 'import sys' &>/dev/null; then
     say "Installing Python 3 via Homebrew..."
-    if ! brew install python3 </dev/null >/tmp/leon_pybrew.log 2>&1; then
+    spin_start "Installing Python 3..."
+    run_timeout 300 brew install python3 </dev/null >/tmp/leon_pybrew.log 2>&1
+    PYBREW_RC=$?
+    spin_stop
+    if [ $PYBREW_RC -eq 124 ]; then
+      die "Installing Python 3 via Homebrew timed out after 5 minutes." \
+          "This is usually a slow or blocked network. Re-run the installer, or
+run \`brew install python3\` yourself first. $(tail -20 /tmp/leon_pybrew.log 2>/dev/null)"
+    fi
+    if [ $PYBREW_RC -ne 0 ]; then
       die "Homebrew could not install Python 3." "$(tail -20 /tmp/leon_pybrew.log 2>/dev/null)"
     fi
     # Re-add Homebrew to PATH in case Homebrew added new paths
@@ -194,23 +307,166 @@ Click Install when prompted, wait for it to finish, then re-run this installer."
   fi
 fi
 
-# ── Find Python ──
-PY=""
-for p in python3 python; do command -v "$p" &>/dev/null && { PY="$p"; break; }; done
-if [ -z "$PY" ] && [ "$OS" = "Linux" ] && command -v apt-get &>/dev/null; then
-  # Same courtesy the Mac path extends via brew: install it, don't assign homework.
-  APT_SUDO=""
-  [ "$(id -u)" != "0" ] && command -v sudo &>/dev/null && APT_SUDO="sudo"
-  say "Python 3 not found — installing it..."
-  PY_APT_OPTS="-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
-  $APT_SUDO apt-get $PY_APT_OPTS update -qq </dev/null 2>/dev/null
-  $APT_SUDO env DEBIAN_FRONTEND=noninteractive apt-get $PY_APT_OPTS install -y \
-      python3 python3-venv python3-pip </dev/null >/tmp/leon_pyapt.log 2>&1 || true
-  command -v python3 &>/dev/null && PY="python3"
+# ── Find Python ────────────────────────────────────────────────────────
+# The floor is 3.11 (derived — see the B11 note further down: numpy and scipy
+# both set Requires-Python >=3.11).
+#
+# B12 — PROVEN ON A CLEAN UBUNTU 22.04 CONTAINER, 2026-08-10. The old code
+# had two separate defects that combined into a hard dead end on the most
+# widely deployed Linux there is:
+#
+#   1. Discovery only ever tried `python3` and `python`. A box whose default
+#      python3 is 3.10 but which ALREADY has python3.11 installed alongside
+#      it — extremely common — was declared hopeless while a qualifying
+#      interpreter sat on PATH the whole time. False negative, zero reason.
+#   2. When the version was too old we printed homework instead of installing,
+#      breaking the same "install it, don't assign homework" courtesy the Mac
+#      brew path extends. Worse, the homework was WRONG: it said
+#      `apt-get install -y python3.13 python3.13-venv`, and 22.04 has no such
+#      package. Verified: "E: Unable to locate package python3.13". The
+#      customer follows our instructions, the command errors, and they are
+#      stuck with no path forward — while python3.11, which satisfies us
+#      completely, is one apt-get away in their default repos.
+#
+# So: scan for a qualifying interpreter newest-first, and if none exists try
+# to INSTALL one (newest available wins), then re-scan. Only then give up —
+# and give up with advice derived from what this machine actually offers.
+PY_FLOOR_MAJOR=3
+PY_FLOOR_MINOR=11
+PY_CANDIDATES="python3.14 python3.13 python3.12 python3.11 python3 python"
+
+py_meets_floor(){
+  command -v "$1" &>/dev/null || return 1
+  "$1" -c "import sys; sys.exit(0 if sys.version_info[:2] >= ($PY_FLOOR_MAJOR,$PY_FLOOR_MINOR) else 1)" &>/dev/null
+}
+find_best_python(){
+  local c
+  for c in $PY_CANDIDATES; do py_meets_floor "$c" && { echo "$c"; return 0; }; done
+  return 1
+}
+# Newest python actually present, qualifying or not — only used to report an
+# honest "you have X, we need Y" if every install attempt fails.
+find_any_python(){
+  local c
+  for c in $PY_CANDIDATES; do command -v "$c" &>/dev/null && { echo "$c"; return 0; }; done
+  return 1
+}
+
+PY="$(find_best_python || true)"
+
+# ── Auto-install a qualifying Python if none is present ────────────────
+if [ -z "$PY" ] && [ "$OS" = "Linux" ] && [ -n "$PKG_MGR" ]; then
+  PKG_SUDO=""
+  [ "$(id -u)" != "0" ] && command -v sudo &>/dev/null && PKG_SUDO="sudo"
+  EXISTING_PY="$(find_any_python || true)"
+  if [ -n "$EXISTING_PY" ]; then
+    EXISTING_VER=$("$EXISTING_PY" -c 'import sys;print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null)
+    say "Python $EXISTING_VER is below the ${PY_FLOOR_MAJOR}.${PY_FLOOR_MINOR} floor — installing a newer one via $PKG_MGR..."
+  else
+    say "Python 3 not found — installing it via $PKG_MGR..."
+  fi
+  : >/tmp/leon_pyapt.log
+  case "$PKG_MGR" in
+    apt)
+      PY_APT_OPTS="-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+      $PKG_SUDO apt-get $PY_APT_OPTS update -qq </dev/null 2>/dev/null
+      # Newest first. apt-cache policy is checked before attempting so a
+      # missing package is a silent skip, not a wall of scary red errors.
+      for v in 3.14 3.13 3.12 3.11; do
+        apt-cache policy "python$v" 2>/dev/null | grep -q 'Candidate: [^(]' || continue
+        say "  trying python$v..."
+        $PKG_SUDO env DEBIAN_FRONTEND=noninteractive apt-get $PY_APT_OPTS install -y \
+            "python$v" "python$v-venv" </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+        py_meets_floor "python$v" && break
+      done
+      # Last resort on older Ubuntu (20.04 ships nothing >= 3.11 at all):
+      # deadsnakes. Tolerated failure — no network, no PPA support, fine.
+      if ! find_best_python >/dev/null 2>&1 && [ -r /etc/os-release ] && grep -qi ubuntu /etc/os-release; then
+        say "  no qualifying python in the default repos — trying the deadsnakes PPA..."
+        $PKG_SUDO env DEBIAN_FRONTEND=noninteractive apt-get $PY_APT_OPTS install -y \
+            software-properties-common </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+        $PKG_SUDO env DEBIAN_FRONTEND=noninteractive add-apt-repository -y ppa:deadsnakes/ppa \
+            </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+        $PKG_SUDO apt-get $PY_APT_OPTS update -qq </dev/null 2>/dev/null
+        for v in 3.13 3.12 3.11; do
+          apt-cache policy "python$v" 2>/dev/null | grep -q 'Candidate: [^(]' || continue
+          $PKG_SUDO env DEBIAN_FRONTEND=noninteractive apt-get $PY_APT_OPTS install -y \
+              "python$v" "python$v-venv" "python$v-distutils" </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+          py_meets_floor "python$v" && break
+        done
+      fi
+      # Ensure pip machinery exists for whichever one we landed on.
+      $PKG_SUDO env DEBIAN_FRONTEND=noninteractive apt-get $PY_APT_OPTS install -y \
+          python3-pip </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+      ;;
+    dnf)
+      for v in 3.14 3.13 3.12 3.11; do
+        $PKG_SUDO dnf install -y "python$v" </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+        py_meets_floor "python$v" && break
+      done
+      $PKG_SUDO dnf install -y python3-pip </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+      ;;
+    yum)
+      for v in 3.12 3.11; do
+        $PKG_SUDO yum install -y "python$v" </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+        py_meets_floor "python$v" && break
+      done
+      $PKG_SUDO yum install -y python3-pip </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+      ;;
+    pacman)
+      # Arch is rolling — plain `python` is always current.
+      $PKG_SUDO pacman -Sy --noconfirm python python-pip </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+      ;;
+    zypper)
+      for v in 313 312 311; do
+        $PKG_SUDO zypper --non-interactive install "python$v" "python$v-devel" </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+        py_meets_floor "python${v:0:1}.${v:1}" && break
+      done
+      $PKG_SUDO zypper --non-interactive install python3-pip </dev/null >>/tmp/leon_pyapt.log 2>&1 || true
+      ;;
+  esac
+  PY="$(find_best_python || true)"
 fi
-[ -z "$PY" ] && die "Python 3 not found (automatic install failed or unavailable)." "  Mac:   brew install python3
-  Linux: sudo apt-get install -y python3 python3-venv python3-pip
+
+# ── Nothing qualifying, and we could not install one ───────────────────
+# Advice is DERIVED from this machine, never hardcoded. The previous
+# hardcoded "install python3.13" was a dead end on Ubuntu 22.04.
+if [ -z "$PY" ]; then
+  HAVE_PY="$(find_any_python || true)"
+  if [ -n "$HAVE_PY" ]; then
+    HAVE_VER=$("$HAVE_PY" -c 'import sys;print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null)
+    WHAT="Python $HAVE_VER is too old — the SI needs ${PY_FLOOR_MAJOR}.${PY_FLOOR_MINOR} or newer."
+  else
+    WHAT="Python 3 not found, and the automatic install did not succeed."
+  fi
+  # Ask the package manager what it can actually give us.
+  SUGGEST=""
+  case "$PKG_MGR" in
+    apt)
+      for v in 3.14 3.13 3.12 3.11; do
+        if apt-cache policy "python$v" 2>/dev/null | grep -q 'Candidate: [^(]'; then
+          SUGGEST="sudo apt-get install -y python$v python$v-venv"; break
+        fi
+      done
+      [ -z "$SUGGEST" ] && SUGGEST="sudo add-apt-repository -y ppa:deadsnakes/ppa && sudo apt-get update && sudo apt-get install -y python3.12 python3.12-venv"
+      ;;
+    dnf)    SUGGEST="sudo dnf install -y python3.12" ;;
+    yum)    SUGGEST="sudo yum install -y python3.12" ;;
+    pacman) SUGGEST="sudo pacman -S python python-pip" ;;
+    zypper) SUGGEST="sudo zypper install python312" ;;
+  esac
+  if [ "$OS" = "Darwin" ]; then SUGGEST="brew install python@3.12"; fi
+  die "$WHAT" "  numpy and scipy both require Python >= ${PY_FLOOR_MAJOR}.${PY_FLOOR_MINOR}. Installing on anything
+  older fails partway through pip with a build error that never names the
+  real cause, so we stop here instead.
+
+  On THIS machine, run:
+      ${SUGGEST:-install Python 3.12 or newer from https://python.org/downloads/}
+  Then re-run this installer.
+
   Log:   /tmp/leon_pyapt.log"
+fi
+
 PYVER=$("$PY" -c 'import sys;print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 say "${G}[OK]${N} Python $PYVER ($PY)"
 
@@ -237,15 +493,19 @@ fi
 # prevent. The source itself does not need 3.11: no match statements and no
 # bare PEP-604 unions outside modules with 'from __future__ import
 # annotations'. It is a dependency fact, not a syntax fact.
-if ! "$PY" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3,11) else 1)'; then
-  die "Python $PYVER is too old — the SI needs Python 3.11 or newer." "  numpy and scipy both require Python >= 3.11. Installing on $PYVER
-  fails partway through pip with a build error that does not name the
-  real cause, so we stop here instead.
-
-  Mac:     brew install python@3.13
-  Windows: https://python.org/downloads/  (tick 'Add python.exe to PATH')
-  Linux:   sudo apt-get install -y python3.13 python3.13-venv
-  Then re-run this installer."
+#
+# B12: the enforcement AND the remediation now both live in the "Find Python"
+# section above, which selects newest-qualifying-first and installs one if
+# none exists. $PY cannot reach this line without meeting the floor. What is
+# left here is a cheap assertion so that if anyone ever reorders these blocks,
+# it fails loudly here instead of dying deep inside a pip build. It must never
+# grow hardcoded install advice again — that is exactly what dead-ended
+# Ubuntu 22.04 (it told customers to install python3.13, which does not exist
+# in 22.04's repos, while python3.11 sat right there).
+if ! "$PY" -c "import sys; sys.exit(0 if sys.version_info[:2] >= ($PY_FLOOR_MAJOR,$PY_FLOOR_MINOR) else 1)"; then
+  die "Internal: selected interpreter $PY is $PYVER, below the ${PY_FLOOR_MAJOR}.${PY_FLOOR_MINOR} floor." \
+      "This is a bug in the installer's Python selection, not a problem with your machine.
+  Please send this line to support along with /tmp/leon_pyapt.log"
 fi
 
 # ── Privilege helper (root => no sudo; else sudo only if usable) ──
@@ -254,25 +514,65 @@ if [ "$(id -u)" != "0" ]; then
   if command -v sudo &>/dev/null; then SUDO="sudo"; fi
 fi
 
-# ── System deps (Debian/Ubuntu/Mint — the 47 OS family) ──
-if [ "$OS" = "Linux" ] && command -v apt-get &>/dev/null; then
+# ── System deps (any of apt / dnf / yum / pacman / zypper) ──
+# Package NAMES differ per distro family even when the underlying library is
+# the same one (portaudio19-dev on Debian is portaudio-devel on Fedora and
+# just portaudio on Arch), so this is a real per-manager list, not one list
+# reused with a different install command. The apt list is battle-tested
+# against the 47 OS family in production; the dnf/pacman/zypper lists are
+# the correct package names for each distro's own repos but have NOT been
+# run against a live Fedora/Arch/openSUSE box from this environment — flag
+# that when reporting on this fix, don't claim it as proven the way the apt
+# path is.
+if [ "$OS" = "Linux" ] && [ -n "$PKG_MGR" ]; then
   say ""
-  say "Installing system packages (python3-venv, etc.)..."
-  # update FIRST (this is why the 47 OS installer works), then noninteractive install
-  # Retries + timeouts: a stalled mirror otherwise hangs this step forever
-  # with zero feedback (observed live — a dead route to archive.ubuntu.com
-  # froze the installer mid-download with no error).
-  APT_OPTS="-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
-  $SUDO apt-get $APT_OPTS update -qq </dev/null 2>/dev/null
-  if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get $APT_OPTS install -y \
-        python3-venv python3-full python3-pip xdotool wmctrl tmux \
-        portaudio19-dev libsndfile1 ffmpeg </dev/null >/tmp/leon_apt.log 2>&1; then
+  say "Installing system packages via $PKG_MGR (python3-venv, etc.)..."
+  # Retries + timeouts on apt specifically: a stalled mirror otherwise hangs
+  # this step forever with zero feedback (observed live — a dead route to
+  # archive.ubuntu.com froze the installer mid-download with no error).
+  DEPS_OK=1
+  case "$PKG_MGR" in
+    apt)
+      APT_OPTS="-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+      $SUDO apt-get $APT_OPTS update -qq </dev/null 2>/dev/null
+      $SUDO env DEBIAN_FRONTEND=noninteractive apt-get $APT_OPTS install -y \
+            python3-venv python3-full python3-pip xdotool wmctrl tmux \
+            portaudio19-dev libsndfile1 ffmpeg </dev/null >/tmp/leon_apt.log 2>&1 || DEPS_OK=0
+      ;;
+    dnf)
+      $SUDO dnf install -y python3-pip xdotool wmctrl tmux \
+            portaudio-devel libsndfile ffmpeg </dev/null >/tmp/leon_apt.log 2>&1 || DEPS_OK=0
+      ;;
+    yum)
+      $SUDO yum install -y python3-pip xdotool wmctrl tmux \
+            portaudio-devel libsndfile ffmpeg </dev/null >/tmp/leon_apt.log 2>&1 || DEPS_OK=0
+      ;;
+    pacman)
+      $SUDO pacman -Sy --noconfirm xdotool wmctrl tmux \
+            portaudio libsndfile ffmpeg </dev/null >/tmp/leon_apt.log 2>&1 || DEPS_OK=0
+      ;;
+    zypper)
+      $SUDO zypper --non-interactive install xdotool wmctrl tmux \
+            portaudio-devel libsndfile-devel ffmpeg </dev/null >/tmp/leon_apt.log 2>&1 || DEPS_OK=0
+      ;;
+  esac
+  if [ "$DEPS_OK" = 1 ]; then
     say "${G}[OK]${N} System deps"
   else
-    say "${Y}[WARN]${N} apt-get could not install venv tooling (no sudo password / offline)."
-    say "        If venv creation fails below, run this once then re-run installer:"
-    say "          sudo apt-get update && sudo apt-get install -y python3-venv python3-full python3-pip"
+    say "${Y}[WARN]${N} $PKG_MGR could not install venv tooling (no sudo password / offline)."
+    say "        If venv creation fails below, install these yourself then re-run:"
+    case "$PKG_MGR" in
+      apt)    say "          sudo apt-get update && sudo apt-get install -y python3-venv python3-full python3-pip" ;;
+      dnf)    say "          sudo dnf install -y python3-pip" ;;
+      yum)    say "          sudo yum install -y python3-pip" ;;
+      pacman) say "          sudo pacman -S python-pip" ;;
+      zypper) say "          sudo zypper install python3-pip" ;;
+    esac
   fi
+elif [ "$OS" = "Linux" ]; then
+  say "${Y}[WARN]${N} No known package manager found (apt-get/dnf/yum/pacman/zypper) — skipping system"
+  say "        packages (tmux, xdotool, wmctrl, ffmpeg). Install them with your distro's tool if"
+  say "        venv creation or voice features fail below."
 fi
 
 # -- macOS: audio + tmux deps (Xcode/Homebrew/Python handled above) --
@@ -283,8 +583,17 @@ if [ "$OS" = "Darwin" ]; then
   if ! find "$BP" /usr/local -name "portaudio.h" 2>/dev/null | grep -q .; then
     if command -v brew &>/dev/null; then
       say "Installing PortAudio (for voice I/O)..."
-      if brew install portaudio </dev/null >/tmp/leon_portaudio.log 2>&1; then
+      # Best-effort and non-fatal on failure, but a WEDGE here still stalls
+      # the whole install (nothing after this line runs until it returns) —
+      # so it gets the same 5-minute ceiling as every other brew step.
+      spin_start "Installing PortAudio..."
+      run_timeout 300 brew install portaudio </dev/null >/tmp/leon_portaudio.log 2>&1
+      PORTAUDIO_RC=$?
+      spin_stop
+      if [ $PORTAUDIO_RC -eq 0 ]; then
         say "${G}[OK]${N} PortAudio"
+      elif [ $PORTAUDIO_RC -eq 124 ]; then
+        say "${Y}[WARN]${N} PortAudio install timed out after 5 minutes (optional) -- voice will still work with software synthesis."
       else
         say "${Y}[WARN]${N} PortAudio install failed (optional) -- voice will still work with software synthesis."
       fi
@@ -296,8 +605,14 @@ if [ "$OS" = "Darwin" ]; then
   if ! command -v tmux &>/dev/null; then
     if command -v brew &>/dev/null; then
       say "Installing tmux (for background sessions)..."
-      if brew install tmux </dev/null >/tmp/leon_tmux.log 2>&1; then
+      spin_start "Installing tmux..."
+      run_timeout 300 brew install tmux </dev/null >/tmp/leon_tmux.log 2>&1
+      TMUX_RC=$?
+      spin_stop
+      if [ $TMUX_RC -eq 0 ]; then
         say "${G}[OK]${N} tmux"
+      elif [ $TMUX_RC -eq 124 ]; then
+        say "${Y}[WARN]${N} tmux install timed out after 5 minutes (optional) -- use './start.sh' instead of background mode."
       else
         say "${Y}[WARN]${N} tmux install failed (optional) -- use './start.sh' instead of background mode."
       fi
@@ -368,12 +683,28 @@ for DL_URL in "${DL_URLS[@]}"; do
       continue
       ;;
   esac
+  # Start each SOURCE from clean bytes. Resuming across sources would splice
+  # two different servers' halves together; the digest would catch it, but only
+  # after another full download's worth of the customer's time.
+  rm -f leon-brain.tar.gz
   for attempt in 1 2 3; do
     # --connect-timeout bounds only the handshake; --max-time bounds the WHOLE
     # transfer, and --speed-limit/--speed-time aborts a connection that is alive
     # but trickling (dead peer, throttled mirror) instead of hanging forever.
+    #
+    # RESUME on retries. Without -C - every retry restarted ~80MB from zero, so
+    # a customer on a genuinely slow or flaky line could burn six full attempts
+    # and still never finish — not because the network was blocked, but because
+    # all partial progress was thrown away each time. Attempt 1 is always fresh;
+    # 2 and 3 continue whatever landed, and the pinned digest still has the
+    # final say on the assembled file, so a bad resume cannot install anything.
+    RESUME=""
+    if [ "$attempt" -gt 1 ] && [ -s leon-brain.tar.gz ]; then
+      RESUME="-C -"
+      say "  ${D}resuming from $(wc -c < leon-brain.tar.gz) bytes already downloaded${N}"
+    fi
     if curl -fsSL --connect-timeout 10 --max-time 900 \
-         --speed-limit 1024 --speed-time 60 "$DL_URL" -o leon-brain.tar.gz \
+         --speed-limit 1024 --speed-time 60 $RESUME "$DL_URL" -o leon-brain.tar.gz \
        && [ -f leon-brain.tar.gz ] && [ "$(wc -c < leon-brain.tar.gz)" -ge 1000 ]; then
       GOT="$( (sha256sum leon-brain.tar.gz 2>/dev/null || shasum -a 256 leon-brain.tar.gz 2>/dev/null) | awk '{print $1}')"
       if [ -z "$GOT" ]; then
@@ -390,7 +721,24 @@ for DL_URL in "${DL_URLS[@]}"; do
       rm -f leon-brain.tar.gz
       break
     fi
-    say "  ${Y}source unreachable, attempt $attempt — retrying...${N}"
+    CURL_RC=$?
+    # "Download failed" is a dead end for a non-technical owner. curl already
+    # knows WHICH layer broke; say so, because the fix is completely different
+    # for a DNS failure, a corporate TLS-intercepting proxy, and a hotel
+    # captive portal — and all three used to print the same useless sentence.
+    case "$CURL_RC" in
+      6)  DL_HINT="the name sabrtechnologies.com could not be resolved — this is DNS, not us. On a hotel or cafe network, open a browser first and accept the wifi sign-in page, then re-run." ;;
+      7)  DL_HINT="the connection was refused or blocked — a firewall or network policy is likely stopping outbound HTTPS." ;;
+      35|51|58|59|60|77|83)
+          DL_HINT="the secure connection could not be verified. On a company network this usually means a proxy is inspecting HTTPS traffic; ask IT to allow sabrtechnologies.com or install the company certificate." ;;
+      28) DL_HINT="the download timed out or stalled — the connection is alive but too slow to finish." ;;
+      *)  DL_HINT="" ;;
+    esac
+    if [ -n "$DL_HINT" ]; then
+      say "  ${Y}attempt $attempt failed: ${DL_HINT}${N}"
+    else
+      say "  ${Y}source unreachable, attempt $attempt — retrying...${N}"
+    fi
     sleep 2
   done
   [ -n "$DL_OK" ] && break
@@ -440,7 +788,6 @@ fi
 # identity across, swap, and keep the previous tree until the new one has been
 # stood up. Nothing is removed until something better exists.
 STAGE_DIR="$HOME/.leon-brain-staging.$$"
-BACKUP_DIR=""
 rm -rf "$STAGE_DIR"
 mkdir -p "$STAGE_DIR" || die "Cannot create staging dir ($STAGE_DIR)"
 tar xzf leon-brain.tar.gz -C "$STAGE_DIR" || {
@@ -480,6 +827,9 @@ if ! mv "$STAGE_DIR/leon-brain" "$INSTALL_DIR"; then
 fi
 rm -rf "$STAGE_DIR"
 rm -f leon-brain.tar.gz
+# The swap is done. From here on, any die() must undo it.
+INSTALL_DIR_FOR_ROLLBACK="$INSTALL_DIR"
+[ -n "$BACKUP_DIR" ] && ROLLBACK_ARMED="1"
 if [ -n "$BACKUP_DIR" ]; then
   say "${G}[OK]${N} Previous install kept at $BACKUP_DIR"
   say "     Delete it once the new one is confirmed working."
@@ -635,6 +985,11 @@ if ! "$VPYTHON" -c "import numpy, scipy, fastapi, anthropic, dotenv, requests" >
   die "Core imports failed after install — environment is not usable." "$(cat /tmp/leon_verify.log)"
 fi
 say "${G}[OK]${N} Core dependencies verified"
+# The new tree is proven usable, so it is no longer something to roll back
+# FROM — rolling back past this point would throw away a good install over a
+# cosmetic later failure. The previous install stays on disk until the owner
+# confirms and deletes it.
+disarm_rollback
 # Voice is optional — report it honestly but never fail on it.
 if "$VPYTHON" -c "import elevenlabs, deepgram" >/dev/null 2>&1; then
   say "${G}[OK]${N} Premium voice stack ready (ElevenLabs + Deepgram)"
