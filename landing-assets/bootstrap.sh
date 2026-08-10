@@ -70,7 +70,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="ea6c0cf4c8942b29a0e125aec71b16df6fa5fbc5e243de3f43ccf43268f645a0"
+EXPECTED_RELEASE_SHA256="f26f825fa99391761d14c58ef7e26a43f94d693434c812b2d8483d4c3e90eb60"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -589,11 +589,32 @@ spin_stop
 # can't compile on a bare box; deepgram/elevenlabs are only used when the client
 # adds a key. None are hard-imported by the brain, so a failure here must NEVER
 # brick the install — the SI still boots, thinks, and talks via the free voice.
+# WHY pyaudio IS ON ITS OWN LINE (do not merge it back in):
+# pip resolves and BUILDS every package in one invocation before it installs
+# ANY of them. pyaudio is the only source-build in this list — it compiles
+# against portaudio.h. When that build fails (the normal case on a Mac without
+# the header, and on any bare box), pip exits before installing the whole
+# batch, so sounddevice, pyttsx3, vosk and webrtcvad silently never land
+# either. `|| true` hides it: install reports success and the SI is mute with
+# no wake word. Reproduced 2026-08-10: `pip install pyperclip <bad-pkg>` ->
+# rc=1 and pyperclip NOT installed. One line per failure domain from here on.
 spin_start "Installing voice & audio (optional)..."
 "$VPYTHON" -m pip install $PIPFLAGS --quiet \
       pyttsx3 faster-whisper deepgram-sdk elevenlabs \
-      sounddevice soundfile pyaudio \
+      sounddevice soundfile \
       vosk webrtcvad >>/tmp/leon_pip.log 2>&1 || true
+
+# pyaudio, isolated, and told where Homebrew put the header. The probe above
+# already installed portaudio via brew; without these flags the compiler still
+# never finds it on Apple Silicon (/opt/homebrew, not /usr/local).
+if [ "$OS" = "Darwin" ] && command -v brew &>/dev/null; then
+  _BP="$(brew_prefix)"
+  CPPFLAGS="-I${_BP}/include${CPPFLAGS:+ $CPPFLAGS}" \
+  LDFLAGS="-L${_BP}/lib${LDFLAGS:+ $LDFLAGS}" \
+  "$VPYTHON" -m pip install $PIPFLAGS --quiet pyaudio >>/tmp/leon_pip.log 2>&1 || true
+else
+  "$VPYTHON" -m pip install $PIPFLAGS --quiet pyaudio >>/tmp/leon_pip.log 2>&1 || true
+fi
 # vosk + webrtcvad power the "always listening" wake-word loop (say "hey <name>").
 # Default wake backend is Vosk; its ~40MB model auto-downloads on first use.
 # Without these, toggling always-listening throws ModuleNotFoundError: vosk.
