@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="eb97c9f17df746e1819d99c7a98e1874c28ac348a11911fcc165c7db364bc903"
+EXPECTED_RELEASE_SHA256="8266eb8f2bca179557b318995bc5ea38ddf1fe9018338388499e75d5a8755b22"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -753,6 +753,10 @@ if [ -z "$DL_OK" ]; then
     # because a newer release had shipped in between. The published sidecar
     # settles it — if the mirror advertises a digest different from the one
     # pinned here, this script is simply out of date and re-fetching fixes it.
+    # NOTE ON THE TRUST MODEL (see the release-pin block above): this fetch
+    # happens only AFTER verification has already failed and nothing will be
+    # installed. The sidecar is used purely to word the error correctly; it can
+    # never cause bytes to be accepted, so the pin remains the only anchor.
     LIVE_SHA=""
     for u in "${DL_URLS[@]}"; do
       LIVE_SHA=$(curl -fsSL --max-time 20 "$u.sha256" 2>/dev/null \
