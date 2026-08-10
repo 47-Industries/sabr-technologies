@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="9786663fea5e965cc535c5b34abaffb010d8cdec7960a3c3b86314c85e3dba14"
+EXPECTED_RELEASE_SHA256="eb97c9f17df746e1819d99c7a98e1874c28ac348a11911fcc165c7db364bc903"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -745,9 +745,37 @@ for DL_URL in "${DL_URLS[@]}"; do
 done
 if [ -z "$DL_OK" ]; then
   if [ -n "$VERIFY_FAILED" ]; then
+    # Tell the two causes apart instead of blaming both on tampering. A copy of
+    # this script downloaded before the last release still pins the OLD digest,
+    # so a PERFECTLY HEALTHY mirror fails verification and the customer was told
+    # to email Dean. Reproduced end to end 2026-08-10: a bootstrap.sh saved
+    # minutes earlier dead-ended on "contact dean before retrying" purely
+    # because a newer release had shipped in between. The published sidecar
+    # settles it — if the mirror advertises a digest different from the one
+    # pinned here, this script is simply out of date and re-fetching fixes it.
+    LIVE_SHA=""
+    for u in "${DL_URLS[@]}"; do
+      LIVE_SHA=$(curl -fsSL --max-time 20 "$u.sha256" 2>/dev/null \
+                 | tr -d '\r' | awk '{print $1}' | head -1)
+      [ -n "$LIVE_SHA" ] && break
+    done
+    if [ -n "$LIVE_SHA" ] && [ "$LIVE_SHA" != "$EXPECTED_RELEASE_SHA256" ]; then
+      die "This installer is out of date — a newer release shipped after you downloaded it." \
+          "Nothing was installed, and nothing is wrong with your machine or the
+download. This copy of the installer pins an older release than the one now
+published, so the digest check correctly refused it.
+
+Fetch a fresh installer and run it again:
+
+    curl -fsSL https://sabrtechnologies.com/landing-assets/bootstrap.sh -o bootstrap.sh && bash bootstrap.sh
+
+  this installer expects: $EXPECTED_RELEASE_SHA256
+  currently published:    $LIVE_SHA"
+    fi
     die "The downloaded brain did not match the digest this installer expects, so nothing was installed." \
-        "Every source that answered served bytes we could not verify. This is either a
-stale mirror or an interfered-with download — either way it will not be run.
+        "The published digest agrees with this installer, but the bytes that arrived
+do not match either of them — so this is a corrupted or interfered-with
+download, not a version mismatch. It will not be run.
 Expected: $EXPECTED_RELEASE_SHA256
 Please contact dean@sabrtechnologies.com before retrying."
   fi
