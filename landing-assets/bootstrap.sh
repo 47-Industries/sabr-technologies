@@ -70,7 +70,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="9e8c354fb9859dd772b292dcf2f7fe2e8f9bca90b4c74eca8c4e81f184404084"
+EXPECTED_RELEASE_SHA256="c6e58ad8021524e388d071c05b67dbf14bd581471637d9cd997880be6b09ae10"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -131,15 +131,38 @@ Click Install when prompted, wait for it to finish, then re-run this installer."
       die "Could not get admin (sudo) access." \
           "This Mac user must be an Administrator. Log in as an admin user, or in System Settings > Users & Groups make this account an Administrator, then re-run the installer."
     fi
-    # keep the sudo timestamp fresh while Homebrew installs
-    ( while true; do sudo -n true 2>/dev/null; sleep 45; done ) &
+    # keep the sudo timestamp fresh while Homebrew installs.
+    # BOUNDED: 60 iterations x 45s = 45 min hard ceiling, so this can never
+    # become an immortal background loop if the install below wedges.
+    ( for _k in $(seq 1 60); do sudo -n true 2>/dev/null; sleep 45; done ) &
     SUDO_KEEP=$!
 
-    say "Installing Homebrew (this can take a few minutes)..."
-    NONINTERACTIVE=1 /bin/bash -c \
-      "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+    # Fetch the Homebrew installer to disk FIRST, with real timeouts, so a
+    # stalled network fails loudly instead of hanging on a static line forever.
+    #   --connect-timeout 20 : bound the handshake
+    #   --max-time 300       : bound the whole transfer (script is small; 5 min is generous)
+    #   --retry 2            : survive a transient blip without user action
+    spin_start "Downloading Homebrew installer..."
+    if ! curl -fsSL --connect-timeout 20 --max-time 300 --retry 2 --retry-delay 3 \
+         https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh \
+         -o /tmp/leon_brew_install.sh 2>/tmp/leon_brew_dl.log; then
+      spin_stop
+      [ -n "$SUDO_KEEP" ] && { kill "$SUDO_KEEP" 2>/dev/null; SUDO_KEEP=""; }
+      die "Could not download the Homebrew installer." \
+          "Your internet connection timed out or is blocking raw.githubusercontent.com. Check your connection (or a VPN/firewall) and re-run the installer. $(tail -5 /tmp/leon_brew_dl.log 2>/dev/null)"
+    fi
+    spin_stop
+    [ -s /tmp/leon_brew_install.sh ] || {
+      [ -n "$SUDO_KEEP" ] && { kill "$SUDO_KEEP" 2>/dev/null; SUDO_KEEP=""; }
+      die "The Homebrew installer downloaded empty." "Re-run the installer; if it keeps happening your network is intercepting the download."
+    }
+
+    # Spinner so the customer always sees motion, never a frozen static line.
+    spin_start "Installing Homebrew (this can take a few minutes)..."
+    NONINTERACTIVE=1 /bin/bash /tmp/leon_brew_install.sh \
       </dev/null >/tmp/leon_brew.log 2>&1
     BREW_RC=$?
+    spin_stop
     [ -n "$SUDO_KEEP" ] && { kill "$SUDO_KEEP" 2>/dev/null; SUDO_KEEP=""; }
 
     if [ $BREW_RC -ne 0 ]; then
@@ -346,7 +369,11 @@ for DL_URL in "${DL_URLS[@]}"; do
       ;;
   esac
   for attempt in 1 2 3; do
-    if curl -fsSL --connect-timeout 10 "$DL_URL" -o leon-brain.tar.gz \
+    # --connect-timeout bounds only the handshake; --max-time bounds the WHOLE
+    # transfer, and --speed-limit/--speed-time aborts a connection that is alive
+    # but trickling (dead peer, throttled mirror) instead of hanging forever.
+    if curl -fsSL --connect-timeout 10 --max-time 900 \
+         --speed-limit 1024 --speed-time 60 "$DL_URL" -o leon-brain.tar.gz \
        && [ -f leon-brain.tar.gz ] && [ "$(wc -c < leon-brain.tar.gz)" -ge 1000 ]; then
       GOT="$( (sha256sum leon-brain.tar.gz 2>/dev/null || shasum -a 256 leon-brain.tar.gz 2>/dev/null) | awk '{print $1}')"
       if [ -z "$GOT" ]; then
