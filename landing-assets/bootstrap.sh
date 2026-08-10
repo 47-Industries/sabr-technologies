@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="8266eb8f2bca179557b318995bc5ea38ddf1fe9018338388499e75d5a8755b22"
+EXPECTED_RELEASE_SHA256="def842dde715b19a30054b076ca606c3ef932bdc85e57f1b1454d245c221a6d1"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -866,6 +866,16 @@ if [ -n "$BACKUP_DIR" ]; then
   say "${G}[OK]${N} Previous install kept at $BACKUP_DIR"
   say "     Delete it once the new one is confirmed working."
 fi
+# Stamp WHICH release this is. Nothing in the installed tree recorded it, so
+# neither the SI, the owner, nor a support conversation could answer "what
+# version are you running?" — which is also why nothing could ever tell that an
+# update existed. The digest is already verified at this point, so this is a
+# fact, not a claim. auto_update.py reads this file.
+{
+  echo "release_sha256=$EXPECTED_RELEASE_SHA256"
+  echo "installed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null)"
+} > "$INSTALL_DIR/.sabr-release" 2>/dev/null || true
+
 say "${G}[OK]${N} Installed to ~/leon-brain/"
 cd "$INSTALL_DIR" || die "Install dir missing after swap"
 
