@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="561ed676e0ce72e5e40382ed39048aa98fc062e18e4e78fb0bb3fd8e9f8c1672"
+EXPECTED_RELEASE_SHA256="53a205353a4c2f6c89bfa7568327a5a72c72b1905935b2f5a3198eca53d44177"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -1085,6 +1085,68 @@ chmod +x setup.sh
 printf '#!/bin/bash\ncd "$(dirname "$0")"\nexec "%s" run.py "$@"\n' "$VPYTHON" > start.sh
 chmod +x start.sh
 say "${G}[OK]${N} Helper scripts created"
+
+# ── VOICE GATE: the SI needs a language model or it installs MUTE ──────
+# Hard-learned: the brain, memory, neural sim and dashboard can all come up
+# perfectly and the SI still cannot say a single word, because nothing in
+# this installer ever guaranteed the `claude` CLI exists and is logged in.
+# That produced an SI that answered "give me a second" forever. We check it
+# here, out loud, BEFORE handing off — non-fatal (the install is still good)
+# but never silent.
+say ""
+say "Checking language connection..."
+CLAUDE_BIN=""
+for c in "$(command -v claude 2>/dev/null)" \
+         "$HOME/.local/bin/claude" \
+         "$HOME/.claude/local/claude" \
+         "/usr/local/bin/claude" \
+         "/opt/homebrew/bin/claude"; do
+  [ -n "$c" ] && [ -x "$c" ] && { CLAUDE_BIN="$c"; break; }
+done
+
+if [ -z "$CLAUDE_BIN" ] && command -v npm >/dev/null 2>&1; then
+  say "  Installing the Claude CLI (one time)..."
+  if run_timeout 300 npm install -g @anthropic-ai/claude-code >/tmp/leon_claude_npm.log 2>&1; then
+    CLAUDE_BIN="$(command -v claude 2>/dev/null)"
+    [ -z "$CLAUDE_BIN" ] && [ -x "$HOME/.local/bin/claude" ] && CLAUDE_BIN="$HOME/.local/bin/claude"
+  fi
+fi
+
+VOICE_OK=0
+if [ -n "$CLAUDE_BIN" ]; then
+  # Only a real end-to-end reply proves it. Presence of the binary, or of a
+  # credentials file, proves nothing — both were true while the SI was mute.
+  if run_timeout 90 "$CLAUDE_BIN" -p "reply with the single word: ready" \
+       >/tmp/leon_claude_probe.log 2>&1 \
+     && grep -qi 'ready' /tmp/leon_claude_probe.log; then
+    VOICE_OK=1
+  fi
+fi
+
+if [ "$VOICE_OK" = "1" ]; then
+  say "${G}[OK]${N} Language connection live — your SI can speak."
+else
+  say ""
+  say "${Y}================================================${N}"
+  say "${Y}  ACTION NEEDED — your SI cannot talk yet${N}"
+  say "${Y}================================================${N}"
+  if [ -z "$CLAUDE_BIN" ]; then
+    say "  The Claude CLI is not installed. Install Node.js, then run:"
+    say "    ${C}npm install -g @anthropic-ai/claude-code${N}"
+    say "  ...and then:  ${C}claude${N}   (sign in when it asks)"
+  else
+    say "  Found the Claude CLI at:"
+    say "    ${C}$CLAUDE_BIN${N}"
+    say "  ...but it is not signed in yet. Run this once and sign in:"
+    say ""
+    say "    ${C}claude${N}"
+    say ""
+    say "  Everything else installed fine. Your SI will have memory, senses"
+    say "  and a dashboard — it just stays silent until this is done."
+  fi
+  say "${Y}================================================${N}"
+  say ""
+fi
 
 # ── Hand off to setup — run it RIGHT NOW, zero copy-paste ──────────────
 # bootstrap is normally run via `curl ... | bash`, so stdin is the pipe, not
