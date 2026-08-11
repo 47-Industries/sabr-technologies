@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="e93cfc4c8f39734c9c5265a2b0fb0c163392c1b34c8c12cea5eeefb7c4252c09"
+EXPECTED_RELEASE_SHA256="e31c97086ab538d2f9bbbe58a516a8627ec7a8f5f771ad1537cc6113dcd373fb"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -1063,7 +1063,16 @@ say "${G}[OK]${N} Packages installed"
 # ── VERIFY: actually import the core deps. No lying that it worked. ──
 say ""
 say "Verifying install..."
-if ! "$VPYTHON" -c "import numpy, scipy, fastapi, anthropic, dotenv, requests" >/tmp/leon_verify.log 2>&1; then
+# EVERY package the CORE install line declares, not a subset. Until 2026-08-11
+# this imported 6 of the 14 and skipped uvicorn — which run.py imports to serve
+# the dashboard at all. So pip could exit 0 with a uvicorn that does not import
+# (missing shared lib, ABI mismatch — the exact failure this script already
+# documents for pyaudio), the installer printed the green banner, and the user
+# discovered it later as ModuleNotFoundError when nothing would start. A gate
+# captioned "no lying that it worked" has to check what it claims to check.
+# Pillow imports as PIL and python-multipart as multipart — import NAMES here,
+# never distribution names, or the gate fails on a perfectly good install.
+if ! "$VPYTHON" -c "import numpy, scipy, fastapi, uvicorn, websockets, multipart, dotenv, PIL, mss, psutil, anthropic, requests, aiohttp" >/tmp/leon_verify.log 2>&1; then
   die "Core imports failed after install — environment is not usable." "$(cat /tmp/leon_verify.log)"
 fi
 say "${G}[OK]${N} Core dependencies verified"
