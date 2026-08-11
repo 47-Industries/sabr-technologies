@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="36e96548c19bf37db48467f7a2b15a81a19dd017978a03efbab9618bb978ae9f"
+EXPECTED_RELEASE_SHA256="561ed676e0ce72e5e40382ed39048aa98fc062e18e4e78fb0bb3fd8e9f8c1672"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -283,11 +283,35 @@ connection. $(tail -20 /tmp/leon_brew.log 2>/dev/null)"
   fi
   say "${G}[OK]${N} Homebrew (${ARCH} at $(brew_prefix))"
 
-  # 3) Python 3 -- brew-install if the Mac has none usable.
-  if ! command -v python3 &>/dev/null || ! python3 -c 'import sys' &>/dev/null; then
-    say "Installing Python 3 via Homebrew..."
-    spin_start "Installing Python 3..."
-    run_timeout 300 brew install python3 </dev/null >/tmp/leon_pybrew.log 2>&1
+  # 3) Python 3 -- brew-install if the Mac has none that MEETS THE FLOOR.
+  #
+  # P0 FIX 2026-08-10 — this dead-ended every stock Mac.
+  # The old condition was `! command -v python3 || ! python3 -c 'import sys'`,
+  # i.e. "is there a python3 at all". Stock macOS 13/14/15 plus the Xcode
+  # Command Line Tools we install ~100 lines above ships /usr/bin/python3 =
+  # 3.9.6. It exists and it imports, so this whole block was SKIPPED. Then the
+  # candidate scan below found nothing at or above the 3.11 floor, the
+  # auto-install remediation is gated to Linux, and the script died telling the
+  # customer to go run `brew install python@3.12` by hand — on a machine where
+  # it had ALREADY installed Homebrew and could have just done it. Handing
+  # someone homework one command short of the finish line.
+  #
+  # Test the FLOOR, not mere existence. Written inline rather than calling
+  # py_meets_floor() because that helper is not defined until later in the file
+  # and moving it risks the Linux path, which currently works.
+  _mac_py_ok=""
+  for _c in python3.13 python3.12 python3.11 python3; do
+    command -v "$_c" &>/dev/null || continue
+    "$_c" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3,11) else 1)' &>/dev/null \
+      && { _mac_py_ok="$_c"; break; }
+  done
+  if [ -z "$_mac_py_ok" ]; then
+    say "Installing Python 3.12 via Homebrew..."
+    spin_start "Installing Python 3.12..."
+    # PINNED. `brew install python3` tracks newest and would hand us 3.14 —
+    # the exact trap the PY_PREFERRED=(13,12,11) ordering elsewhere exists to
+    # avoid, since our wheels are not all built for it yet.
+    run_timeout 300 brew install python@3.12 </dev/null >/tmp/leon_pybrew.log 2>&1
     PYBREW_RC=$?
     spin_stop
     if [ $PYBREW_RC -eq 124 ]; then
@@ -300,10 +324,26 @@ run \`brew install python3\` yourself first. $(tail -20 /tmp/leon_pybrew.log 2>/
     fi
     # Re-add Homebrew to PATH in case Homebrew added new paths
     ensure_brew_on_path
-    # Verify Python can actually be used
-    if ! command -v python3 &>/dev/null || ! python3 -c 'import sys' &>/dev/null; then
-      die "Python 3 installed by Homebrew but not executable." "Try: $(brew_prefix)/bin/python3 --version"
+    # Verify Python can actually be used — AT THE FLOOR.
+    # The old check was `python3 -c 'import sys'`, which stock macOS 3.9.6
+    # passes. So brew could fail to provide a qualifying interpreter and this
+    # gate would still go green, moving the failure hundreds of lines
+    # downstream into a confusing venv or wheel error. Same defect shape as
+    # the one directly above: verifying presence instead of the property we
+    # actually require. `brew install python@3.12` puts python3.12 in the brew
+    # prefix, so look for it by name and not just as bare `python3`.
+    _mac_py_ok=""
+    for _c in python3.12 python3.13 python3.11 python3; do
+      command -v "$_c" &>/dev/null || continue
+      "$_c" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3,11) else 1)' &>/dev/null \
+        && { _mac_py_ok="$_c"; break; }
+    done
+    if [ -z "$_mac_py_ok" ]; then
+      die "Homebrew finished but no Python 3.11+ is on PATH." \
+          "Check: $(brew_prefix)/bin/python3.12 --version
+If that works, your PATH is missing $(brew_prefix)/bin — run: eval \$($(brew_prefix)/bin/brew shellenv)"
     fi
+    say "${G}[OK]${N} Python ($_mac_py_ok)"
   fi
 fi
 
