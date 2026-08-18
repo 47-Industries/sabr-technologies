@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="4fadf159428d14909ecf0e2edc989fd07390bb58ecf0c206f7746d6a87319db6"
+EXPECTED_RELEASE_SHA256="f54b8d146d31b7c32efe8ae7f55cf259b965a8e6fa566979fa581d14f4a01e7f"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
