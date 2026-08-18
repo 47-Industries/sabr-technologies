@@ -845,7 +845,18 @@ if [ -d "$INSTALL_DIR" ]; then
   say "Stopping previous SI (if running)..."
   pkill -f "$INSTALL_DIR/.venv/bin/python" 2>/dev/null || true
   tmux kill-session -t leon 2>/dev/null || true
-  command -v fuser >/dev/null 2>&1 && fuser -k 8000/tcp 2>/dev/null || true
+  # NOT a blind `fuser -k 8000/tcp`. That kills whatever holds port 8000 on the
+  # owner's machine — their own dev server, someone else's app — and an
+  # installer that terminates unrelated software is a defect, not a cleanup.
+  # Only kill a listener we can prove is this install's own interpreter.
+  if command -v lsof >/dev/null 2>&1; then
+    for _pid in $(lsof -t -iTCP:8000 -sTCP:LISTEN 2>/dev/null); do
+      _exe=$(readlink -f "/proc/$_pid/exe" 2>/dev/null || true)
+      case "$_exe" in
+        "$INSTALL_DIR"/*) kill "$_pid" 2>/dev/null || true ;;
+      esac
+    done
+  fi
   sleep 1
 fi
 # ── B4: VALIDATE THEN SWAP. Never delete-then-hope. ───────────────────
