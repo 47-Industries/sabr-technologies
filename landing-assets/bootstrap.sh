@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="3020ffd72ef2828375bed436cb1bd69ef9f9f9c5ca0b3605c9a412bb16d7dc13"
+EXPECTED_RELEASE_SHA256="4bbec7853cb35e29478fae124b85dad1f242d6166c800d69c53ee32cc9a37e2c"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -900,12 +900,18 @@ if [ -d "$INSTALL_DIR" ]; then
         || say "  ${Y}[WARN]${N} could not carry $keep forward"
     fi
   done
-  # The persona lives in brain/, so it needs the sub-path, not the top level.
-  # A hand-edited personality should survive an update like memory does.
-  if [ -f "$INSTALL_DIR/brain/si_persona.py" ]; then
-    cp -a "$INSTALL_DIR/brain/si_persona.py" "$STAGE_DIR/leon-brain/brain/" 2>/dev/null \
-      && say "  ${G}kept${N} brain/si_persona.py"
-  fi
+  # These live in brain/ (sub-path). Carry them so an update never strips a
+  # hand-edited persona OR the ORIGINAL's owner identity. si_persona.py is the
+  # client persona; leon_persona.py + owner_facts.py exist ONLY on the original
+  # (Dean's Leon) and are excluded from the release, so without this an update
+  # from the customer build would turn Leon into a generic client SI. Customers
+  # simply do not have those two files, so this is a no-op for them.
+  for _pf in brain/si_persona.py brain/leon_persona.py brain/owner_facts.py; do
+    if [ -f "$INSTALL_DIR/$_pf" ]; then
+      cp -a "$INSTALL_DIR/$_pf" "$STAGE_DIR/leon-brain/brain/" 2>/dev/null \
+        && say "  ${G}kept${N} $_pf"
+    fi
+  done
   # This is an UPDATE (INSTALL_DIR already existed). finalize() preserves by
   # default; the only extra signal it needs is WHOSE dir this was, so it can
   # tell a same-SI update from a different SI reusing the directory (the ghost
