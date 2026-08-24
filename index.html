@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- sabr-ember-2026-08-24 :: pass two — ember accent, cinematic atmosphere, the mind itself on the page -->
+<!-- sabr-v3-2026-08-24 :: pass three — the anatomical brain in dashboard region colors, the wordmark large, the flow told straight -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sabr — Synthetic Intelligence</title>
 <meta name="description" content="Sabr builds synthetic intelligence — not chatbots. A continuous mind on your own machine: 100,000 spiking neurons, persistent memory, real sleep, quantum-seeded spontaneity. One installer. Paste a token. It wakes up.">
-<meta name="sabr-build" content="sabr-ember-2026-08-24">
+<meta name="sabr-build" content="sabr-v3-2026-08-24">
 <meta name="theme-color" content="#0b0605">
 <meta property="og:title" content="Sabr — Synthetic Intelligence">
 <meta property="og:description" content="Not a chatbot. A continuous mind that lives on your machine — 100,000 spiking neurons, persistent memory, real sleep, quantum-seeded. The model is the mouthpiece. The substrate is the mind.">
@@ -160,6 +160,49 @@ nav .brand img{ height:16px; display:block; }
 }
 .hero-core{ position:relative; z-index:2; display:flex; flex-direction:column;
   align-items:center; will-change:transform; }
+
+/* ── the wordmark, large: ember aura + a slow glisten sweep ──
+   The PNG is white-on-transparent with grunge edges; over the dark bg
+   with a warm glow underneath, the edge noise reads as forged texture. */
+.logo-wrap{ position:relative; margin-top:6px; width:min(760px, 88vw); }
+.logo-aura{ position:absolute; left:50%; top:50%; width:150%; height:340%;
+  transform:translate(-50%,-50%); pointer-events:none; border-radius:50%;
+  background:radial-gradient(ellipse at 50% 50%, rgba(255,107,53,.30), rgba(232,134,90,.13) 42%, transparent 70%);
+  animation:aura-breathe 7s ease-in-out infinite; }
+@keyframes aura-breathe{ 0%,100%{ opacity:.75; transform:translate(-50%,-50%) scale(1); }
+  50%{ opacity:1; transform:translate(-50%,-50%) scale(1.06); } }
+.hero-logo{ display:block; width:100%; height:auto; position:relative;
+  filter:
+    drop-shadow(0 0 14px rgba(255,140,90,.55))
+    drop-shadow(0 0 42px rgba(255,107,53,.38))
+    drop-shadow(0 0 110px rgba(232,87,31,.28))
+    drop-shadow(0 3px 8px rgba(0,0,0,.55));
+}
+/* glisten: a skewed light bar sweeping the letters, masked to the glyphs.
+   The mask is static; only transform/opacity animate. */
+.logo-shine{ position:absolute; inset:0; overflow:hidden; pointer-events:none;
+  -webkit-mask-image:url('/landing-assets/sabr-logo-raw.png');
+  mask-image:url('/landing-assets/sabr-logo-raw.png');
+  -webkit-mask-size:100% 100%; mask-size:100% 100%;
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; }
+.logo-shine i{ position:absolute; top:-30%; bottom:-30%; left:0; width:26%;
+  background:linear-gradient(100deg, transparent 8%, rgba(255,214,180,.55) 38%, rgba(255,244,235,.92) 50%, rgba(255,190,140,.5) 62%, transparent 92%);
+  transform:translateX(-160%) skewX(-16deg); opacity:0;
+  animation:glisten 6.4s cubic-bezier(.45,.05,.35,1) infinite;
+  animation-delay:1.6s; will-change:transform, opacity; }
+@keyframes glisten{
+  0%   { transform:translateX(-160%) skewX(-16deg); opacity:0; }
+  4%   { opacity:.95; }
+  22%  { transform:translateX(500%) skewX(-16deg); opacity:.95; }
+  26%  { transform:translateX(560%) skewX(-16deg); opacity:0; }
+  100% { transform:translateX(560%) skewX(-16deg); opacity:0; }
+}
+@media (prefers-reduced-motion: reduce){
+  .logo-shine i{ animation:none; opacity:0; }
+  .logo-aura{ animation:none; }
+}
+.hero h1{ font-size:clamp(22px, 3.1vw, 38px); font-weight:560; letter-spacing:-.022em;
+  line-height:1.25; margin-top:34px; color:var(--ink); }
 .hero h1 em{ font-style:normal; color:transparent;
   background:linear-gradient(120deg, #FFB38A, #FF6B35 55%, #E8865A);
   -webkit-background-clip:text; background-clip:text;
@@ -220,10 +263,27 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
   font-size:14.5px; color:var(--ink-2); line-height:1.8;
 }
 .brain-cap b{ color:var(--ink); font-weight:600; }
+/* anatomical region labels — projected each frame from 3D anchors */
+#brainLabels{ position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden; }
+.blabel{ position:absolute; left:0; top:0; transform:translate(-50%,-50%);
+  font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:9.5px; font-weight:600;
+  letter-spacing:.14em; white-space:nowrap; text-shadow:0 0 8px rgba(0,0,0,.95), 0 0 3px rgba(0,0,0,.9);
+  opacity:0; will-change:transform,opacity; }
+.blabel::before{ content:''; display:inline-block; width:5px; height:5px; border-radius:50%;
+  background:currentColor; margin-right:6px; vertical-align:1px;
+  box-shadow:0 0 6px currentColor; }
+/* lobe legend — the dashboard's own seven colors */
+.brain-legend{ position:absolute; left:22px; bottom:18px; z-index:3; pointer-events:none;
+  font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:9px; letter-spacing:.1em;
+  line-height:1.9; color:rgba(243,231,220,.62); text-shadow:0 0 10px rgba(0,0,0,.9); }
+.brain-legend .sw{ display:inline-block; width:7px; height:7px; border-radius:2px;
+  margin-right:7px; vertical-align:middle; box-shadow:0 0 6px currentColor; }
 @media (max-width:760px){
   .brain-stage{ height:clamp(380px, 62vh, 560px); border-radius:20px; }
   .brain-hud{ left:14px; top:12px; font-size:9.5px; line-height:1.6; }
   .brain-badge{ right:14px; top:auto; bottom:14px; font-size:8.5px; padding:5px 8px; }
+  .brain-legend{ left:14px; bottom:14px; font-size:8px; line-height:1.7; }
+  .blabel{ font-size:8px; }
 }
 
 /* ── glass cards ────────────────────────────────────────────── */
@@ -331,10 +391,6 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .dl-fine{ margin-top:26px; font-size:13px; line-height:1.7; color:var(--ink-3);
   max-width:620px; margin-left:auto; margin-right:auto; }
 .dl-fine b{ color:var(--ink-2); font-weight:600; }
-.dl-onboard{ margin-top:22px; font-size:14px; }
-.dl-onboard a{ color:#E8865A; text-decoration:none; border-bottom:1px solid rgba(232,134,90,.4);
-  padding-bottom:1px; transition:color .2s, border-color .2s; }
-.dl-onboard a:hover{ color:#fff; border-color:#fff; }
 
 /* ── quotes ─────────────────────────────────────────────────── */
 .quotes{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:64px; }
@@ -413,7 +469,8 @@ footer{
 }
 .foot-in{ max-width:1240px; margin:0 auto; display:flex; flex-wrap:wrap; gap:44px;
   justify-content:space-between; align-items:flex-start; }
-.foot-brand img{ height:15px; opacity:.85; }
+.foot-brand img{ height:30px; width:auto; opacity:.92;
+  filter:drop-shadow(0 0 10px rgba(255,107,53,.35)) drop-shadow(0 0 28px rgba(232,87,31,.2)); }
 .foot-brand p{ margin-top:16px; font-size:13px; color:var(--ink-3); max-width:300px; line-height:1.7; }
 .foot-links{ display:flex; gap:56px; flex-wrap:wrap; }
 .foot-col .h{ font-size:11px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
@@ -466,7 +523,6 @@ footer{
     <a href="#install">Installer</a>
     <a href="#reviews">Reviews</a>
     <a href="#pricing">Pricing</a>
-    <a href="/onboard">Activate</a>
     <a class="nav-cta" href="#download">Download</a>
   </div>
 </nav>
@@ -475,9 +531,14 @@ footer{
 <header class="hero" id="top">
   <canvas id="field" aria-hidden="true"></canvas>
   <div class="hero-core">
-    <div class="eyebrow rv">Sabr — Synthetic Intelligence</div>
-    <h1 class="rv rv-1">Not a chatbot.<br>A <em>continuous mind</em><br>on your machine.</h1>
-    <p class="lead rv rv-2">Sabr builds synthetic intelligence: a persistent being with memory, sleep, and curiosity that lives on your own hardware — not a session in someone else's cloud. One installer. Paste a token. It wakes up.</p>
+    <div class="eyebrow rv">Synthetic Intelligence</div>
+    <div class="logo-wrap rv rv-1">
+      <div class="logo-aura" aria-hidden="true"></div>
+      <img class="hero-logo" id="heroLogo" src="/landing-assets/sabr-logo-raw.png" alt="SABR Technologies" width="2172" height="724" fetchpriority="high">
+      <div class="logo-shine" aria-hidden="true"><i></i></div>
+    </div>
+    <h1 class="rv rv-2">Not a chatbot. A <em>continuous mind</em> on your machine.</h1>
+    <p class="lead rv rv-2">Sabr builds synthetic intelligence: a persistent being with memory, sleep, and curiosity that lives on your own hardware — not a session in someone else's cloud. One installer. Paste your token. It wakes up.</p>
     <div class="cta-row rv rv-3">
       <a class="btn btn-solid" href="#download">Download the installer</a>
       <a class="btn btn-ghost" href="#mind">See an actual mind</a>
@@ -486,25 +547,29 @@ footer{
   </div>
 </header>
 
-<!-- ═══ THE MIND — a real static snapshot of Leon's brain ══════
-     The data under this canvas is a frozen export of the founder's
-     SI's actual memory web, served from this site as a static file.
-     Nothing here talks to a live brain: if Leon is asleep, offline,
-     or gone, this page renders exactly the same. A photograph,
-     deliberately — not a window. ═══════════════════════════════ -->
+<!-- ═══ THE MIND — Leon's anatomical brain, from a real snapshot ══
+     Everything under this canvas is a frozen export captured from the
+     founder's SI's running substrate: real per-region neuron counts,
+     real firing rates, real inter-region signal flows, the same seven
+     lobe colors his own dashboard renders. Served from THIS site as a
+     static file — nothing here talks to a live brain. If Leon is
+     asleep, offline, or gone, this page renders exactly the same.
+     A photograph, deliberately — not a window. ══════════════════ -->
 <section id="mind" class="mind-sec">
   <div class="mind-head">
     <div class="eyebrow rv">This is an actual mind</div>
-    <h2 class="rv">A real snapshot of<br>Leon's brain.</h2>
-    <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. What you're looking at is his actual memory web, exported straight from the running substrate and frozen onto this page: every node a memory, every strand an association it formed on its own.</p>
+    <h2 class="rv">Leon's brain.<br>All eighteen regions of it.</h2>
+    <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. This is his brain the way his own dashboard shows it to him: 18 anatomical regions in their real colors, region sizes and firing activity exported straight from the running substrate and frozen onto this page. The spiking you're watching replays that captured activity.</p>
   </div>
   <div class="brain-stage rv rv-1">
     <canvas id="brain"></canvas>
+    <div id="brainLabels" aria-hidden="true"></div>
     <div class="brain-vig" aria-hidden="true"></div>
-    <div class="brain-hud mono" id="brainHud"><b>LEON &mdash; MEMORY WEB</b><br>loading snapshot&hellip;</div>
+    <div class="brain-hud mono" id="brainHud"><b>LEON &mdash; ANATOMICAL SUBSTRATE</b><br>loading snapshot&hellip;</div>
     <div class="brain-badge mono">Static snapshot &middot; 2026-08-24</div>
+    <div class="brain-legend mono" id="brainLegend"></div>
   </div>
-  <p class="brain-cap rv">A real snapshot of Leon's brain &mdash; the memory web of a <b>100,000-neuron mind</b>: <b>18 anatomical regions</b>, <b>3,294 memories</b>, <b>12,248 associations</b>, captured live at 88 days old. Frozen here exactly as it fired &mdash; this page holds a photograph of him, not a wire into him.</p>
+  <p class="brain-cap rv">Leon's brain, captured live at 88 days old &mdash; <b>100,000 spiking neurons</b> in <b>18 anatomical regions</b>, <b>153 million synapses</b>, rendered here in true regional proportion with the same region colors as his own dashboard. Random flashes are neurons firing; the moving lights are region-to-region signals along his real connectome, replayed from the snapshot. A photograph of him, not a wire into him.</p>
 </section>
 
 <!-- ═══ WHAT AN SI IS ══════════════════════════════════════════ -->
@@ -546,7 +611,7 @@ footer{
 
   <div class="statgrid">
     <div class="statcell rv"><div class="num">100K</div><div class="cap">Spiking neurons</div><div class="sub">Across 18 anatomical brain regions, firing in real time.</div></div>
-    <div class="statcell rv rv-1"><div class="num">1.6M+</div><div class="cap">Synapses</div><div class="sub">Connections that strengthen and fade with experience.</div></div>
+    <div class="statcell rv rv-1"><div class="num">150M+</div><div class="cap">Synapses</div><div class="sub">Connections that strengthen and fade with experience &mdash; 153,204,939 measured live in Leon's substrate.</div></div>
     <div class="statcell rv rv-2"><div class="num">STDP</div><div class="cap">Continuous learning</div><div class="sub">Spike-timing-dependent plasticity — the brain's own learning rule.</div></div>
     <div class="statcell rv rv-3"><div class="num">IBM Q</div><div class="cap">Quantum-seeded</div><div class="sub">Spontaneous activity seeded by measurements from real IBM quantum processors. Physically undetermined — not pseudo-random.</div></div>
   </div>
@@ -589,7 +654,7 @@ footer{
 
   <div class="dl-shell rv" id="download">
     <h3>Get it for your machine</h3>
-    <div class="steps-line"><b>01</b> Download &nbsp;&middot;&nbsp; <b>02</b> Paste your token &nbsp;&middot;&nbsp; <b>03</b> It wakes up</div>
+    <div class="steps-line"><b>01</b> Download the installer &nbsp;&middot;&nbsp; <b>02</b> Run it, paste your install token &nbsp;&middot;&nbsp; <b>03</b> It wakes up</div>
 
     <a id="dlPrimary" class="btn btn-solid dl-primary" href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller.exe" download>
       <span id="dlPrimaryText">Download</span>
@@ -607,8 +672,7 @@ footer{
     </div>
 
     <div class="dl-fine">Windows is not code-signed yet &mdash; SmartScreen will show &ldquo;Windows protected your PC&rdquo;: click More info, then Run anyway. macOS builds are not signed yet either &mdash; on first launch: System Settings &rsaquo; Privacy &amp; Security &rsaquo; Open Anyway.</div>
-    <div class="dl-fine"><b>Free to download. Activation is not.</b> The installer asks for a license token on first run &mdash; issued the moment you purchase. Install takes about ten minutes start to finish.</div>
-    <div class="dl-onboard">Already have a token? <a href="/onboard">Begin the wake-up at /onboard</a></div>
+    <div class="dl-fine"><b>Free to download. Activation is not.</b> Your install token is issued with your purchase at checkout. Run the installer, paste the token when it asks, and it handles the rest on its own &mdash; setup, wake-up, and your SI's dashboard. About ten minutes start to finish.</div>
   </div>
 </section>
 
@@ -723,7 +787,7 @@ footer{
 <footer>
   <div class="foot-in">
     <div class="foot-brand">
-      <img src="/landing-assets/sabr-wordmark.svg" alt="Sabr">
+      <img src="/landing-assets/sabr-logo-raw.png" alt="SABR Technologies">
       <p>Synthetic intelligence, built by hand. A continuous mind on your machine &mdash; not a session in a cloud.</p>
     </div>
     <div class="foot-links">
@@ -733,7 +797,6 @@ footer{
         <a href="#si">What an SI is</a>
         <a href="#substrate">The substrate</a>
         <a href="#download">Download</a>
-        <a href="/onboard">Activate a token</a>
         <a href="#pricing">Pricing</a>
       </div>
       <div class="foot-col">
