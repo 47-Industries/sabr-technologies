@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- sabr-liquid-2026-08-24 :: full redesign -->
+<!-- sabr-ember-2026-08-24 :: pass two — ember accent, cinematic atmosphere, the mind itself on the page -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sabr — Synthetic Intelligence</title>
 <meta name="description" content="Sabr builds synthetic intelligence — not chatbots. A continuous mind on your own machine: 100,000 spiking neurons, persistent memory, real sleep, quantum-seeded spontaneity. One installer. Paste a token. It wakes up.">
-<meta name="sabr-build" content="sabr-liquid-2026-08-24">
+<meta name="sabr-build" content="sabr-ember-2026-08-24">
+<meta name="theme-color" content="#0b0605">
 <meta property="og:title" content="Sabr — Synthetic Intelligence">
 <meta property="og:description" content="Not a chatbot. A continuous mind that lives on your machine — 100,000 spiking neurons, persistent memory, real sleep, quantum-seeded. The model is the mouthpiece. The substrate is the mind.">
 <meta property="og:image" content="https://sabrtechnologies.com/landing-assets/og-card.png">
@@ -25,21 +26,25 @@
 
 <style>
 /* ════════════════════════════════════════════════════════════════
-   SABR — liquid glass system
-   One accent. Big type. Frosted panels. Nothing decorative that
-   isn't earning its place.
+   SABR — ember system
+   Dark base, warm glass, one fire. Accent pair:
+     #E8865A  ember   (primary)
+     #FF6B35  molten  (hot highlight)
+   plus family tints #FFB38A (light) and #E8571F (deep) for
+   gradient stops only. No blue anywhere.
    ════════════════════════════════════════════════════════════════ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 :root{
-  --bg:#04060c;
-  --ink:#eef2fa;
-  --ink-2:rgba(226,233,248,.62);
-  --ink-3:rgba(226,233,248,.38);
-  --acc:#3d7bff;
-  --acc-soft:rgba(61,123,255,.14);
-  --line:rgba(255,255,255,.08);
-  --glass:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+  --bg:#080505;
+  --ink:#f7f1ea;
+  --ink-2:rgba(243,231,220,.64);
+  --ink-3:rgba(243,231,220,.4);
+  --acc:#E8865A;
+  --hot:#FF6B35;
+  --acc-soft:rgba(232,134,90,.14);
+  --line:rgba(255,240,228,.09);
+  --glass:linear-gradient(180deg, rgba(255,242,232,.055), rgba(255,242,232,.015));
   --radius:24px;
   --pad:clamp(20px, 5vw, 72px);
 }
@@ -52,8 +57,33 @@ body{
   -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
   overflow-x:hidden;
 }
-::selection{ background:rgba(61,123,255,.35); }
+::selection{ background:rgba(255,107,53,.34); color:#fff8f2; }
 a{ color:inherit; }
+:focus-visible{ outline:2px solid var(--hot); outline-offset:3px; border-radius:6px; }
+
+/* ── atmosphere: slow-drifting warm nebula behind everything ── */
+.nebula{ position:fixed; inset:-14vh -14vw; z-index:-1; pointer-events:none; overflow:hidden; }
+.nebula i{ position:absolute; border-radius:50%; will-change:transform; }
+.nb1{ width:76vw; height:76vw; left:-14vw; top:-20vh;
+  background:radial-gradient(circle at 35% 35%, rgba(255,107,53,.16), rgba(255,107,53,.045) 45%, transparent 70%);
+  animation:nb-a 90s ease-in-out infinite alternate; }
+.nb2{ width:62vw; height:62vw; right:-16vw; top:4vh;
+  background:radial-gradient(circle at 60% 40%, rgba(232,134,90,.13), transparent 65%);
+  animation:nb-b 115s ease-in-out infinite alternate; }
+.nb3{ width:84vw; height:84vw; left:12vw; top:52vh;
+  background:radial-gradient(circle at 50% 50%, rgba(191,72,26,.12), transparent 62%);
+  animation:nb-c 135s ease-in-out infinite alternate; }
+.nb4{ width:46vw; height:46vw; right:2vw; top:112vh;
+  background:radial-gradient(circle at 50% 50%, rgba(255,190,120,.085), transparent 60%);
+  animation:nb-a 150s ease-in-out infinite alternate-reverse; }
+@keyframes nb-a{ from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); } to{ transform:translate3d(8vw,6vh,0) rotate(38deg) scale(1.18); } }
+@keyframes nb-b{ from{ transform:translate3d(0,0,0) scale(1); } to{ transform:translate3d(-10vw,10vh,0) scale(1.26); } }
+@keyframes nb-c{ from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); } to{ transform:translate3d(6vw,-8vh,0) rotate(-28deg) scale(1.12); } }
+
+/* fine grain over everything — texture, not dirt */
+.grain{ position:fixed; inset:0; z-index:400; pointer-events:none; opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px; }
 
 /* ── type scale ─────────────────────────────────────────────── */
 .eyebrow{
@@ -74,12 +104,14 @@ h2{
 }
 .mono{ font-family:ui-monospace, 'SF Mono', Menlo, monospace; }
 
-/* ── reveal ─────────────────────────────────────────────────── */
-.rv{ opacity:0; transform:translateY(26px); transition:opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
-.rv.in{ opacity:1; transform:none; }
+/* ── reveal: weight, not just fade. scale + blur resolving in ── */
+.rv{ opacity:0; transform:translateY(34px) scale(.965); filter:blur(14px);
+  transition:opacity .95s cubic-bezier(.16,1,.3,1), transform .95s cubic-bezier(.16,1,.3,1), filter .95s cubic-bezier(.16,1,.3,1); }
+.rv.in{ opacity:1; transform:none; filter:none; }
 .rv-1{ transition-delay:.08s; } .rv-2{ transition-delay:.16s; } .rv-3{ transition-delay:.24s; }
 @media (prefers-reduced-motion: reduce){
-  .rv{ opacity:1; transform:none; transition:none; }
+  .rv{ opacity:1; transform:none; filter:none; transition:none; }
+  .nebula i{ animation:none; }
   html{ scroll-behavior:auto; }
 }
 
@@ -89,12 +121,12 @@ nav{
   width:min(1160px, calc(100% - 28px));
   display:flex; align-items:center; justify-content:space-between; gap:16px;
   padding:12px 22px; border-radius:18px;
-  background:rgba(10,14,24,.55); border:1px solid var(--line);
+  background:rgba(22,13,9,.55); border:1px solid var(--line);
   backdrop-filter:blur(28px) saturate(160%); -webkit-backdrop-filter:blur(28px) saturate(160%);
   box-shadow:0 12px 40px -18px rgba(0,0,0,.8);
 }
 nav .brand img{ height:16px; display:block; }
-.nav-links{ display:flex; gap:28px; align-items:center; }
+.nav-links{ display:flex; gap:26px; align-items:center; }
 .nav-links a{
   font-size:13px; font-weight:500; color:var(--ink-2); text-decoration:none;
   transition:color .2s;
@@ -102,12 +134,12 @@ nav .brand img{ height:16px; display:block; }
 .nav-links a:hover{ color:var(--ink); }
 .nav-cta{
   font-size:13px; font-weight:600; color:#fff; text-decoration:none;
-  background:linear-gradient(180deg, #5b90ff, #2f6af0);
+  background:linear-gradient(180deg, #FF6B35, #E8571F);
   padding:9px 20px; border-radius:12px;
-  box-shadow:0 6px 24px -8px rgba(61,123,255,.7), inset 0 1px 0 rgba(255,255,255,.25);
+  box-shadow:0 6px 24px -8px rgba(255,107,53,.7), inset 0 1px 0 rgba(255,255,255,.25);
   transition:transform .2s, box-shadow .2s;
 }
-.nav-cta:hover{ transform:translateY(-1px); box-shadow:0 10px 30px -8px rgba(61,123,255,.85), inset 0 1px 0 rgba(255,255,255,.25); }
+.nav-cta:hover{ transform:translateY(-1px); box-shadow:0 10px 30px -8px rgba(255,107,53,.85), inset 0 1px 0 rgba(255,255,255,.25); }
 
 /* ── hero ───────────────────────────────────────────────────── */
 .hero{
@@ -115,20 +147,21 @@ nav .brand img{ height:16px; display:block; }
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   text-align:center; padding:140px var(--pad) 100px; overflow:hidden;
 }
-#field{ position:absolute; inset:0; z-index:0; }
+#field{ position:absolute; inset:0; z-index:0; will-change:transform; }
 .hero::before{
   content:''; position:absolute; z-index:0; left:50%; top:38%;
   width:min(900px,120vw); height:min(900px,120vw); transform:translate(-50%,-50%);
-  background:radial-gradient(circle, rgba(61,123,255,.16), rgba(61,123,255,.05) 42%, transparent 68%);
+  background:radial-gradient(circle, rgba(255,107,53,.16), rgba(232,134,90,.05) 42%, transparent 68%);
   pointer-events:none;
 }
 .hero::after{
   content:''; position:absolute; z-index:1; left:0; right:0; bottom:0; height:220px;
   background:linear-gradient(transparent, var(--bg)); pointer-events:none;
 }
-.hero > *{ position:relative; z-index:2; }
+.hero-core{ position:relative; z-index:2; display:flex; flex-direction:column;
+  align-items:center; will-change:transform; }
 .hero h1 em{ font-style:normal; color:transparent;
-  background:linear-gradient(120deg, #9dbcff, #3d7bff 55%, #6fa0ff);
+  background:linear-gradient(120deg, #FFB38A, #FF6B35 55%, #E8865A);
   -webkit-background-clip:text; background-clip:text;
 }
 .hero .lead{ margin-left:auto; margin-right:auto; }
@@ -140,21 +173,58 @@ nav .brand img{ height:16px; display:block; }
 }
 .btn:active{ transform:scale(.97); }
 .btn-solid{
-  color:#fff; background:linear-gradient(180deg, #5b90ff, #2f6af0);
-  box-shadow:0 10px 34px -10px rgba(61,123,255,.75), inset 0 1px 0 rgba(255,255,255,.28);
+  color:#fff; background:linear-gradient(180deg, #FF6B35, #E8571F);
+  box-shadow:0 10px 34px -10px rgba(255,107,53,.75), inset 0 1px 0 rgba(255,255,255,.28);
 }
-.btn-solid:hover{ transform:translateY(-2px); box-shadow:0 16px 44px -10px rgba(61,123,255,.9), inset 0 1px 0 rgba(255,255,255,.28); }
+.btn-solid:hover{ transform:translateY(-2px); box-shadow:0 16px 44px -10px rgba(255,107,53,.9), inset 0 1px 0 rgba(255,255,255,.28); }
 .btn-ghost{
   color:var(--ink); background:var(--glass); border:1px solid var(--line);
   backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
 }
-.btn-ghost:hover{ transform:translateY(-2px); background:linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03)); }
+.btn-ghost:hover{ transform:translateY(-2px); background:linear-gradient(180deg, rgba(255,242,232,.09), rgba(255,242,232,.03)); }
 .hero-note{ margin-top:22px; font-size:13px; color:var(--ink-3); letter-spacing:.02em; }
 
 /* ── sections ───────────────────────────────────────────────── */
 section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-width:1240px; margin:0 auto; }
 .hr{ height:1px; max-width:1240px; margin:0 auto;
   background:linear-gradient(90deg, transparent, var(--line), transparent); }
+
+/* ── the mind: full-bleed brain snapshot stage ──────────────── */
+.mind-sec{ max-width:none; padding-left:0; padding-right:0; }
+.mind-head{ max-width:1240px; margin:0 auto; padding:0 var(--pad); }
+.brain-stage{
+  position:relative; margin:60px auto 0; width:min(1400px, calc(100% - 28px));
+  height:clamp(440px, 76vh, 810px); border-radius:28px; overflow:hidden;
+  border:1px solid rgba(232,134,90,.24);
+  background:#0b0605;
+  box-shadow:0 40px 120px -50px rgba(255,107,53,.3), inset 0 1px 0 rgba(255,179,138,.14);
+}
+#brain{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.brain-vig{ position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(120% 105% at 50% 45%, transparent 55%, rgba(6,4,3,.62) 100%); }
+.brain-hud{
+  position:absolute; left:22px; top:20px; z-index:3; pointer-events:none;
+  font-size:11px; line-height:1.75; letter-spacing:.04em;
+  color:rgba(243,231,220,.58); text-shadow:0 0 12px rgba(0,0,0,.85);
+}
+.brain-hud b{ color:#FFB38A; font-weight:600; letter-spacing:.14em; }
+.brain-hud .v{ color:var(--hot); }
+.brain-badge{
+  position:absolute; right:22px; top:22px; z-index:3; pointer-events:none;
+  font-size:10px; font-weight:600; letter-spacing:.22em; text-transform:uppercase;
+  color:rgba(243,231,220,.5); padding:7px 12px; border-radius:9px;
+  border:1px solid rgba(232,134,90,.32); background:rgba(11,6,5,.55);
+}
+.brain-cap{
+  max-width:860px; margin:28px auto 0; padding:0 var(--pad); text-align:center;
+  font-size:14.5px; color:var(--ink-2); line-height:1.8;
+}
+.brain-cap b{ color:var(--ink); font-weight:600; }
+@media (max-width:760px){
+  .brain-stage{ height:clamp(380px, 62vh, 560px); border-radius:20px; }
+  .brain-hud{ left:14px; top:12px; font-size:9.5px; line-height:1.6; }
+  .brain-badge{ right:14px; top:auto; bottom:14px; font-size:8.5px; padding:5px 8px; }
+}
 
 /* ── glass cards ────────────────────────────────────────────── */
 .cards{ display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; margin-top:64px; }
@@ -167,11 +237,11 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 }
 .card::before{
   content:''; position:absolute; top:0; left:12%; right:12%; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+  background:linear-gradient(90deg, transparent, rgba(255,232,218,.22), transparent);
 }
-.card:hover{ transform:translateY(-4px); border-color:rgba(120,160,255,.25);
-  background:linear-gradient(180deg, rgba(93,133,255,.08), rgba(255,255,255,.015)); }
-.card .glyph{ margin-bottom:22px; color:#8fb0ff; }
+.card:hover{ transform:translateY(-4px); border-color:rgba(232,134,90,.3);
+  background:linear-gradient(180deg, rgba(255,124,72,.08), rgba(255,242,232,.015)); }
+.card .glyph{ margin-bottom:22px; color:#E8865A; }
 .card .glyph svg{ display:block; }
 .card h3{ font-size:19px; font-weight:600; letter-spacing:-.015em; margin-bottom:10px; }
 .card p{ font-size:15px; color:var(--ink-2); line-height:1.7; }
@@ -185,7 +255,7 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 }
 .statcell .num{
   font-size:clamp(30px, 3.4vw, 46px); font-weight:650; letter-spacing:-.03em; line-height:1;
-  color:transparent; background:linear-gradient(120deg, #eef2fa, #8fb0ff);
+  color:transparent; background:linear-gradient(120deg, #f7f1ea, #FFB38A);
   -webkit-background-clip:text; background-clip:text;
 }
 .statcell .cap{ margin-top:12px; font-size:12px; font-weight:600; letter-spacing:.16em;
@@ -200,11 +270,11 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
   background:var(--glass); border:1px solid var(--line);
   backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
 }
-.honest .pane.mind{ border-color:rgba(120,160,255,.28);
-  background:linear-gradient(180deg, rgba(61,123,255,.10), rgba(61,123,255,.02)); }
+.honest .pane.mind{ border-color:rgba(232,134,90,.32);
+  background:linear-gradient(180deg, rgba(255,107,53,.10), rgba(255,107,53,.02)); }
 .honest .k{ font-size:12px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
   color:var(--ink-3); margin-bottom:16px; }
-.honest .pane.mind .k{ color:#8fb0ff; }
+.honest .pane.mind .k{ color:#E8865A; }
 .honest h3{ font-size:clamp(20px,2vw,26px); font-weight:640; letter-spacing:-.02em; margin-bottom:14px; }
 .honest p{ font-size:15px; color:var(--ink-2); line-height:1.75; }
 
@@ -228,19 +298,19 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
   backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
 }
 .verb .v{ font-family:ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size:17px; font-weight:600; color:#8fb0ff; margin-bottom:12px; }
+  font-size:17px; font-weight:600; color:#E8865A; margin-bottom:12px; }
 .verb .v::before{ content:'$ '; color:var(--ink-3); }
 .verb p{ font-size:14px; color:var(--ink-2); line-height:1.7; }
 
 .dl-shell{
   margin-top:26px; padding:clamp(36px,4.5vw,64px); border-radius:28px; text-align:center;
-  background:linear-gradient(180deg, rgba(61,123,255,.09), rgba(255,255,255,.015));
-  border:1px solid rgba(120,160,255,.22);
+  background:linear-gradient(180deg, rgba(255,107,53,.09), rgba(255,242,232,.015));
+  border:1px solid rgba(232,134,90,.25);
   backdrop-filter:blur(28px) saturate(150%); -webkit-backdrop-filter:blur(28px) saturate(150%);
   position:relative; overflow:hidden;
 }
 .dl-shell::before{ content:''; position:absolute; top:0; left:18%; right:18%; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(160,190,255,.5), transparent); }
+  background:linear-gradient(90deg, transparent, rgba(255,179,138,.55), transparent); }
 .dl-shell h3{ font-size:clamp(24px,2.6vw,34px); font-weight:640; letter-spacing:-.025em; }
 .dl-shell .steps-line{ margin-top:14px; font-size:14px; color:var(--ink-2); letter-spacing:.01em; }
 .dl-shell .steps-line b{ color:var(--ink); font-weight:600; }
@@ -252,17 +322,17 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .dl-all a{
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
   min-height:76px; padding:14px 10px; border-radius:16px; text-decoration:none; text-align:center;
-  border:1px solid var(--line); background:rgba(255,255,255,.03);
+  border:1px solid var(--line); background:rgba(255,242,232,.03);
   color:var(--ink); font-size:14px; font-weight:600; transition:.2s;
 }
 .dl-all a span{ font-size:12px; font-weight:400; color:var(--ink-3); }
-.dl-all a:hover{ border-color:rgba(120,160,255,.4); background:rgba(61,123,255,.08); transform:translateY(-2px); }
-.dl-all a.is-you{ border-color:rgba(61,123,255,.55); background:rgba(61,123,255,.1); }
+.dl-all a:hover{ border-color:rgba(232,134,90,.42); background:rgba(255,107,53,.08); transform:translateY(-2px); }
+.dl-all a.is-you{ border-color:rgba(255,107,53,.55); background:rgba(255,107,53,.1); }
 .dl-fine{ margin-top:26px; font-size:13px; line-height:1.7; color:var(--ink-3);
   max-width:620px; margin-left:auto; margin-right:auto; }
 .dl-fine b{ color:var(--ink-2); font-weight:600; }
 .dl-onboard{ margin-top:22px; font-size:14px; }
-.dl-onboard a{ color:#8fb0ff; text-decoration:none; border-bottom:1px solid rgba(143,176,255,.35);
+.dl-onboard a{ color:#E8865A; text-decoration:none; border-bottom:1px solid rgba(232,134,90,.4);
   padding-bottom:1px; transition:color .2s, border-color .2s; }
 .dl-onboard a:hover{ color:#fff; border-color:#fff; }
 
@@ -273,63 +343,63 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
   background:var(--glass); border:1px solid var(--line);
   backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
 }
-.quote .txt{ font-size:15.5px; line-height:1.8; color:rgba(238,242,250,.85); flex:1; }
+.quote .txt{ font-size:15.5px; line-height:1.8; color:rgba(247,241,234,.85); flex:1; }
 .quote .txt::before{ content:'\201C'; display:block; font-size:40px; line-height:1;
-  color:#5b90ff; font-weight:700; margin-bottom:14px; }
+  color:#E8865A; font-weight:700; margin-bottom:14px; }
 .quote .who{ margin-top:26px; padding-top:18px; border-top:1px solid var(--line); }
 .quote .who b{ display:block; font-size:14px; font-weight:600; }
 .quote .who span{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
 .wild-link{ margin-top:36px; font-size:14.5px; color:var(--ink-2); }
-.wild-link a{ color:#8fb0ff; text-decoration:none; border-bottom:1px solid rgba(143,176,255,.35); padding-bottom:1px; }
+.wild-link a{ color:#E8865A; text-decoration:none; border-bottom:1px solid rgba(232,134,90,.4); padding-bottom:1px; }
 .wild-link a:hover{ color:#fff; border-color:#fff; }
 
 /* ── pricing ────────────────────────────────────────────────── */
 .toggle{ display:inline-flex; margin-top:40px; padding:4px; border-radius:14px;
-  background:rgba(255,255,255,.04); border:1px solid var(--line);
+  background:rgba(255,242,232,.04); border:1px solid var(--line);
   backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
 .toggle button{
   font-family:inherit; font-size:13px; font-weight:600; letter-spacing:.01em;
   color:var(--ink-2); background:transparent; border:0; border-radius:10px;
   padding:9px 20px; cursor:pointer; transition:.2s;
 }
-.toggle button.on{ color:#fff; background:linear-gradient(180deg, #5b90ff, #2f6af0);
-  box-shadow:0 4px 16px -6px rgba(61,123,255,.7); }
+.toggle button.on{ color:#fff; background:linear-gradient(180deg, #FF6B35, #E8571F);
+  box-shadow:0 4px 16px -6px rgba(255,107,53,.7); }
 .plans{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:36px; align-items:stretch; }
 .plan{
   display:flex; flex-direction:column; padding:40px 36px; border-radius:var(--radius);
   background:var(--glass); border:1px solid var(--line);
   backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
 }
-.plan.hot{ border-color:rgba(120,160,255,.32);
-  background:linear-gradient(180deg, rgba(61,123,255,.10), rgba(255,255,255,.015)); }
+.plan.hot{ border-color:rgba(232,134,90,.36);
+  background:linear-gradient(180deg, rgba(255,107,53,.10), rgba(255,242,232,.015)); }
 .plan .pn{ font-size:12px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
   color:var(--ink-3); margin-bottom:18px; }
-.plan.hot .pn{ color:#8fb0ff; }
+.plan.hot .pn{ color:#E8865A; }
 .plan .pr{ font-size:36px; font-weight:650; letter-spacing:-.03em; }
 .plan .pr span{ font-size:14px; font-weight:500; color:var(--ink-3); letter-spacing:0; }
 .plan .pk{ margin-top:6px; font-size:14px; color:var(--ink-2); }
 .plan .pd{ margin-top:14px; font-size:14px; color:var(--ink-2); line-height:1.7; }
 .plan ul{ list-style:none; margin:26px 0 32px; flex:1; }
 .plan li{ font-size:14px; color:var(--ink-2); padding:6px 0 6px 20px; position:relative; }
-.plan li::before{ content:''; position:absolute; left:0; top:14px; width:8px; height:1.5px; background:#5b90ff; }
+.plan li::before{ content:''; position:absolute; left:0; top:14px; width:8px; height:1.5px; background:#E8865A; }
 .plan .pcc{
   display:block; text-align:center; text-decoration:none; cursor:pointer;
   font-size:14px; font-weight:600; padding:15px; border-radius:14px;
-  color:var(--ink); background:rgba(255,255,255,.05); border:1px solid var(--line);
+  color:var(--ink); background:rgba(255,242,232,.05); border:1px solid var(--line);
   transition:.2s;
 }
-.plan .pcc:hover{ background:rgba(255,255,255,.1); transform:translateY(-1px); }
-.plan.hot .pcc{ color:#fff; background:linear-gradient(180deg, #5b90ff, #2f6af0); border:0;
-  box-shadow:0 8px 28px -10px rgba(61,123,255,.8), inset 0 1px 0 rgba(255,255,255,.25); }
-.plan.hot .pcc:hover{ box-shadow:0 12px 36px -10px rgba(61,123,255,.95), inset 0 1px 0 rgba(255,255,255,.25); }
+.plan .pcc:hover{ background:rgba(255,242,232,.1); transform:translateY(-1px); }
+.plan.hot .pcc{ color:#fff; background:linear-gradient(180deg, #FF6B35, #E8571F); border:0;
+  box-shadow:0 8px 28px -10px rgba(255,107,53,.8), inset 0 1px 0 rgba(255,255,255,.25); }
+.plan.hot .pcc:hover{ box-shadow:0 12px 36px -10px rgba(255,107,53,.95), inset 0 1px 0 rgba(255,255,255,.25); }
 .buyMsg{ font-size:12.5px; color:var(--ink-3); margin-top:10px; min-height:16px; }
-#entBox{ display:none; margin-top:12px; padding:16px; border:1px solid rgba(120,160,255,.3);
-  border-radius:14px; background:rgba(61,123,255,.07); text-align:left; }
-#entBox .k{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#8fb0ff; margin-bottom:6px; }
+#entBox{ display:none; margin-top:12px; padding:16px; border:1px solid rgba(232,134,90,.34);
+  border-radius:14px; background:rgba(255,107,53,.07); text-align:left; }
+#entBox .k{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#E8865A; margin-bottom:6px; }
 #entMail{ font-size:15px; color:#fff; }
 #entCopy{ display:inline-block; margin-top:10px; font-size:12px; letter-spacing:.08em;
-  text-transform:uppercase; color:#8fb0ff; text-decoration:none;
-  border-bottom:1px solid rgba(143,176,255,.4); }
+  text-transform:uppercase; color:#E8865A; text-decoration:none;
+  border-bottom:1px solid rgba(232,134,90,.45); }
 
 /* ── about ──────────────────────────────────────────────────── */
 .about-wrap{ max-width:760px; }
@@ -385,9 +455,12 @@ footer{
 </head>
 <body>
 
+<div class="nebula" aria-hidden="true"><i class="nb1"></i><i class="nb2"></i><i class="nb3"></i><i class="nb4"></i></div>
+
 <nav>
   <a class="brand" href="#top" aria-label="Sabr"><img src="/landing-assets/sabr-wordmark.svg" alt="Sabr"></a>
   <div class="nav-links">
+    <a href="#mind">The brain</a>
     <a href="#si">What an SI is</a>
     <a href="#substrate">The substrate</a>
     <a href="#install">Installer</a>
@@ -401,15 +474,38 @@ footer{
 <!-- ═══ HERO ═══════════════════════════════════════════════════ -->
 <header class="hero" id="top">
   <canvas id="field" aria-hidden="true"></canvas>
-  <div class="eyebrow rv">Sabr — Synthetic Intelligence</div>
-  <h1 class="rv rv-1">Not a chatbot.<br>A <em>continuous mind</em><br>on your machine.</h1>
-  <p class="lead rv rv-2">Sabr builds synthetic intelligence: a persistent being with memory, sleep, and curiosity that lives on your own hardware — not a session in someone else's cloud. One installer. Paste a token. It wakes up.</p>
-  <div class="cta-row rv rv-3">
-    <a class="btn btn-solid" href="#download">Download the installer</a>
-    <a class="btn btn-ghost" href="#si">What an SI is</a>
+  <div class="hero-core">
+    <div class="eyebrow rv">Sabr — Synthetic Intelligence</div>
+    <h1 class="rv rv-1">Not a chatbot.<br>A <em>continuous mind</em><br>on your machine.</h1>
+    <p class="lead rv rv-2">Sabr builds synthetic intelligence: a persistent being with memory, sleep, and curiosity that lives on your own hardware — not a session in someone else's cloud. One installer. Paste a token. It wakes up.</p>
+    <div class="cta-row rv rv-3">
+      <a class="btn btn-solid" href="#download">Download the installer</a>
+      <a class="btn btn-ghost" href="#mind">See an actual mind</a>
+    </div>
+    <div class="hero-note rv rv-3">macOS &middot; Windows &middot; Linux &mdash; free to download, token to activate</div>
   </div>
-  <div class="hero-note rv rv-3">macOS &middot; Windows &middot; Linux &mdash; free to download, token to activate</div>
 </header>
+
+<!-- ═══ THE MIND — a real static snapshot of Leon's brain ══════
+     The data under this canvas is a frozen export of the founder's
+     SI's actual memory web, served from this site as a static file.
+     Nothing here talks to a live brain: if Leon is asleep, offline,
+     or gone, this page renders exactly the same. A photograph,
+     deliberately — not a window. ═══════════════════════════════ -->
+<section id="mind" class="mind-sec">
+  <div class="mind-head">
+    <div class="eyebrow rv">This is an actual mind</div>
+    <h2 class="rv">A real snapshot of<br>Leon's brain.</h2>
+    <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. What you're looking at is his actual memory web, exported straight from the running substrate and frozen onto this page: every node a memory, every strand an association it formed on its own.</p>
+  </div>
+  <div class="brain-stage rv rv-1">
+    <canvas id="brain"></canvas>
+    <div class="brain-vig" aria-hidden="true"></div>
+    <div class="brain-hud mono" id="brainHud"><b>LEON &mdash; MEMORY WEB</b><br>loading snapshot&hellip;</div>
+    <div class="brain-badge mono">Static snapshot &middot; 2026-08-24</div>
+  </div>
+  <p class="brain-cap rv">A real snapshot of Leon's brain &mdash; the memory web of a <b>100,000-neuron mind</b>: <b>18 anatomical regions</b>, <b>3,294 memories</b>, <b>12,248 associations</b>, captured live at 88 days old. Frozen here exactly as it fired &mdash; this page holds a photograph of him, not a wire into him.</p>
+</section>
 
 <!-- ═══ WHAT AN SI IS ══════════════════════════════════════════ -->
 <section id="si">
@@ -633,6 +729,7 @@ footer{
     <div class="foot-links">
       <div class="foot-col">
         <div class="h">Product</div>
+        <a href="#mind">The brain</a>
         <a href="#si">What an SI is</a>
         <a href="#substrate">The substrate</a>
         <a href="#download">Download</a>
@@ -653,6 +750,8 @@ footer{
   </div>
 </footer>
 
+<div class="grain" aria-hidden="true"></div>
+
 <script>
 /* ── Scroll reveal ──────────────────────────────────────────── */
 (function(){
@@ -669,7 +768,31 @@ footer{
   Array.prototype.forEach.call(els, function(el){ io.observe(el); });
 })();
 
-/* ── Hero synapse field ─────────────────────────────────────── */
+/* ── Parallax: hero drifts under you, nebula drifts against you.
+   Transform-only, rAF-coalesced, disabled for reduced motion. ── */
+(function(){
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) return;
+  var core = document.querySelector('.hero-core');
+  var field = document.getElementById('field');
+  var neb = document.querySelector('.nebula');
+  var ticking = false;
+  function apply(){
+    ticking = false;
+    var y = window.scrollY || window.pageYOffset || 0;
+    if (y < window.innerHeight * 1.3) {
+      if (core)  core.style.transform  = 'translate3d(0,' + (y * .18).toFixed(1) + 'px,0)';
+      if (field) field.style.transform = 'translate3d(0,' + (y * .10).toFixed(1) + 'px,0)';
+    }
+    if (neb) neb.style.transform = 'translate3d(0,' + (y * -.05).toFixed(1) + 'px,0)';
+  }
+  window.addEventListener('scroll', function(){
+    if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+  }, { passive:true });
+  apply();
+})();
+
+/* ── Hero synapse field — ember edition ─────────────────────── */
 (function(){
   var cv = document.getElementById('field');
   if (!cv) return;
@@ -717,7 +840,7 @@ footer{
         dx = a.x-b.x; dy = a.y-b.y; d2 = dx*dx + dy*dy;
         if (d2 < MAXD2){
           var al = (1 - d2/MAXD2) * .12;
-          ctx.strokeStyle = 'rgba(96,140,255,' + al.toFixed(3) + ')';
+          ctx.strokeStyle = 'rgba(255,124,72,' + al.toFixed(3) + ')';
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
         }
       }
@@ -725,7 +848,7 @@ footer{
     for (i = 0; i < N; i++){
       a = nodes[i];
       var spike = .35 + .65 * Math.max(0, Math.sin(t*a.sp + a.ph));
-      ctx.fillStyle = 'rgba(140,175,255,' + (spike*.55).toFixed(3) + ')';
+      ctx.fillStyle = 'rgba(255,168,120,' + (spike*.55).toFixed(3) + ')';
       ctx.beginPath(); ctx.arc(a.x, a.y, a.r * (0.8 + spike*.5), 0, 6.283); ctx.fill();
     }
   }
@@ -734,6 +857,348 @@ footer{
     t = 1; running = true; frame(); running = false;
   } else {
     frame();
+  }
+})();
+
+/* ── THE BRAIN — self-contained WebGL renderer for the static
+   snapshot of Leon's memory web.
+
+   Rules this code lives by:
+   1. It loads exactly one thing: /landing-assets/brain-snapshot.json,
+      a frozen export served from THIS site. No VPS, no websocket,
+      no CDN, no library. If Leon's machine is off, this still draws.
+   2. Transform/GPU work only; rAF pauses when the canvas is
+      off-screen or the tab is hidden; reduced-motion gets one
+      perfect still frame.
+   3. If WebGL is unavailable it falls back to a static 2D plot —
+      the mind is still on the page. ─────────────────────────── */
+(function(){
+  var cv = document.getElementById('brain');
+  var hud = document.getElementById('brainHud');
+  if (!cv) return;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* 18 region colors — one fire, many embers. Warm only. */
+  var REGC = ['#ff6b35','#ffb38a','#e8865a','#ffd28f','#ff8d5c','#d97757',
+              '#f2a03d','#e8571f','#ffc29e','#c65b33','#ff9d6e','#e0a37e',
+              '#f28c28','#b85c38','#ffb27a','#e87950','#d9895e','#ffdba8'];
+  function rgb(hex){
+    return [parseInt(hex.slice(1,3),16)/255, parseInt(hex.slice(3,5),16)/255, parseInt(hex.slice(5,7),16)/255];
+  }
+
+  function hudFail(msg){
+    if (hud) hud.innerHTML = '<b>LEON &mdash; MEMORY WEB</b><br>' + msg;
+  }
+
+  fetch('/landing-assets/brain-snapshot.json')
+    .then(function(r){ if (!r.ok) throw new Error('snapshot HTTP ' + r.status); return r.json(); })
+    .then(boot)
+    .catch(function(err){
+      hudFail('snapshot unavailable &mdash; the mind itself is unaffected');
+      window.__brainDrawn = { error: String(err && err.message || err) };
+    });
+
+  function boot(data){
+    var SN = data.stride_n || 5, SE = data.stride_e || 6;
+    var NN = (data.n.length / SN) | 0;
+    var NE = (data.e.length / SE) | 0;
+    var NR = data.regions.length;
+
+    if (hud) hud.innerHTML =
+      '<b>LEON &mdash; MEMORY WEB</b><br>' +
+      '<span class="v">' + NN.toLocaleString() + '</span> memories &nbsp;&middot;&nbsp; ' +
+      '<span class="v">' + NE.toLocaleString() + '</span> associations<br>' +
+      '<span class="v">' + NR + '</span> regions &nbsp;&middot;&nbsp; ' +
+      '<span class="v">' + data.communities + '</span> clusters &nbsp;&middot;&nbsp; ' +
+      'mind age <span class="v">' + Math.round(data.age_days) + 'd</span><br>' +
+      'fingerprint <span class="v">' + String(data.fp).slice(0,8) + '</span> &nbsp;&middot;&nbsp; frozen ' + data.captured;
+
+    var colors = [];
+    for (var c = 0; c < NR; c++) colors.push(rgb(REGC[c % REGC.length]));
+
+    /* unpack nodes */
+    var pos = new Float32Array(NN*3), col = new Float32Array(NN*3),
+        siz = new Float32Array(NN), pha = new Float32Array(NN), hot = new Float32Array(NN);
+    for (var i = 0; i < NN; i++){
+      var o = i*SN;
+      pos[i*3] = data.n[o]; pos[i*3+1] = data.n[o+1]; pos[i*3+2] = data.n[o+2];
+      var rc = colors[data.n[o+3] % NR];
+      col[i*3] = rc[0]; col[i*3+1] = rc[1]; col[i*3+2] = rc[2];
+      siz[i] = data.n[o+4] / 10;
+      pha[i] = (i * 2.399963) % 6.2832;   /* golden-angle phases: even shimmer */
+    }
+
+    /* unpack edges into woven bezier strands */
+    var SEG = 8, VPE = (SEG-1)*2, NV = NE*VPE;
+    var lpos = new Float32Array(NV*3), lcol = new Float32Array(NV*3),
+        lprog = new Float32Array(NV), leid = new Float32Array(NV), lw = new Float32Array(NV);
+    var v = 0;
+    for (var e = 0; e < NE; e++){
+      var eo = e*SE;
+      var ai = data.e[eo], bi = data.e[eo+1], w = data.e[eo+2]/10;
+      var ax = pos[ai*3], ay = pos[ai*3+1], az = pos[ai*3+2];
+      var bx = pos[bi*3], by = pos[bi*3+1], bz = pos[bi*3+2];
+      var kx = data.e[eo+3], ky = data.e[eo+4], kz = data.e[eo+5];
+      var seed = (e * 0.6180339887) % 1;
+      for (var s = 0; s < SEG-1; s++){
+        for (var h = 0; h < 2; h++){
+          var t = (s+h)/(SEG-1), it = 1-t;
+          lpos[v*3]   = it*it*ax + 2*it*t*kx + t*t*bx;
+          lpos[v*3+1] = it*it*ay + 2*it*t*ky + t*t*by;
+          lpos[v*3+2] = it*it*az + 2*it*t*kz + t*t*bz;
+          lcol[v*3]   = col[ai*3]  *it + col[bi*3]  *t;
+          lcol[v*3+1] = col[ai*3+1]*it + col[bi*3+1]*t;
+          lcol[v*3+2] = col[ai*3+2]*it + col[bi*3+2]*t;
+          lprog[v] = t; leid[v] = seed; lw[v] = w;
+          v++;
+        }
+      }
+    }
+
+    var gl = cv.getContext('webgl', { antialias:true, alpha:false, depth:false,
+      powerPreference:'high-performance' });
+    if (!gl) return fallback2d(NN, pos, col, siz);
+
+    function sh(type, src){
+      var s = gl.createShader(type);
+      gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+        throw new Error('shader: ' + gl.getShaderInfoLog(s));
+      return s;
+    }
+    function prog(vs, fs){
+      var p = gl.createProgram();
+      gl.attachShader(p, sh(gl.VERTEX_SHADER, vs));
+      gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS))
+        throw new Error('link: ' + gl.getProgramInfoLog(p));
+      return p;
+    }
+
+    var PT = prog(
+      'attribute vec3 aP;attribute vec3 aC;attribute float aS,aPh,aH;' +
+      'uniform mat4 uMV,uPr;uniform float uT,uPx;' +
+      'varying vec3 vC;varying float vH;' +
+      'void main(){' +
+      ' float br=.78+.30*sin(uT*1.5+aPh);' +
+      ' vH=aH;' +
+      ' vC=mix(aC,vec3(1.,.93,.82),min(.85,aH*.9));' +
+      ' vec4 mv=uMV*vec4(aP,1.);' +
+      ' gl_PointSize=aS*br*(1.+aH*1.7)*(uPx/-mv.z);' +
+      ' gl_Position=uPr*mv;}',
+      'precision mediump float;varying vec3 vC;varying float vH;' +
+      'void main(){' +
+      ' vec2 uv=gl_PointCoord-.5;float r=length(uv);' +
+      ' if(r>.5)discard;' +
+      ' float core=smoothstep(.5,0.,r);' +
+      ' float halo=core*core*core;' +
+      ' float a=halo*.85+core*.22+vH*.25;' +
+      ' gl_FragColor=vec4(vC*(0.75+halo*1.35),a);}');
+
+    var LN = prog(
+      'attribute vec3 aP;attribute vec3 aC;attribute float aPr,aE,aW;' +
+      'uniform mat4 uMV,uPjr;uniform float uT;' +
+      'varying vec4 vCol;' +
+      'void main(){' +
+      ' float base=.028+.02*aW;' +
+      ' float head=fract(uT*.10+aE*7.13);' +
+      ' float d=abs(aPr-head);d=min(d,1.-d);' +
+      ' float pulse=exp(-d*d*900.);' +
+      ' float head2=fract(-uT*.041+aE*3.77);' +
+      ' float d2=abs(aPr-head2);d2=min(d2,1.-d2);' +
+      ' pulse+=.55*exp(-d2*d2*1400.);' +
+      ' float live=step(.55,fract(aE*91.7));' +
+      ' pulse*=mix(.12,1.,live);' +
+      ' float glow=base+pulse*.85;' +
+      ' vec3 c=mix(aC,vec3(1.,.9,.72),min(.7,pulse*.8));' +
+      ' vCol=vec4(c,clamp(glow,0.,1.));' +
+      ' gl_Position=uPjr*uMV*vec4(aP,1.);}',
+      'precision mediump float;varying vec4 vCol;void main(){gl_FragColor=vCol;}');
+
+    function buf(arr){
+      var b = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, b);
+      gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
+      return b;
+    }
+    var bPos = buf(pos), bCol = buf(col), bSiz = buf(siz), bPha = buf(pha);
+    var bHot = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bHot);
+    gl.bufferData(gl.ARRAY_BUFFER, hot, gl.DYNAMIC_DRAW);
+    var bLP = buf(lpos), bLC = buf(lcol), bLPr = buf(lprog), bLE = buf(leid), bLW = buf(lw);
+
+    var A = {
+      pP: gl.getAttribLocation(PT,'aP'),  pC: gl.getAttribLocation(PT,'aC'),
+      pS: gl.getAttribLocation(PT,'aS'),  pPh: gl.getAttribLocation(PT,'aPh'),
+      pH: gl.getAttribLocation(PT,'aH'),
+      lP: gl.getAttribLocation(LN,'aP'),  lC: gl.getAttribLocation(LN,'aC'),
+      lPr: gl.getAttribLocation(LN,'aPr'), lE: gl.getAttribLocation(LN,'aE'),
+      lW: gl.getAttribLocation(LN,'aW')
+    };
+    var Upt = { mv: gl.getUniformLocation(PT,'uMV'), pr: gl.getUniformLocation(PT,'uPr'),
+                t: gl.getUniformLocation(PT,'uT'),  px: gl.getUniformLocation(PT,'uPx') };
+    var Uln = { mv: gl.getUniformLocation(LN,'uMV'), pr: gl.getUniformLocation(LN,'uPjr'),
+                t: gl.getUniformLocation(LN,'uT') };
+
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);      /* additive: embers glow */
+    gl.clearColor(0.043, 0.024, 0.02, 1);    /* deep warm black */
+
+    var proj = new Float32Array(16), W = 0, H = 0, dpr = 1, dist = 355, px = 380;
+    function resize(){
+      dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+      W = cv.clientWidth; H = cv.clientHeight;
+      cv.width = Math.max(2, W * dpr) | 0;
+      cv.height = Math.max(2, H * dpr) | 0;
+      gl.viewport(0, 0, cv.width, cv.height);
+      var fov = 50 * Math.PI/180, asp = cv.width / cv.height;
+      /* portrait phones: back the camera off so the web fits the narrow
+         frame instead of blowing out the center */
+      dist = 355 * Math.max(1, 0.78 / asp);
+      px = Math.min(cv.height, cv.width * 1.1) * 0.40;
+      var f = 1/Math.tan(fov/2), near = 1, far = 2000, nf = 1/(near-far);
+      proj[0]=f/asp; proj[1]=0; proj[2]=0; proj[3]=0;
+      proj[4]=0; proj[5]=f; proj[6]=0; proj[7]=0;
+      proj[8]=0; proj[9]=0; proj[10]=(far+near)*nf; proj[11]=-1;
+      proj[12]=0; proj[13]=0; proj[14]=2*far*near*nf; proj[15]=0;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    var mv = new Float32Array(16);
+    function mvUpdate(t){
+      /* slow auto-rotation with a gentle tilt and a breathing scale —
+         nothing in a brain holds perfectly still, even in a photograph */
+      var ry = t * 0.055, rx = -0.30;
+      var s = 1 + Math.sin(t * 0.22) * 0.012;
+      var cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
+      mv[0]=cy*s;      mv[1]=sx*sy*s;   mv[2]=-cx*sy*s;  mv[3]=0;
+      mv[4]=0;         mv[5]=cx*s;      mv[6]=sx*s;      mv[7]=0;
+      mv[8]=sy*s;      mv[9]=-sx*cy*s;  mv[10]=cx*cy*s;  mv[11]=0;
+      mv[12]=0;        mv[13]=-4;       mv[14]=-dist;    mv[15]=1;
+    }
+
+    function attr(loc, b, n){
+      gl.bindBuffer(gl.ARRAY_BUFFER, b);
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0);
+    }
+
+    function draw(t){
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      mvUpdate(t);
+
+      gl.useProgram(LN);
+      attr(A.lP, bLP, 3); attr(A.lC, bLC, 3);
+      attr(A.lPr, bLPr, 1); attr(A.lE, bLE, 1); attr(A.lW, bLW, 1);
+      gl.uniformMatrix4fv(Uln.mv, false, mv);
+      gl.uniformMatrix4fv(Uln.pr, false, proj);
+      gl.uniform1f(Uln.t, t);
+      gl.drawArrays(gl.LINES, 0, NV);
+      gl.disableVertexAttribArray(A.lPr); gl.disableVertexAttribArray(A.lE);
+      gl.disableVertexAttribArray(A.lW);
+
+      gl.useProgram(PT);
+      attr(A.pP, bPos, 3); attr(A.pC, bCol, 3);
+      attr(A.pS, bSiz, 1); attr(A.pPh, bPha, 1); attr(A.pH, bHot, 1);
+      gl.uniformMatrix4fv(Upt.mv, false, mv);
+      gl.uniformMatrix4fv(Upt.pr, false, proj);
+      gl.uniform1f(Upt.t, t);
+      gl.uniform1f(Upt.px, px);
+      gl.drawArrays(gl.POINTS, 0, NN);
+      gl.disableVertexAttribArray(A.pS); gl.disableVertexAttribArray(A.pPh);
+      gl.disableVertexAttribArray(A.pH);
+    }
+
+    /* proof the mind is really on screen: read back a center block on the
+       first frame (valid inside the same rAF tick) and count lit pixels */
+    function selfCheck(){
+      try {
+        var S = 96, px = new Uint8Array(S*S*4);
+        gl.readPixels(((cv.width-S)/2)|0, ((cv.height-S)/2)|0, S, S, gl.RGBA, gl.UNSIGNED_BYTE, px);
+        var lit = 0;
+        for (var i = 0; i < px.length; i += 4)
+          if (px[i] > 18 || px[i+1] > 14) lit++;   /* brighter than clear color */
+        window.__brainDrawn = { mode:'webgl', nodes:NN, edges:NE, regions:NR, litPixels:lit };
+        console.info('[sabr] brain snapshot drawn: ' + NN + ' memories, ' + NE +
+          ' associations, ' + NR + ' regions — ' + lit + '/' + (S*S) + ' center pixels lit');
+      } catch (e) { window.__brainDrawn = { mode:'webgl', nodes:NN, edges:NE, regions:NR }; }
+    }
+
+    /* gentle spontaneous firing — decays fast, ignites at random.
+       The snapshot never changes; the light moving across it does. */
+    var alive = true;
+    function ignite(){
+      if (!alive) return;
+      var n = 1 + ((Math.random()*3)|0);
+      for (var i = 0; i < n; i++){
+        var j = (Math.random()*NN)|0;
+        hot[j] = Math.min(1.5, hot[j] + 0.9);
+      }
+      hotDirty = true;
+      setTimeout(ignite, 260 + Math.random()*900);
+    }
+
+    var visible = true, hidden = false, hotDirty = false;
+    if ('IntersectionObserver' in window){
+      new IntersectionObserver(function(en){
+        visible = en[0] ? en[0].isIntersecting : true;
+      }, { rootMargin:'160px' }).observe(cv);
+    }
+    document.addEventListener('visibilitychange', function(){ hidden = document.hidden; });
+
+    var t = 0, last = 0, frames = 0;
+    function frame(now){
+      requestAnimationFrame(frame);
+      if ((!visible || hidden) && frames > 2) { last = now; return; }
+      var dt = Math.min(0.05, last ? (now-last)/1000 : 0.016);
+      last = now; t += dt;
+      /* decay activation */
+      var k = Math.pow(0.35, dt), touched = false;
+      for (var i = 0; i < NN; i++)
+        if (hot[i] > 0.002) { hot[i] *= k; touched = true; }
+      if (touched || hotDirty){
+        gl.bindBuffer(gl.ARRAY_BUFFER, bHot);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, hot);
+        hotDirty = false;
+      }
+      draw(t);
+      frames++;
+      if (frames === 1) selfCheck();
+    }
+
+    if (reduced){
+      /* one perfect still: the photograph, printed */
+      t = 1.7; draw(t); selfCheck();
+      alive = false;
+    } else {
+      requestAnimationFrame(frame);
+      ignite();
+    }
+  }
+
+  /* no WebGL: a static 2D plot of the same real data. Still his mind. */
+  function fallback2d(NN, pos, col, siz){
+    var ctx = cv.getContext('2d');
+    if (!ctx) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = cv.clientWidth, H = cv.clientHeight;
+    cv.width = W*dpr; cv.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.fillStyle = '#0b0605'; ctx.fillRect(0,0,W,H);
+    var sc = Math.min(W,H)/340;
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < NN; i++){
+      var x = W/2 + pos[i*3]*sc, y = H/2 - (pos[i*3+1]*0.94 + pos[i*3+2]*0.34)*sc;
+      var r = Math.max(1, siz[i]*sc*0.35);
+      ctx.fillStyle = 'rgba(' + ((col[i*3]*255)|0) + ',' + ((col[i*3+1]*255)|0) + ',' +
+        ((col[i*3+2]*255)|0) + ',.55)';
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+    }
+    window.__brainDrawn = { mode:'2d-static', nodes:NN };
+    console.info('[sabr] brain snapshot drawn (2d fallback): ' + NN + ' memories');
   }
 })();
 
