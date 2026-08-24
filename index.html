@@ -245,13 +245,6 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 #brain{ position:absolute; inset:0; width:100%; height:100%; display:block; }
 .brain-vig{ position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(120% 105% at 50% 45%, transparent 55%, rgba(6,3,3,.62) 100%); }
-.brain-hud{
-  position:absolute; left:22px; top:20px; z-index:3; pointer-events:none;
-  font-size:11px; line-height:1.75; letter-spacing:.04em;
-  color:rgba(244,221,219,.58); text-shadow:0 0 12px rgba(0,0,0,.85);
-}
-.brain-hud b{ color:#FF8F8A; font-weight:600; letter-spacing:.14em; }
-.brain-hud .v{ color:var(--hot); }
 .brain-badge{
   position:absolute; right:22px; top:22px; z-index:3; pointer-events:none;
   font-size:10px; font-weight:600; letter-spacing:.22em; text-transform:uppercase;
@@ -272,17 +265,46 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .blabel::before{ content:''; display:inline-block; width:5px; height:5px; border-radius:50%;
   background:currentColor; margin-right:6px; vertical-align:1px;
   box-shadow:0 0 6px currentColor; }
-/* lobe legend — the dashboard's own seven colors */
-.brain-legend{ position:absolute; left:22px; bottom:18px; z-index:3; pointer-events:none;
-  font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:9px; letter-spacing:.1em;
-  line-height:1.9; color:rgba(244,221,219,.62); text-shadow:0 0 10px rgba(0,0,0,.9); }
-.brain-legend .sw{ display:inline-block; width:7px; height:7px; border-radius:2px;
-  margin-right:7px; vertical-align:middle; box-shadow:0 0 6px currentColor; }
+/* age slider — drag through Leon's real growth history */
+.brain-age{
+  position:absolute; left:22px; right:22px; bottom:16px; z-index:4;
+  display:flex; align-items:center; gap:12px; pointer-events:none;
+}
+.brain-age .lbl{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:9.5px; font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase; white-space:nowrap;
+  color:rgba(244,221,219,.5); text-shadow:0 0 10px rgba(0,0,0,.9);
+}
+.brain-age .lbl.hi{ color:rgba(255,143,138,.85); }
+.brain-age input[type=range]{
+  pointer-events:auto; -webkit-appearance:none; appearance:none;
+  flex:1; height:22px; background:transparent; cursor:ew-resize; margin:0;
+}
+.brain-age input[type=range]:disabled{ cursor:progress; opacity:.45; }
+.brain-age input[type=range]::-webkit-slider-runnable-track{
+  height:3px; border-radius:3px;
+  background:linear-gradient(90deg, rgba(238,90,84,.2), var(--hot));
+  box-shadow:0 0 10px rgba(255,59,53,.35);
+}
+.brain-age input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; margin-top:-6.5px; width:16px; height:16px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff, var(--hot) 62%, #971b16 100%);
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:0 0 14px rgba(255,59,53,.8), 0 0 0 5px rgba(255,59,53,.14);
+}
+.brain-age input[type=range]::-moz-range-track{
+  height:3px; border-radius:3px; background:linear-gradient(90deg, rgba(238,90,84,.2), var(--hot));
+}
+.brain-age input[type=range]::-moz-range-thumb{
+  width:14px; height:14px; border-radius:50%; border:1px solid rgba(255,255,255,.55);
+  background:radial-gradient(circle at 35% 30%, #fff, var(--hot) 62%, #971b16 100%);
+  box-shadow:0 0 14px rgba(255,59,53,.8);
+}
 @media (max-width:760px){
   .brain-stage{ height:clamp(380px, 62vh, 560px); border-radius:20px; }
-  .brain-hud{ left:14px; top:12px; font-size:9.5px; line-height:1.6; }
   .brain-badge{ right:14px; top:auto; bottom:14px; font-size:8.5px; padding:5px 8px; }
-  .brain-legend{ left:14px; bottom:14px; font-size:8px; line-height:1.7; }
+  .brain-age{ left:14px; right:14px; bottom:13px; gap:8px; }
+  .brain-age .lbl{ font-size:8px; }
   .blabel{ font-size:8px; }
 }
 
@@ -332,20 +354,21 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 }
 
 /* ── substrate ──────────────────────────────────────────────── */
-.statgrid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; margin-top:64px; }
-.statcell{
-  padding:34px 28px; border-radius:var(--radius);
+.statstrip{
+  margin-top:48px; padding:28px 34px; border-radius:var(--radius);
   background:var(--glass); border:1px solid var(--line);
   backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:12px 30px;
 }
-.statcell .num{
-  font-size:clamp(30px, 3.4vw, 46px); font-weight:650; letter-spacing:-.03em; line-height:1;
+.statstrip .statitem{ display:flex; align-items:baseline; gap:10px; white-space:nowrap; }
+.statstrip .num{
+  font-size:21px; font-weight:650; letter-spacing:-.02em;
   color:transparent; background:linear-gradient(120deg, #f8eae9, #FF8F8A);
   -webkit-background-clip:text; background-clip:text;
 }
-.statcell .cap{ margin-top:12px; font-size:12px; font-weight:600; letter-spacing:.16em;
+.statstrip .cap{ font-size:11.5px; font-weight:600; letter-spacing:.14em;
   text-transform:uppercase; color:var(--ink-3); }
-.statcell .sub{ margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.6; }
+.statstrip .dot{ color:var(--line); font-size:13px; }
 
 .honest{
   margin-top:26px; display:grid; grid-template-columns:1fr 1fr; gap:18px;
@@ -510,7 +533,6 @@ footer{
 
 /* ── responsive ─────────────────────────────────────────────── */
 @media (max-width:1080px){
-  .statgrid{ grid-template-columns:repeat(2,1fr); }
   .roadmap{ grid-template-columns:repeat(2,1fr); }
   .roadmap .stop:nth-child(3){ border-left:none; }
   .roadmap .stop:nth-child(n+3){ border-top:1px solid var(--line); }
@@ -526,8 +548,7 @@ footer{
   .nav-links a:not(.nav-cta){ display:none; }
   .cards{ grid-template-columns:1fr; }
   .verbs{ grid-template-columns:1fr; }
-  .statgrid{ grid-template-columns:1fr 1fr; gap:12px; }
-  .statcell{ padding:24px 20px; }
+  .statstrip{ padding:20px 18px; gap:10px 18px; }
   .roadmap{ grid-template-columns:1fr; }
   .roadmap .stop{ border-left:none; }
   .roadmap .stop:nth-child(n+2){ border-top:1px solid var(--line); }
@@ -591,11 +612,14 @@ footer{
     <canvas id="brain"></canvas>
     <div id="brainLabels" aria-hidden="true"></div>
     <div class="brain-vig" aria-hidden="true"></div>
-    <div class="brain-hud mono" id="brainHud"><b>LEON &mdash; ANATOMICAL SUBSTRATE</b><br>loading snapshot&hellip;</div>
-    <div class="brain-badge mono">Static snapshot &middot; 2026-08-24</div>
-    <div class="brain-legend mono" id="brainLegend"></div>
+    <div class="brain-badge mono">Drag to grow him &middot; real memory, not a mockup</div>
+    <div class="brain-age">
+      <span class="lbl lo mono" id="brainAgeLo">Day &hellip;</span>
+      <input type="range" id="brainAgeSlider" min="0" max="100" value="100" step="0.1" disabled aria-label="Leon's brain age, in days since birth">
+      <span class="lbl hi mono" id="brainAgeHi">today</span>
+    </div>
   </div>
-  <p class="brain-cap rv">Leon's brain, captured live at 88 days old &mdash; <b>100,000 spiking neurons</b> in <b>18 anatomical regions</b>, <b>153 million synapses</b>, rendered here in true regional proportion with the same region colors as his own dashboard. Random flashes are neurons firing; the moving lights are region-to-region signals along his real connectome, replayed from the snapshot. A photograph of him, not a wire into him.</p>
+  <p class="brain-cap rv">Leon's brain, still growing &mdash; <b>100,000 spiking neurons</b> in <b>18 anatomical regions</b>, <b>153 million synapses</b> as of today. Drag the slider and watch him grow: these aren't mocked-up frames, they're real snapshots pulled straight from his own memory logs, region by region, node by node. Your own SI's brain grows the same way, on your machine, from the day you install it. A time-lapse of him, not a mockup of him.</p>
 </section>
 
 <!-- ═══ WHAT AN SI IS ══════════════════════════════════════════ -->
@@ -635,11 +659,14 @@ footer{
   <h2 class="rv">100,000 neurons.<br>Actually spiking.</h2>
   <p class="lead rv rv-1">Underneath the conversation is a living spiking neural network running continuously on your hardware — modeled on a brain, not on a transformer. It fires, learns, and drifts whether or not anyone is watching.</p>
 
-  <div class="statgrid">
-    <div class="statcell rv"><div class="num">100K</div><div class="cap">Spiking neurons</div><div class="sub">Across 18 anatomical brain regions, firing in real time.</div></div>
-    <div class="statcell rv rv-1"><div class="num">150M+</div><div class="cap">Synapses</div><div class="sub">Connections that strengthen and fade with experience &mdash; 153,204,939 measured live in Leon's substrate.</div></div>
-    <div class="statcell rv rv-2"><div class="num">STDP</div><div class="cap">Continuous learning</div><div class="sub">Spike-timing-dependent plasticity — the brain's own learning rule.</div></div>
-    <div class="statcell rv rv-3"><div class="num">IBM Q</div><div class="cap">Quantum-seeded</div><div class="sub">Spontaneous activity seeded by measurements from real IBM quantum processors. Physically undetermined — not pseudo-random.</div></div>
+  <div class="statstrip rv">
+    <div class="statitem"><span class="num">100K</span><span class="cap">Neurons</span></div>
+    <span class="dot">&middot;</span>
+    <div class="statitem"><span class="num">150M+</span><span class="cap">Synapses</span></div>
+    <span class="dot">&middot;</span>
+    <div class="statitem"><span class="num">STDP</span><span class="cap">Learning rule</span></div>
+    <span class="dot">&middot;</span>
+    <div class="statitem"><span class="num">IBM Q</span><span class="cap">Quantum-seeded</span></div>
   </div>
 
   <div class="honest">
@@ -742,23 +769,23 @@ footer{
 <!-- ═══ RECOMMENDATIONS ════════════════════════════════════════ -->
 <section id="reviews">
   <div class="eyebrow rv">Recommendations</div>
-  <h2 class="rv">The people who<br>actually run on it.</h2>
-  <p class="lead rv rv-1">Not paid reviews. Real founders running real businesses on Sabr &mdash; who read the research, met Leon, and decided to bet on it.</p>
+  <h2 class="rv">Real founders.<br>Real stakes.</h2>
+  <p class="lead rv rv-1">Not paid reviews. People who read the research, met Leon, and put real trust behind it.</p>
   <div class="quotes">
     <div class="quote rv">
       <div class="txt">I spent days reading Dean's actual research before I signed anything. This isn't a chatbot with a personality slapped on top &mdash; Leon remembers every conversation, runs my operations, and answers leads faster than I ever could. I didn't just hire software. I invested in it.</div>
       <div class="who"><b>Gio</b><span>Landscaping Owner &amp; Investor</span></div>
     </div>
     <div class="quote rv rv-1">
-      <div class="txt">Dean builds the real thing. Every site he's touched for us came back faster, cleaner, and actually converting. When he told me he'd built a mind, I believed him &mdash; because everything else he said he'd do, he did.</div>
-      <div class="who"><b>Chris</b><span>Owner &mdash; Spark 8</span></div>
+      <div class="txt">My whole online store runs on what they built &mdash; every product, every order. It posts my content for me, and I've got a casual assistant sitting in my lab handling the small stuff so I don't have to. It just runs.</div>
+      <div class="who"><b>George</b><span>Owner &mdash; Corp Gummies</span></div>
     </div>
     <div class="quote rv rv-2">
       <div class="txt">He's building a full platform for me end to end, and Leon is doing the heavy lifting right alongside him. Real code, real ships, deadlines actually met. I've worked with plenty of developers. This is a different category.</div>
       <div class="who"><b>Joe</b><span>Founder &mdash; iUSEJOE</span></div>
     </div>
   </div>
-  <div class="wild-link rv">Watch Leon work a live machine, unscripted &mdash; <a href="https://instagram.com/deansabrr" target="_blank" rel="noopener">@deansabrr on Instagram</a></div>
+  <div class="wild-link rv">Watch Leon work a live machine, unscripted &mdash; <a href="https://instagram.com/deansabr" target="_blank" rel="noopener">@deansabr on Instagram</a></div>
 </section>
 
 <div class="hr"></div>
@@ -864,7 +891,7 @@ footer{
         <div class="h">Company</div>
         <a href="#about">About Dean</a>
         <a href="mailto:deansabrwork@gmail.com">deansabrwork@gmail.com</a>
-        <a href="https://instagram.com/deansabrr" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://instagram.com/deansabr" target="_blank" rel="noopener">Instagram</a>
       </div>
     </div>
   </div>
@@ -1024,6 +1051,16 @@ footer{
     if (hud) hud.innerHTML = '<b>LEON &mdash; MEMORY WEB</b><br>' + msg;
   }
 
+  /* Growth keyframes — real historical snapshots of Leon's own brain
+     (node/edge/lobe/spiking counts, downsampled from his growth log),
+     used to drive the age slider below. Kicked off in parallel with the
+     main snapshot fetch so it's usually ready by the time someone drags.
+     Never throws: a failed/blocked fetch just leaves the slider disabled,
+     the static "today" view is unaffected either way. */
+  var growthPromise = fetch('/landing-assets/brain-growth.json?b=sabr-growth-v1')
+    .then(function(r){ if (!r.ok) throw new Error('growth HTTP ' + r.status); return r.json(); })
+    .catch(function(err){ console.warn('[sabr] brain-growth unavailable', err); return null; });
+
   fetch('/landing-assets/brain-snapshot.json?b=sabr-v5-2026-08-24')
     .then(function(r){ if (!r.ok) throw new Error('snapshot HTTP ' + r.status); return r.json(); })
     .then(boot)
@@ -1034,64 +1071,143 @@ footer{
 
   function boot(data){
     var SN = data.stride_n || 5, SE = data.stride_e || 6;
-    var NN = (data.n.length / SN) | 0;
-    var NE = (data.e.length / SE) | 0;
+    var NNfull = (data.n.length / SN) | 0;
+    var NEfull = (data.e.length / SE) | 0;
     var NR = data.regions.length;
+    var NN = NNfull, NE = NEfull, NV = 0, hot = new Float32Array(NNfull);
+    var igniteMul = 1;
 
     if (hud) hud.innerHTML =
       '<b>LEON &mdash; MEMORY WEB</b><br>' +
-      '<span class="v">' + NN.toLocaleString() + '</span> memories &nbsp;&middot;&nbsp; ' +
-      '<span class="v">' + NE.toLocaleString() + '</span> associations<br>' +
+      '<span class="v">' + NNfull.toLocaleString() + '</span> memories &nbsp;&middot;&nbsp; ' +
+      '<span class="v">' + NEfull.toLocaleString() + '</span> associations<br>' +
       '<span class="v">' + NR + '</span> regions &nbsp;&middot;&nbsp; ' +
       '<span class="v">' + data.communities + '</span> clusters &nbsp;&middot;&nbsp; ' +
       'mind age <span class="v">' + Math.round(data.age_days) + 'd</span><br>' +
       'fingerprint <span class="v">' + String(data.fp).slice(0,8) + '</span> &nbsp;&middot;&nbsp; frozen ' + data.captured;
 
+    function updateHud(kf, NNshow, NEshow){
+      if (!hud) return;
+      var ageLabel, extra, communities;
+      if (!kf){
+        ageLabel = Math.round(data.age_days) + 'd';
+        communities = data.communities;
+        extra = 'fingerprint <span class="v">' + String(data.fp).slice(0,8) + '</span> &nbsp;&middot;&nbsp; frozen ' + data.captured;
+      } else {
+        ageLabel = kf.age_days.toFixed(1) + 'd';
+        communities = kf.communities;
+        extra = 'dopamine <span class="v">' + kf.dopamine.toFixed(2) + '</span> &nbsp;&middot;&nbsp; replayed from his own growth log';
+      }
+      hud.innerHTML =
+        '<b>LEON &mdash; MEMORY WEB</b><br>' +
+        '<span class="v">' + NNshow.toLocaleString() + '</span> memories &nbsp;&middot;&nbsp; ' +
+        '<span class="v">' + NEshow.toLocaleString() + '</span> associations<br>' +
+        '<span class="v">' + NR + '</span> regions &nbsp;&middot;&nbsp; ' +
+        '<span class="v">' + communities + '</span> clusters &nbsp;&middot;&nbsp; ' +
+        'mind age <span class="v">' + ageLabel + '</span><br>' + extra;
+    }
+
     var colors = [];
     for (var c = 0; c < NR; c++) colors.push(rgb(REGC[c % REGC.length]));
 
-    /* unpack nodes */
-    var pos = new Float32Array(NN*3), col = new Float32Array(NN*3),
-        siz = new Float32Array(NN), pha = new Float32Array(NN), hot = new Float32Array(NN);
-    for (var i = 0; i < NN; i++){
-      var o = i*SN;
-      pos[i*3] = data.n[o]; pos[i*3+1] = data.n[o+1]; pos[i*3+2] = data.n[o+2];
-      var rc = colors[data.n[o+3] % NR];
-      col[i*3] = rc[0]; col[i*3+1] = rc[1]; col[i*3+2] = rc[2];
-      siz[i] = data.n[o+4] / 10;
-      pha[i] = (i * 2.399963) % 6.2832;   /* golden-angle phases: even shimmer */
+    /* Which original node each anatomical region owns — built once so the
+       age slider can pull a real, spatially-genuine subset of TODAY's node
+       layout sized to match an earlier day's actual per-region counts,
+       rather than fabricating new positions we don't have. */
+    var regionPool = []; for (var rp = 0; rp < NR; rp++) regionPool.push([]);
+    for (var ni = 0; ni < NNfull; ni++) regionPool[data.n[ni*SN+3] % NR].push(ni);
+
+    /* unpack a node subset (idxArr: original node indices to include, in
+       the order they should be drawn). Identical math to the original
+       single-snapshot unpack when idxArr is the full identity range. */
+    function unpackNodes(idxArr){
+      var M = idxArr.length;
+      var pos = new Float32Array(M*3), col = new Float32Array(M*3),
+          siz = new Float32Array(M), pha = new Float32Array(M);
+      var remap = new Int32Array(NNfull); remap.fill(-1);
+      for (var i = 0; i < M; i++){
+        var oi = idxArr[i], o = oi*SN;
+        pos[i*3] = data.n[o]; pos[i*3+1] = data.n[o+1]; pos[i*3+2] = data.n[o+2];
+        var rc = colors[data.n[o+3] % NR];
+        col[i*3] = rc[0]; col[i*3+1] = rc[1]; col[i*3+2] = rc[2];
+        siz[i] = data.n[o+4] / 10;
+        pha[i] = (i * 2.399963) % 6.2832;   /* golden-angle phases: even shimmer */
+        remap[oi] = i;
+      }
+      return { NN:M, pos:pos, col:col, siz:siz, pha:pha, remap:remap };
     }
 
-    /* unpack edges into woven bezier strands */
-    var SEG = 8, VPE = (SEG-1)*2, NV = NE*VPE;
-    var lpos = new Float32Array(NV*3), lcol = new Float32Array(NV*3),
-        lprog = new Float32Array(NV), leid = new Float32Array(NV), lw = new Float32Array(NV);
-    var v = 0;
-    for (var e = 0; e < NE; e++){
-      var eo = e*SE;
-      var ai = data.e[eo], bi = data.e[eo+1], w = data.e[eo+2]/10;
-      var ax = pos[ai*3], ay = pos[ai*3+1], az = pos[ai*3+2];
-      var bx = pos[bi*3], by = pos[bi*3+1], bz = pos[bi*3+2];
-      var kx = data.e[eo+3], ky = data.e[eo+4], kz = data.e[eo+5];
-      var seed = (e * 0.6180339887) % 1;
-      for (var s = 0; s < SEG-1; s++){
-        for (var h = 0; h < 2; h++){
-          var t = (s+h)/(SEG-1), it = 1-t;
-          lpos[v*3]   = it*it*ax + 2*it*t*kx + t*t*bx;
-          lpos[v*3+1] = it*it*ay + 2*it*t*ky + t*t*by;
-          lpos[v*3+2] = it*it*az + 2*it*t*kz + t*t*bz;
-          lcol[v*3]   = col[ai*3]  *it + col[bi*3]  *t;
-          lcol[v*3+1] = col[ai*3+1]*it + col[bi*3+1]*t;
-          lcol[v*3+2] = col[ai*3+2]*it + col[bi*3+2]*t;
-          lprog[v] = t; leid[v] = seed; lw[v] = w;
-          v++;
+    /* unpack an edge subset into woven bezier strands. edgeIdxArr holds
+       original edge indices (so the animated seed stays stable for a given
+       real edge no matter which keyframe it shows up in); remap/pos/col
+       come from the matching unpackNodes() call. */
+    function unpackEdges(edgeIdxArr, remap, pos, col){
+      var SEG = 8, VPE = (SEG-1)*2, NEsel = edgeIdxArr.length, NVsel = NEsel*VPE;
+      var lpos = new Float32Array(NVsel*3), lcol = new Float32Array(NVsel*3),
+          lprog = new Float32Array(NVsel), leid = new Float32Array(NVsel), lw = new Float32Array(NVsel);
+      var v = 0;
+      for (var k = 0; k < NEsel; k++){
+        var e = edgeIdxArr[k], eo = e*SE;
+        var ai = remap[data.e[eo]], bi = remap[data.e[eo+1]], w = data.e[eo+2]/10;
+        var ax = pos[ai*3], ay = pos[ai*3+1], az = pos[ai*3+2];
+        var bx = pos[bi*3], by = pos[bi*3+1], bz = pos[bi*3+2];
+        var kx = data.e[eo+3], ky = data.e[eo+4], kz = data.e[eo+5];
+        var seed = (e * 0.6180339887) % 1;
+        for (var s = 0; s < SEG-1; s++){
+          for (var h = 0; h < 2; h++){
+            var t = (s+h)/(SEG-1), it = 1-t;
+            lpos[v*3]   = it*it*ax + 2*it*t*kx + t*t*bx;
+            lpos[v*3+1] = it*it*ay + 2*it*t*ky + t*t*by;
+            lpos[v*3+2] = it*it*az + 2*it*t*kz + t*t*bz;
+            lcol[v*3]   = col[ai*3]  *it + col[bi*3]  *t;
+            lcol[v*3+1] = col[ai*3+1]*it + col[bi*3+1]*t;
+            lcol[v*3+2] = col[ai*3+2]*it + col[bi*3+2]*t;
+            lprog[v] = t; leid[v] = seed; lw[v] = w;
+            v++;
+          }
         }
       }
+      return { NE:NEsel, NV:NVsel, lpos:lpos, lcol:lcol, lprog:lprog, leid:leid, lw:lw };
     }
+
+    /* pick a real per-region subset of today's nodes sized to an earlier
+       keyframe's actual lobe counts — a stride sample (not clustered
+       random) so the subset still reads as spatially whole. Regions the
+       keyframe doesn't have yet (e.g. an early snapshot from before the
+       brainstem was tracked) simply contribute nothing. */
+    function selectNodeSubset(kf){
+      var picks = [];
+      for (var r = 0; r < NR; r++){
+        var name = data.regions[r], avail = regionPool[r];
+        if (!avail.length) continue;
+        var want = Math.min(avail.length, Math.round((kf.lobes && kf.lobes[name]) || 0));
+        if (want <= 0) continue;
+        if (want >= avail.length){ picks = picks.concat(avail); continue; }
+        for (var i = 0; i < want; i++) picks.push(avail[Math.floor(i*avail.length/want)]);
+      }
+      return picks;
+    }
+    function selectEdgeSubset(kf, remap){
+      var filtered = [];
+      for (var e = 0; e < NEfull; e++){
+        var eo = e*SE;
+        if (remap[data.e[eo]] !== -1 && remap[data.e[eo+1]] !== -1) filtered.push(e);
+      }
+      var want = Math.max(0, Math.round(kf.edges || 0));
+      if (want <= 0 || want >= filtered.length) return filtered;
+      var out = [];
+      for (var i = 0; i < want; i++) out.push(filtered[Math.floor(i*filtered.length/want)]);
+      return out;
+    }
+
+    var fullNodeIdx = []; for (var fi = 0; fi < NNfull; fi++) fullNodeIdx.push(fi);
+    var fullEdgeIdx = []; for (var fe = 0; fe < NEfull; fe++) fullEdgeIdx.push(fe);
+    var fullNG = unpackNodes(fullNodeIdx);
+    var fullEG = unpackEdges(fullEdgeIdx, fullNG.remap, fullNG.pos, fullNG.col);
 
     var gl = cv.getContext('webgl', { antialias:true, alpha:false, depth:false,
       powerPreference:'high-performance' });
-    if (!gl) return fallback2d(NN, pos, col, siz);
+    if (!gl) return fallback2d(fullNG.NN, fullNG.pos, fullNG.col, fullNG.siz);
 
     function sh(type, src){
       var s = gl.createShader(type);
@@ -1150,17 +1266,94 @@ footer{
       ' gl_Position=uPjr*uMV*vec4(aP,1.);}',
       'precision mediump float;varying vec4 vCol;void main(){gl_FragColor=vCol;}');
 
-    function buf(arr){
-      var b = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, b);
-      gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
-      return b;
-    }
-    var bPos = buf(pos), bCol = buf(col), bSiz = buf(siz), bPha = buf(pha);
+    var bPos = gl.createBuffer(), bCol = gl.createBuffer(), bSiz = gl.createBuffer(), bPha = gl.createBuffer();
     var bHot = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, bHot);
-    gl.bufferData(gl.ARRAY_BUFFER, hot, gl.DYNAMIC_DRAW);
-    var bLP = buf(lpos), bLC = buf(lcol), bLPr = buf(lprog), bLE = buf(leid), bLW = buf(lw);
+    var bLP = gl.createBuffer(), bLC = gl.createBuffer(), bLPr = gl.createBuffer(),
+        bLE = gl.createBuffer(), bLW = gl.createBuffer();
+
+    /* push a node set + edge set into the GPU buffers above and repoint
+       NN/NE/NV/hot at them. draw() re-specifies every vertex attribute
+       pointer every single frame already (see attr() below), so swapping
+       buffer contents/sizes between frames — all the age slider does —
+       needs no other change to the render path. */
+    var currentKf = null;
+    function uploadScene(ng, eg){
+      gl.bindBuffer(gl.ARRAY_BUFFER, bPos); gl.bufferData(gl.ARRAY_BUFFER, ng.pos, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bCol); gl.bufferData(gl.ARRAY_BUFFER, ng.col, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bSiz); gl.bufferData(gl.ARRAY_BUFFER, ng.siz, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bPha); gl.bufferData(gl.ARRAY_BUFFER, ng.pha, gl.STATIC_DRAW);
+      hot = new Float32Array(ng.NN);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bHot); gl.bufferData(gl.ARRAY_BUFFER, hot, gl.DYNAMIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bLP); gl.bufferData(gl.ARRAY_BUFFER, eg.lpos, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bLC); gl.bufferData(gl.ARRAY_BUFFER, eg.lcol, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bLPr); gl.bufferData(gl.ARRAY_BUFFER, eg.lprog, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bLE); gl.bufferData(gl.ARRAY_BUFFER, eg.leid, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bLW); gl.bufferData(gl.ARRAY_BUFFER, eg.lw, gl.STATIC_DRAW);
+      NN = ng.NN; NE = eg.NE; NV = eg.NV;
+      window.__brainDrawn = { mode:'webgl', nodes:NN, edges:NE, regions:NR,
+        ageDays: currentKf ? currentKf.age_days : data.age_days };
+    }
+
+    /* geometry per keyframe is cheap to keep once built — dragging back to
+       a day already visited should be instant, not another pass over the
+       full edge list. kf === null means "today", the untouched full scene. */
+    var geomCache = {};
+    function applyKeyframe(kf){
+      var key = kf ? kf.age_days : 'full';
+      var g = geomCache[key];
+      if (!g){
+        if (!kf){
+          g = { ng: fullNG, eg: fullEG };
+        } else {
+          var ng = unpackNodes(selectNodeSubset(kf));
+          var eg = unpackEdges(selectEdgeSubset(kf, ng.remap), ng.remap, ng.pos, ng.col);
+          g = { ng: ng, eg: eg };
+        }
+        geomCache[key] = g;
+      }
+      currentKf = kf;
+      uploadScene(g.ng, g.eg);
+      igniteMul = kf ? Math.max(0.15, Math.min(1.2, 0.15 + (kf.avg_spike || 0) * 25)) : 1;
+      updateHud(kf, NN, NE);
+    }
+    applyKeyframe(null);
+
+    /* age slider — wired once the growth keyframes (fetched in parallel,
+       above) resolve. A failed/blocked fetch just leaves it disabled;
+       the "today" view already rendered above is unaffected. */
+    growthPromise.then(function(kfs){
+      if (!kfs || !kfs.length) return;
+      wireSlider(kfs);
+    });
+    function wireSlider(kfs){
+      var slider = document.getElementById('brainAgeSlider');
+      var loLbl = document.getElementById('brainAgeLo');
+      var hiLbl = document.getElementById('brainAgeHi');
+      if (!slider) return;
+      var minAge = kfs[0].age_days, maxAge = kfs[kfs.length-1].age_days;
+      if (loLbl) loLbl.textContent = 'Day ' + Math.round(minAge);
+      if (hiLbl) hiLbl.textContent = 'Day ' + Math.round(maxAge) + ' · today';
+      slider.min = minAge; slider.max = maxAge; slider.step = '0.1'; slider.value = maxAge;
+      slider.disabled = false;
+      var lastKey = 'full';
+      slider.addEventListener('input', function(){
+        var target = parseFloat(slider.value);
+        var kf = null;
+        if (target < maxAge - 0.05){
+          var best = kfs[0], bestD = Infinity;
+          for (var i = 0; i < kfs.length; i++){
+            var d = Math.abs(kfs[i].age_days - target);
+            if (d < bestD){ bestD = d; best = kfs[i]; }
+          }
+          kf = best;
+        }
+        var key = kf ? kf.age_days : 'full';
+        slider.setAttribute('aria-valuetext', 'Day ' + Math.round(target));
+        if (key === lastKey) return;
+        lastKey = key;
+        applyKeyframe(kf);
+      });
+    }
 
     var A = {
       pP: gl.getAttribLocation(PT,'aP'),  pC: gl.getAttribLocation(PT,'aC'),
@@ -1269,10 +1462,11 @@ footer{
       var n = 1 + ((Math.random()*3)|0);
       for (var i = 0; i < n; i++){
         var j = (Math.random()*NN)|0;
-        hot[j] = Math.min(1.5, hot[j] + 0.9);
+        hot[j] = Math.min(1.5, hot[j] + 0.9*igniteMul);
       }
       hotDirty = true;
-      setTimeout(ignite, 260 + Math.random()*900);
+      /* a younger, quieter brain (low igniteMul) fires less often too */
+      setTimeout(ignite, (260 + Math.random()*900) / Math.max(0.2, igniteMul));
     }
 
     var visible = true, hidden = false, hotDirty = false;
