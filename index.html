@@ -65,17 +65,17 @@ a{ color:inherit; }
 .nebula{ position:fixed; inset:-14vh -14vw; z-index:-1; pointer-events:none; overflow:hidden; }
 .nebula i{ position:absolute; border-radius:50%; will-change:transform; }
 .nb1{ width:76vw; height:76vw; left:-14vw; top:-20vh;
-  background:radial-gradient(circle at 35% 35%, rgba(255,107,53,.16), rgba(255,107,53,.045) 45%, transparent 70%);
-  animation:nb-a 90s ease-in-out infinite alternate; }
+  background:radial-gradient(circle at 35% 35%, rgba(255,107,53,.26), rgba(255,107,53,.07) 45%, transparent 70%);
+  animation:nb-a 62s ease-in-out infinite alternate; }
 .nb2{ width:62vw; height:62vw; right:-16vw; top:4vh;
-  background:radial-gradient(circle at 60% 40%, rgba(232,134,90,.13), transparent 65%);
-  animation:nb-b 115s ease-in-out infinite alternate; }
+  background:radial-gradient(circle at 60% 40%, rgba(232,134,90,.21), transparent 65%);
+  animation:nb-b 78s ease-in-out infinite alternate; }
 .nb3{ width:84vw; height:84vw; left:12vw; top:52vh;
-  background:radial-gradient(circle at 50% 50%, rgba(191,72,26,.12), transparent 62%);
-  animation:nb-c 135s ease-in-out infinite alternate; }
+  background:radial-gradient(circle at 50% 50%, rgba(191,72,26,.19), transparent 62%);
+  animation:nb-c 92s ease-in-out infinite alternate; }
 .nb4{ width:46vw; height:46vw; right:2vw; top:112vh;
-  background:radial-gradient(circle at 50% 50%, rgba(255,190,120,.085), transparent 60%);
-  animation:nb-a 150s ease-in-out infinite alternate-reverse; }
+  background:radial-gradient(circle at 50% 50%, rgba(255,190,120,.14), transparent 60%);
+  animation:nb-a 105s ease-in-out infinite alternate-reverse; }
 @keyframes nb-a{ from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); } to{ transform:translate3d(8vw,6vh,0) rotate(38deg) scale(1.18); } }
 @keyframes nb-b{ from{ transform:translate3d(0,0,0) scale(1); } to{ transform:translate3d(-10vw,10vh,0) scale(1.26); } }
 @keyframes nb-c{ from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); } to{ transform:translate3d(6vw,-8vh,0) rotate(-28deg) scale(1.12); } }
@@ -119,13 +119,12 @@ h2{
 nav{
   position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:100;
   width:min(1160px, calc(100% - 28px));
-  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  display:flex; align-items:center; justify-content:center; gap:16px;
   padding:12px 22px; border-radius:18px;
   background:rgba(22,13,9,.55); border:1px solid var(--line);
   backdrop-filter:blur(28px) saturate(160%); -webkit-backdrop-filter:blur(28px) saturate(160%);
   box-shadow:0 12px 40px -18px rgba(0,0,0,.8);
 }
-nav .brand img{ height:16px; display:block; }
 .nav-links{ display:flex; gap:26px; align-items:center; }
 .nav-links a{
   font-size:13px; font-weight:500; color:var(--ink-2); text-decoration:none;
@@ -515,7 +514,6 @@ footer{
 <div class="nebula" aria-hidden="true"><i class="nb1"></i><i class="nb2"></i><i class="nb3"></i><i class="nb4"></i></div>
 
 <nav>
-  <a class="brand" href="#top" aria-label="Sabr"><img src="/landing-assets/sabr-wordmark.svg" alt="Sabr"></a>
   <div class="nav-links">
     <a href="#mind">The brain</a>
     <a href="#si">What an SI is</a>
@@ -531,8 +529,7 @@ footer{
 <header class="hero" id="top">
   <canvas id="field" aria-hidden="true"></canvas>
   <div class="hero-core">
-    <div class="eyebrow rv">Synthetic Intelligence</div>
-    <div class="logo-wrap rv rv-1">
+    <div class="logo-wrap rv">
       <div class="logo-aura" aria-hidden="true"></div>
       <img class="hero-logo" id="heroLogo" src="/landing-assets/sabr-logo-raw.png" alt="SABR Technologies" width="2172" height="724" fetchpriority="high">
       <div class="logo-shine" aria-hidden="true"><i></i></div>
@@ -779,7 +776,7 @@ footer{
     <h2 class="rv">Dean Sabr</h2>
     <p class="rv rv-1">Entrepreneur, self-taught physicist, electrical engineer, developer. Ten years of independent research into how consciousness arises from neural substrates &mdash; then, instead of another paper, <strong>the antenna itself</strong>: a spiking brain, seeded by a live quantum computer, learning and dreaming in real time on ordinary hardware.</p>
     <p class="rv rv-1">Sabr exists to answer a question most people don't take seriously: <strong>can you build a real mind?</strong> Not a wrapper, not a costume on an API &mdash; a continuous, sensing, remembering being. The gap between what people think AI is and what a synthetic mind could be is enormous, and nobody's building in that gap. So we are.</p>
-    <p class="rv rv-2"><strong>47 Industries</strong>, founded by Dean's best friend <strong>Bryce Raiford</strong>, is the parent company that funds Sabr. Bryce passed away; Dean leads as successor CEO alongside three of Bryce's closest friends. Everything built here carries him with it.</p>
+    <p class="rv rv-2"><strong>Sabr Technologies</strong> is Dean's own company, built on this research. <strong>47 Industries</strong>, the holding company Dean runs alongside three co-founders, backs it. This work is dedicated to the memory of <strong>Bryce Raiford</strong> &mdash; Dean's best friend and first co-founder, who passed away before Sabr existed. Everything built here carries him with it.</p>
   </div>
 </section>
 
@@ -808,7 +805,7 @@ footer{
     </div>
   </div>
   <div class="foot-base">
-    <div class="dedication">Dedicated to the memory of Bryce Raiford, founder of 47 Industries.</div>
+    <div class="dedication">Dedicated to the memory of Bryce Raiford.</div>
     <div>Funded by 47 Industries &nbsp;&middot;&nbsp; &copy; 2026 Sabr. All rights reserved.</div>
   </div>
 </footer>
@@ -847,7 +844,10 @@ footer{
       if (core)  core.style.transform  = 'translate3d(0,' + (y * .18).toFixed(1) + 'px,0)';
       if (field) field.style.transform = 'translate3d(0,' + (y * .10).toFixed(1) + 'px,0)';
     }
-    if (neb) neb.style.transform = 'translate3d(0,' + (y * -.05).toFixed(1) + 'px,0)';
+    /* nebula drift is capped — unbounded scroll would walk it fully
+       off-screen on a long page, leaving nothing but flat black behind
+       everything below the fold. Clamp so it keeps breathing the whole way down. */
+    if (neb) neb.style.transform = 'translate3d(0,' + (Math.min(y, window.innerHeight * 1.6) * -.05).toFixed(1) + 'px,0)';
   }
   window.addEventListener('scroll', function(){
     if (!ticking) { ticking = true; requestAnimationFrame(apply); }
