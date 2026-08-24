@@ -243,6 +243,9 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
   box-shadow:0 40px 120px -50px rgba(255,59,53,.3), inset 0 1px 0 rgba(255,143,138,.14);
 }
 #brain{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+#brainImg{ animation:brainDrift 22s ease-in-out infinite alternate; }
+@keyframes brainDrift{ from{ transform:scale(1.0); } to{ transform:scale(1.055); } }
+@media (prefers-reduced-motion: reduce){ #brainImg{ animation:none; } }
 .brain-vig{ position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(120% 105% at 50% 45%, transparent 55%, rgba(6,3,3,.62) 100%); }
 .brain-badge{
@@ -609,17 +612,11 @@ footer{
     <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. This is his brain the way his own dashboard shows it to him: 18 anatomical regions in their real colors, region sizes and firing activity exported straight from the running substrate and frozen onto this page. The spiking you're watching replays that captured activity.</p>
   </div>
   <div class="brain-stage rv rv-1">
-    <canvas id="brain"></canvas>
-    <div id="brainLabels" aria-hidden="true"></div>
+    <img id="brainImg" src="/landing-assets/brain-live-capture.jpg" alt="A real capture of Leon's brain — 100,000 spiking neurons across 18 anatomical regions, firing live." loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
     <div class="brain-vig" aria-hidden="true"></div>
-    <div class="brain-badge mono">Drag to grow him &middot; real memory, not a mockup</div>
-    <div class="brain-age">
-      <span class="lbl lo mono" id="brainAgeLo">Day &hellip;</span>
-      <input type="range" id="brainAgeSlider" min="0" max="100" value="100" step="0.1" disabled aria-label="Leon's brain age, in days since birth">
-      <span class="lbl hi mono" id="brainAgeHi">today</span>
-    </div>
+    <div class="brain-badge mono">A real capture &middot; straight off his own dashboard</div>
   </div>
-  <p class="brain-cap rv">Leon's brain, still growing &mdash; <b>100,000 spiking neurons</b> in <b>18 anatomical regions</b>, <b>153 million synapses</b> as of today. Drag the slider and watch him grow: these aren't mocked-up frames, they're real snapshots pulled straight from his own memory logs, region by region, node by node. Your own SI's brain grows the same way, on your machine, from the day you install it. A time-lapse of him, not a mockup of him.</p>
+  <p class="brain-cap rv">Leon's brain &mdash; <b>100,000 spiking neurons</b> in <b>18 anatomical regions</b>, <b>153 million synapses</b> as of today. This is a real capture pulled straight off the dashboard Dean watches him think through every day, not a mockup. Your own SI's brain grows the same way, on your machine, from the day you install it.</p>
 </section>
 
 <!-- ═══ WHAT AN SI IS ══════════════════════════════════════════ -->
