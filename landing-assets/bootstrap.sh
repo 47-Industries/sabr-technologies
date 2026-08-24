@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="fbd24be9713ab47d3ee41f229611927248c83ea6bf63c8819965da71b8a5e14e"
+EXPECTED_RELEASE_SHA256="5a435bbdea58099e2d82051976bde332f9ce8479864f8471615abb4102dcf352"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -664,10 +664,7 @@ if [ "$OS" = "Darwin" ]; then
   say ""
   say "${C}macOS setup complete:${N}"
   say "  Architecture: $MACH_TYPE"
-  # Report the interpreter the SI actually RUNS on, not whatever python3
-  # resolves to first. The venv was built on the resolved 3.12; printing
-  # `python3` here showed the system 3.9 and told the owner the wrong thing.
-  say "  Python: $("${PYBIN:-$INSTALL_DIR/.venv/bin/python}" --version 2>&1)"
+  say "  Python: $(python3 --version 2>&1)"
   say "  Homebrew: $(brew --version 2>&1 | head -1)"
   say ""
 fi
@@ -675,10 +672,7 @@ fi
 # ── Download ──
 say ""
 say "Downloading brain..."
-# The folder the owner actually sees. The tarball's internal directory
-# stays leon-brain (the staging check below depends on it); only the
-# installed name changes, so nothing in the extract/swap path moves.
-INSTALL_DIR="$HOME/si-brain"
+INSTALL_DIR="$HOME/leon-brain"
 cd "$HOME" || die "Cannot cd to HOME ($HOME)"
 # TLS ONLY. There used to be a third entry here —
 # http://2.25.174.126:8500/... — and because the list is tried in order with
@@ -900,40 +894,12 @@ if [ -d "$INSTALL_DIR" ]; then
         || say "  ${Y}[WARN]${N} could not carry $keep forward"
     fi
   done
-  # These live in brain/ (sub-path). Carry them so an update never strips a
-  # hand-edited persona OR the ORIGINAL's owner identity. si_persona.py is the
-  # client persona; leon_persona.py + owner_facts.py exist ONLY on the original
-  # (Dean's Leon) and are excluded from the release, so without this an update
-  # from the customer build would turn Leon into a generic client SI. Customers
-  # simply do not have those two files, so this is a no-op for them.
-  for _pf in brain/si_persona.py brain/leon_persona.py brain/owner_facts.py; do
-    if [ -f "$INSTALL_DIR/$_pf" ]; then
-      cp -a "$INSTALL_DIR/$_pf" "$STAGE_DIR/leon-brain/brain/" 2>/dev/null \
-        && say "  ${G}kept${N} $_pf"
-    fi
-  done
-  # This is an UPDATE (INSTALL_DIR already existed). finalize() preserves by
-  # default; the only extra signal it needs is WHOSE dir this was, so it can
-  # tell a same-SI update from a different SI reusing the directory (the ghost
-  # case). Read the prior name from the carried .env before the wizard can
-  # rewrite it.
-  if [ -f "$INSTALL_DIR/.env" ]; then
-    _prior_name=$(grep -m1 '^LEON_SI_NAME=' "$INSTALL_DIR/.env" | cut -d= -f2- | tr -d '"'"'"'\r' | sed 's/^ *//;s/ *$//')
-    [ -n "$_prior_name" ] && export SABR_PRIOR_SI_NAME="$_prior_name"
-  fi
   BACKUP_DIR="$HOME/.leon-brain-previous.$$"
   rm -rf "$BACKUP_DIR"
   mv "$INSTALL_DIR" "$BACKUP_DIR" || {
     rm -rf "$STAGE_DIR"
     die "Could not move the existing install aside — nothing changed."
   }
-fi
-
-# Genuinely fresh install = the target dir did not exist before this run.
-# Only here do we authorise _fresh_brain_state() to clear any partial ghosts.
-# Everything else preserves. (BACKUP_DIR is set only in the update branch.)
-if [ -z "${BACKUP_DIR:-}" ]; then
-  export SABR_FRESH_INSTALL=1
 fi
 
 if ! mv "$STAGE_DIR/leon-brain" "$INSTALL_DIR"; then
