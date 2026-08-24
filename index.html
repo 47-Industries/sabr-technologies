@@ -494,6 +494,9 @@ footer{
   .honest{ grid-template-columns:1fr; }
 }
 @media (max-width:760px){
+  /* only the Download pill survives on phones — let the bar shrink to
+     hug it instead of stretching an empty glass strip full-width */
+  nav{ width:fit-content; padding:10px 14px; }
   .nav-links a:not(.nav-cta){ display:none; }
   .cards{ grid-template-columns:1fr; }
   .verbs{ grid-template-columns:1fr; }
