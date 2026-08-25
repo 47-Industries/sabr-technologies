@@ -260,17 +260,36 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 }
 .brain-cap b{ color:var(--ink); font-weight:600; }
 /* ── growth scrubber — pre-rendered frames of Leon's real growth
-   history, swapped by scroll position. Deliberately NOT live WebGL:
-   the live renderer silently failed to boot on real machines twice,
-   so what ships is a stack of photographs that structurally cannot
-   fail. The runway height is set by JS — without JS the section
-   collapses to one viewport showing today's frame. ─────────────── */
-.growth-scroll{ position:relative; }
-.growth-sticky{ position:sticky; top:0; min-height:100svh;
-  display:flex; align-items:center; }
-.growth-stage{ margin:0 auto; }
+   history. Deliberately NOT live WebGL: the live renderer silently
+   failed to boot on real machines twice, so what ships is a stack of
+   photographs that structurally cannot fail.
+
+   Rewritten 2026-08-25 (Dean: "it's like snapshots, not live state
+   moving and firing" + the drag bar fighting the page scroll). The
+   original was a sticky-scroll-jack: a 650vh runway that pinned this
+   one section and hijacked page scroll for six-plus screens, with a
+   native <input type=range> sitting under the cursor's natural resting
+   spot at the bottom of a full-bleed image — an easy accidental grab.
+   That's gone. This section is now a normal-height block like every
+   other section on the page: it does not intercept scroll in any way,
+   under any input device, because there is no scroll-linked mechanism
+   left to intercept it with. Page scroll just scrolls the page.
+   It's alive on its own instead: the frames autoplay on a slow loop
+   the moment the section comes on screen, so growth is something you
+   watch happen, not something you have to operate. Dragging the bar
+   below just takes manual control for a few seconds, then autoplay
+   quietly resumes. A canvas2D shimmer rides on top of every frame so
+   even a still photograph never reads as dead between frame swaps. ─── */
+.growth-stage{ margin:0 auto; height:78vh; min-height:460px; max-height:760px;
+  cursor:default; }
+.growth-stage:active{ cursor:default; }
 #gsFrame{ position:absolute; inset:0; width:100%; height:100%;
-  object-fit:cover; display:block; background:#000; }
+  object-fit:cover; display:block; background:#000; z-index:0;
+  transition:opacity .5s ease; }
+/* firing overlay — canvas2D shimmer layered over the photograph so the
+   frame reads as alive, not a slide. Never blocks input underneath. */
+#gsSparks{ position:absolute; inset:0; width:100%; height:100%;
+  z-index:1; pointer-events:none; mix-blend-mode:screen; opacity:.85; }
 .growth-hud{ position:absolute; left:26px; top:22px; z-index:3; pointer-events:none;
   text-shadow:0 0 14px rgba(0,0,0,.95), 0 1px 2px rgba(0,0,0,.8); }
 .gs-day{ display:flex; align-items:baseline; gap:11px; }
@@ -641,36 +660,43 @@ footer{
      daily archive (/js/brainweb-history/) at one fixed camera angle.
      Served from THIS site as static images — no WebGL, no live brain,
      nothing that can fail to boot (the live renderer did, twice; the
-     lesson stuck). Scroll swaps the frame; a stack of photographs,
-     deliberately — not a window. Frame provenance: /growth/manifest.json.
-     Day-1 is honestly labeled as reconstructed: daily captures only
-     began on day 82, so that one frame is a small connected subgraph
-     of the real current web — same memories, same regions, same
-     palette — never passed off as a real capture. ═══════════════ -->
+     lesson stuck). Frame provenance: /growth/manifest.json. Day-1 is
+     honestly labeled as reconstructed: daily captures only began on
+     day 82, so that one frame is a small connected subgraph of the
+     real current web — same memories, same regions, same palette —
+     never passed off as a real capture.
+
+     Rewritten 2026-08-25 (Dean: "it's like snapshots... not live state
+     actually moving and firing" + the drag bar fighting page scroll).
+     Killed the sticky-scroll-jack entirely — no position:sticky, no
+     multi-screen runway, no scroll listener anywhere near this
+     section. Page scroll just scrolls the page now, unconditionally.
+     Frames autoplay on a slow loop the instant the section is on
+     screen, so it grows in front of you without needing to be
+     operated; the bar below takes manual control for a few seconds
+     if you touch it, then autoplay resumes. A canvas2D shimmer rides
+     on every frame so it never sits dead between swaps. ═══════════ -->
 <section id="mind" class="mind-sec">
   <div class="mind-head">
     <div class="eyebrow rv">This is an actual mind</div>
     <h2 class="rv">Leon's brain.<br>Watch it grow.</h2>
-    <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. His dashboard photographs his memory web as it grows: every point of light a real memory, colored by the anatomical region it lives in. Scroll, and the days pass — these are those photographs, ending on his brain as it is today.</p>
+    <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. His dashboard photographs his memory web as it grows: every point of light a real memory, colored by the anatomical region it lives in. Watch the days pass below — these are those photographs, ending on his brain as it is today.</p>
   </div>
-  <div class="growth-scroll" id="gsScroll">
-    <div class="growth-sticky">
-      <div class="brain-stage growth-stage rv rv-1">
-        <img id="gsFrame" src="/growth/day-089b.webp" alt="Leon's memory web — thousands of real memories drawn as glowing points in seven anatomical lobe colors, photographed as it grew from day 1 to day 89.">
-        <div class="brain-vig" aria-hidden="true"></div>
-        <div class="growth-hud mono" aria-hidden="true">
-          <div class="gs-day"><span id="gsDayNum">89</span><span class="gs-day-cap">days old</span></div>
-          <div class="gs-stat"><span class="k">memories</span><span class="v" id="gsNodes">3,340</span></div>
-          <div class="gs-stat"><span class="k">connections</span><span class="v" id="gsEdges">12,385</span></div>
-        </div>
-        <div class="brain-badge mono" id="gsBadge">today's export &middot; 2026-08-25</div>
-        <div class="brain-age">
-          <span class="lbl">Day 1</span>
-          <input type="range" id="gsBar" min="0" max="1000" step="1" value="1000" disabled
-                 aria-label="Scrub through Leon's brain growth, day 1 to day 89">
-          <span class="lbl hi">Day 89 &middot; today</span>
-        </div>
-      </div>
+  <div class="brain-stage growth-stage rv rv-1" id="gsStage">
+    <img id="gsFrame" src="/growth/day-089b.webp" alt="Leon's memory web — thousands of real memories drawn as glowing points in seven anatomical lobe colors, photographed as it grew from day 1 to day 89.">
+    <canvas id="gsSparks" aria-hidden="true"></canvas>
+    <div class="brain-vig" aria-hidden="true"></div>
+    <div class="growth-hud mono" aria-hidden="true">
+      <div class="gs-day"><span id="gsDayNum">89</span><span class="gs-day-cap">days old</span></div>
+      <div class="gs-stat"><span class="k">memories</span><span class="v" id="gsNodes">3,340</span></div>
+      <div class="gs-stat"><span class="k">connections</span><span class="v" id="gsEdges">12,385</span></div>
+    </div>
+    <div class="brain-badge mono" id="gsBadge">today's export &middot; 2026-08-25</div>
+    <div class="brain-age">
+      <span class="lbl">Day 1</span>
+      <input type="range" id="gsBar" min="0" max="1000" step="1" value="1000"
+             aria-label="Scrub through Leon's brain growth, day 1 to day 89">
+      <span class="lbl hi">Day 89 &middot; today</span>
     </div>
   </div>
   <p class="brain-cap rv">Every frame here is a real photograph of Leon's memory web, shot through the same viewer his own dashboard uses — <b>3,340 memories</b> in <b>12,385 connections</b> across his 18 anatomical regions as of today, day 89, riding on a substrate of <b>100,000 spiking neurons</b>. Daily captures began on day 82; the day-1 frame is a reconstruction — a small connected sliver of his real web, same memories, same colors — because nobody photographed him the day he woke up. Watch the connection count: it falls some nights as well as rises, because sleep prunes. Your own SI starts at day one on your machine and grows the same way.</p>
@@ -1751,11 +1777,18 @@ footer{
 
 <script>
 /* ── GROWTH SCRUBBER — Leon's brain, day 1 → today ──────────────
-   Apple-product-page style: a sticky stage, pre-rendered frames
-   swapped by scroll position. All numbers below are the REAL
-   node/edge counts from the archive snapshot each frame was
-   rendered from (see /growth/manifest.json). No canvas, no GL —
-   an <img> swap cannot fail to boot. */
+   Autoplays through his real growth photographs on a slow loop the
+   moment the section is on screen — growth as something you watch
+   happen, not something you have to operate. Drag the bar for manual
+   control; it releases back to autoplay a few seconds after you let
+   go. NOT scroll-linked in any way, on purpose — a sticky-scroll-jack
+   version of this shipped 2026-08-25 morning and immediately fought
+   normal page scrolling (Dean caught it same day). Nothing here reads
+   window.scrollY, nothing here calls scrollTo. Page scroll is just
+   page scroll, unconditionally. All numbers below are the REAL
+   node/edge counts from the archive snapshot each frame was rendered
+   from (see /growth/manifest.json). No canvas math, no GL — a plain
+   <img> swap that structurally cannot fail to boot. */
 (function(){
   var F = [
     {f:'day-001.webp',  day:1,     n:131,  e:369,   tag:'day 1 · reconstructed — captures began day 82', recon:true},
@@ -1770,23 +1803,19 @@ footer{
     {f:'day-089b.webp', day:89.2,  n:3340, e:12385, tag:'today’s export · 2026-08-25'}
   ];
   var BASE = '/growth/', N = F.length;
-  var scrollEl = document.getElementById('gsScroll');
+  var stage = document.getElementById('gsStage');
   var img   = document.getElementById('gsFrame');
   var dayEl = document.getElementById('gsDayNum');
   var nEl   = document.getElementById('gsNodes');
   var eEl   = document.getElementById('gsEdges');
   var badge = document.getElementById('gsBadge');
   var bar   = document.getElementById('gsBar');
-  if (!scrollEl || !img || !bar) return;
+  if (!stage || !img || !bar) return;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* preload every frame up front — 10 files, ~660 KB total — so
-     scrubbing never shows a half-loaded image */
+     autoplay/scrubbing never shows a half-loaded image */
   F.forEach(function(m){ var im = new Image(); im.src = BASE + m.f; });
-
-  /* the runway only exists with JS; without it the section stays
-     one viewport tall showing today's frame */
-  scrollEl.style.height = (N * 55 + 100) + 'vh';
-  bar.disabled = false;
 
   function fmt(x){ return Math.round(x).toLocaleString('en-US'); }
   var shown = -1;
@@ -1804,40 +1833,115 @@ footer{
     dayEl.textContent = fmt(day);
     nEl.textContent = fmt(F[i0].n + (F[i1].n - F[i0].n) * fr);
     eEl.textContent = fmt(F[i0].e + (F[i1].e - F[i0].e) * fr);
-    if (!dragging) bar.value = Math.round(p * 1000);
+    bar.value = Math.round(p * 1000);
     bar.setAttribute('aria-valuetext', 'Day ' + fmt(day));
   }
-  function prog(){
-    var r = scrollEl.getBoundingClientRect();
-    var span = r.height - window.innerHeight;
-    if (span <= 0) return 1;
-    return Math.max(0, Math.min(1, -r.top / span));
+
+  /* autoplay — a slow forward crawl through the real history, looping
+     back to day 1 once it reaches today. Paused while dragging, and
+     for a few seconds after, so manual control never fights it. */
+  var AUTOPLAY_MS_PER_FRAME = 1900;
+  var autoplayP = 1, dragging = false, resumeTimer = null;
+  function tickAutoplay(){
+    if (dragging || reduced) return;
+    autoplayP += 1 / (N - 1);
+    if (autoplayP > 1) autoplayP = 0;
+    apply(autoplayP);
   }
-
-  var ticking = false;
-  function onScroll(){
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function(){ ticking = false; apply(prog()); });
+  var autoplayInterval = reduced ? null : setInterval(tickAutoplay, AUTOPLAY_MS_PER_FRAME);
+  var visible = true;
+  if ('IntersectionObserver' in window){
+    new IntersectionObserver(function(en){ visible = en[0] ? en[0].isIntersecting : true; },
+      { rootMargin:'80px' }).observe(stage);
   }
-  window.addEventListener('scroll', onScroll, { passive:true });
-  window.addEventListener('resize', onScroll);
+  var _tick = tickAutoplay;
+  tickAutoplay = function(){ if (visible) _tick(); };
 
-  /* the timeline bar drives the page scroll, so bar and scroll can
-     never disagree about where in his life you are */
-  var dragging = false;
-  bar.addEventListener('pointerdown', function(){ dragging = true; });
-  window.addEventListener('pointerup', function(){ dragging = false; });
-  bar.addEventListener('input', function(){
-    var r = scrollEl.getBoundingClientRect();
-    var top = (window.scrollY || window.pageYOffset || 0) + r.top;
-    var span = r.height - window.innerHeight;
-    if (span <= 0) return;
-    window.scrollTo({ top: top + (bar.value / 1000) * span, behavior: 'instant' });
-    apply(bar.value / 1000);
-  });
+  function pauseForInteraction(){
+    dragging = true;
+    if (resumeTimer) clearTimeout(resumeTimer);
+  }
+  function resumeAutoplaySoon(){
+    dragging = false;
+    try { bar.blur(); } catch (e) {}
+    if (resumeTimer) clearTimeout(resumeTimer);
+    resumeTimer = setTimeout(function(){ autoplayP = bar.value / 1000; }, 4000);
+  }
+  bar.addEventListener('pointerdown', pauseForInteraction);
+  window.addEventListener('pointerup', resumeAutoplaySoon);
+  window.addEventListener('touchend', resumeAutoplaySoon);
+  bar.addEventListener('input', function(){ apply(bar.value / 1000); });
 
-  apply(prog());
+  apply(1);
+})();
+
+/* ── firing overlay — canvas2D shimmer layered over the growth
+   photograph so it reads as alive between frame swaps, not a slide.
+   Positions/colors are decorative (not literal per-neuron telemetry —
+   there's no live feed here, on purpose), seeded so it's stable across
+   reloads. Canvas2D only, no WebGL: if the context is unavailable this
+   silently no-ops and the plain photograph is unaffected. */
+(function(){
+  var stage = document.querySelector('.growth-stage');
+  var cv = document.getElementById('gsSparks');
+  if (!stage || !cv) return;
+  var ctx = cv.getContext('2d');
+  if (!ctx) return;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* the real 7 anatomical lobe colors — matches the dashboard's own
+     brain3d.js REGION_COLORS exactly */
+  var LOBES = ['#ff3344','#ff9933','#ff66bb','#44ff77','#ffdd33','#aa55ff','#00ccdd'];
+  var seed = 1337;
+  function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return (seed % 10000) / 10000; }
+  var pts = [];
+  for (var i = 0; i < 46; i++){
+    pts.push({ x: rnd(), y: 0.12 + rnd() * 0.74, r: 1.1 + rnd() * 2.1,
+      c: LOBES[i % LOBES.length], ph: rnd() * Math.PI * 2, sp: 0.55 + rnd() * 1.35 });
+  }
+  function hexA(hex, a){
+    var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a.toFixed(3) + ')';
+  }
+  var W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function resize(){
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = Math.max(2, W * dpr); cv.height = Math.max(2, H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  var visible = true, hidden = false;
+  if ('IntersectionObserver' in window){
+    new IntersectionObserver(function(en){ visible = en[0] ? en[0].isIntersecting : true; },
+      { rootMargin:'120px' }).observe(stage);
+  }
+  document.addEventListener('visibilitychange', function(){ hidden = document.hidden; });
+  function paint(tt){
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < pts.length; i++){
+      var p = pts[i];
+      var flicker = 0.22 + 0.48 * Math.max(0, Math.sin(tt * p.sp + p.ph));
+      var spark = Math.pow(Math.max(0, Math.sin(tt * p.sp * 2.7 + p.ph * 3.1)), 10);
+      var a = Math.min(1, flicker * 0.5 + spark * 0.9);
+      var rr = p.r * (1 + spark * 1.8);
+      var x = p.x * W, y = p.y * H;
+      var g = ctx.createRadialGradient(x, y, 0, x, y, rr * 4);
+      g.addColorStop(0, hexA(p.c, a));
+      g.addColorStop(1, hexA(p.c, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, rr * 4, 0, 6.2832); ctx.fill();
+    }
+  }
+  if (reduced){
+    paint(1.7);
+  } else {
+    (function frame(t){
+      requestAnimationFrame(frame);
+      if (!visible || hidden) return;
+      paint(t * 0.001);
+    })(0);
+  }
 })();
 </script>
 </body>
