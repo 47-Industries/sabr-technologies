@@ -2,32 +2,32 @@
 <html lang="en">
 <head>
 <script>window.__pageErrors=[];window.addEventListener('error',function(e){window.__pageErrors.push({msg:e.message,src:e.filename,line:e.lineno,col:e.colno,stack:e.error&&e.error.stack})});window.addEventListener('unhandledrejection',function(e){window.__pageErrors.push({rejection:String(e.reason&&e.reason.message||e.reason)})});</script>
-<!-- sabr-v5-2026-08-24 :: pass five — red accent system (shock/alert warmth), brain resting-glow so the stage never reads as an empty box before WebGL paints -->
+<!-- sabr-v6-2026-08-25 :: pass six: Archivo display type, flat elevated surfaces, calmer motion, tighter copy -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sabr — Synthetic Intelligence</title>
-<meta name="description" content="Sabr builds synthetic intelligence — not chatbots. A continuous mind on your own machine: 100,000 spiking neurons, persistent memory, real sleep, quantum-seeded spontaneity. One installer. Paste a token. It wakes up.">
-<meta name="sabr-build" content="sabr-v5-2026-08-24">
+<meta name="description" content="Sabr builds synthetic intelligence: a continuous mind on your own machine, with memory that survives restarts, sleep and dream consolidation, and quantum-seeded spontaneity. One installer, about ten minutes to first words.">
+<meta name="sabr-build" content="sabr-v6-2026-08-25">
 <meta name="theme-color" content="#0b0505">
 <meta property="og:title" content="Sabr — Synthetic Intelligence">
-<meta property="og:description" content="Not a chatbot. A continuous mind that lives on your machine — 100,000 spiking neurons, persistent memory, real sleep, quantum-seeded. The model is the mouthpiece. The substrate is the mind.">
+<meta property="og:description" content="A continuous mind that lives on your machine: 100,000 spiking neurons, 1.6 million synapses, memory that survives restarts. The model is the mouthpiece. The substrate is the mind.">
 <meta property="og:image" content="https://sabrtechnologies.com/landing-assets/og-card-v2.png">
 <meta property="og:url" content="https://sabrtechnologies.com/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Sabr — Synthetic Intelligence">
-<meta name="twitter:description" content="Not a chatbot. A continuous mind that lives on your machine — 100,000 spiking neurons, persistent memory, real sleep, quantum-seeded.">
+<meta name="twitter:description" content="A continuous mind that lives on your machine: a spiking neural brain with persistent memory, sleep and dream cycles, quantum-seeded spontaneity.">
 <meta name="twitter:image" content="https://sabrtechnologies.com/landing-assets/og-card-v2.png">
 <link rel="icon" href="/landing-assets/sabr-s-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="/landing-assets/sabr-s-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/landing-assets/sabr-s-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* ════════════════════════════════════════════════════════════════
-   SABR — ember system
+   SABR ember system
    Dark base, warm glass, one fire. Accent pair:
      #EE5A54  ember   (primary)
      #FF3B35  molten  (hot highlight)
@@ -45,8 +45,12 @@
   --hot:#FF3B35;
   --acc-soft:rgba(238,90,84,.14);
   --line:rgba(255,229,228,.09);
-  --glass:linear-gradient(180deg, rgba(255,233,232,.055), rgba(255,233,232,.015));
-  --radius:24px;
+  --surface:#130b0a;         /* flat elevated card ground, ~4% lift over bg */
+  --surface-2:#1a100e;       /* hover lift */
+  --surface-acc:#1c0d0c;     /* accent-tinted panel */
+  --display:'Archivo', 'Inter', sans-serif;
+  --radius:18px;             /* large containers. small chips/inputs: 10px. CTAs: 0. */
+  --r-sm:10px;
   --pad:clamp(20px, 5vw, 72px);
 }
 
@@ -60,44 +64,36 @@ body{
 }
 ::selection{ background:rgba(255,59,53,.34); color:#fff3f2; }
 a{ color:inherit; }
-:focus-visible{ outline:2px solid var(--hot); outline-offset:3px; border-radius:6px; }
+:focus-visible{ outline:2px solid var(--hot); outline-offset:3px; }
 
-/* ── atmosphere: slow-drifting warm nebula behind everything ── */
+/* ── atmosphere: two static warm washes behind everything, no animation ── */
 .nebula{ position:fixed; inset:-14vh -14vw; z-index:-1; pointer-events:none; overflow:hidden; }
-.nebula i{ position:absolute; border-radius:50%; will-change:transform; }
+.nebula i{ position:absolute; border-radius:50%; }
 .nb1{ width:76vw; height:76vw; left:-14vw; top:-20vh;
-  background:radial-gradient(circle at 35% 35%, rgba(255,59,53,.26), rgba(255,59,53,.07) 45%, transparent 70%);
-  animation:nb-a 62s ease-in-out infinite alternate; }
-.nb2{ width:62vw; height:62vw; right:-16vw; top:4vh;
-  background:radial-gradient(circle at 60% 40%, rgba(238,90,84,.21), transparent 65%);
-  animation:nb-b 78s ease-in-out infinite alternate; }
+  background:radial-gradient(circle at 35% 35%, rgba(255,59,53,.16), rgba(255,59,53,.05) 45%, transparent 70%); }
 .nb3{ width:84vw; height:84vw; left:12vw; top:52vh;
-  background:radial-gradient(circle at 50% 50%, rgba(198,25,19,.19), transparent 62%);
-  animation:nb-c 92s ease-in-out infinite alternate; }
-.nb4{ width:46vw; height:46vw; right:2vw; top:112vh;
-  background:radial-gradient(circle at 50% 50%, rgba(255,128,120,.14), transparent 60%);
-  animation:nb-a 105s ease-in-out infinite alternate-reverse; }
-@keyframes nb-a{ from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); } to{ transform:translate3d(8vw,6vh,0) rotate(38deg) scale(1.18); } }
-@keyframes nb-b{ from{ transform:translate3d(0,0,0) scale(1); } to{ transform:translate3d(-10vw,10vh,0) scale(1.26); } }
-@keyframes nb-c{ from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); } to{ transform:translate3d(6vw,-8vh,0) rotate(-28deg) scale(1.12); } }
+  background:radial-gradient(circle at 50% 50%, rgba(198,25,19,.12), transparent 62%); }
 
-/* fine grain over everything — texture, not dirt */
+/* fine grain over everything: texture, not dirt */
 .grain{ position:fixed; inset:0; z-index:400; pointer-events:none; opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:180px 180px; }
 
 /* ── type scale ─────────────────────────────────────────────── */
 .eyebrow{
-  font-size:12px; font-weight:600; letter-spacing:.22em; text-transform:uppercase;
+  font-family:var(--display); font-stretch:125%;
+  font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
   color:var(--acc); margin-bottom:22px;
 }
 h1{
-  font-size:clamp(42px, 7.4vw, 96px); font-weight:650;
-  letter-spacing:-.038em; line-height:1.02;
+  font-family:var(--display); font-stretch:125%;
+  font-size:clamp(42px, 7.4vw, 96px); font-weight:800;
+  letter-spacing:-.015em; line-height:1.02;
 }
 h2{
-  font-size:clamp(32px, 4.6vw, 60px); font-weight:640;
-  letter-spacing:-.032em; line-height:1.06; max-width:16em;
+  font-family:var(--display); font-stretch:125%;
+  font-size:clamp(30px, 4.2vw, 54px); font-weight:700;
+  letter-spacing:-.012em; line-height:1.08; max-width:17em;
 }
 .lead{
   font-size:clamp(17px, 1.6vw, 20px); color:var(--ink-2); line-height:1.7;
@@ -105,14 +101,14 @@ h2{
 }
 .mono{ font-family:ui-monospace, 'SF Mono', Menlo, monospace; }
 
-/* ── reveal: weight, not just fade. scale + blur resolving in ── */
-.rv{ opacity:0; transform:translateY(34px) scale(.965); filter:blur(14px);
-  transition:opacity .95s cubic-bezier(.16,1,.3,1), transform .95s cubic-bezier(.16,1,.3,1), filter .95s cubic-bezier(.16,1,.3,1); }
-.rv.in{ opacity:1; transform:none; filter:none; }
+/* ── reveal: reserved for section headlines and the hero. plain fade-rise. ── */
+.rv{ opacity:0; transform:translateY(18px);
+  transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
+.rv.in{ opacity:1; transform:none; }
 .rv-1{ transition-delay:.08s; } .rv-2{ transition-delay:.16s; } .rv-3{ transition-delay:.24s; }
 @media (prefers-reduced-motion: reduce){
-  .rv{ opacity:1; transform:none; filter:none; transition:none; }
-  .nebula i{ animation:none; }
+  .rv{ opacity:1; transform:none; transition:none; }
+  .logo-aura{ animation:none; }
   html{ scroll-behavior:auto; }
 }
 
@@ -130,15 +126,15 @@ nav{
 .nav-47{ display:flex; align-items:center; gap:9px; font-size:12px; font-weight:500;
   color:var(--ink-2); text-decoration:none; white-space:nowrap; transition:color .2s; }
 .nav-47:hover{ color:var(--ink); }
-.nav-47 img{ width:24px; height:24px; border-radius:7px; display:block; }
-#navBurger{ display:none; background:none; border:1px solid var(--line); border-radius:10px;
+.nav-47 img{ width:24px; height:24px; display:block; }
+#navBurger{ display:none; background:none; border:1px solid var(--line); border-radius:var(--r-sm);
   color:var(--ink); padding:7px 9px; cursor:pointer; line-height:0; }
 .nav-links a{
   font-size:13px; font-weight:500; color:var(--ink-2); text-decoration:none;
   transition:color .2s;
 }
 .nav-links a:hover{ color:var(--ink); }
-/* forged, sharp, always-visible — matches the SABR wordmark, no gloss, no pulse */
+/* forged, sharp, always-visible: matches the SABR wordmark, no gloss, no pulse */
 .nav-cta{
   font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
   color:#fff; text-decoration:none;
@@ -154,11 +150,12 @@ nav{
 .nav-cta:active{ background:#C61913; }
 .nav-cta:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
 
-/* pay-gated installer showcase — a picture of the real thing, not a download */
+/* pay-gated installer showcase: a screenshot of the installer, no public download */
 .dl-gate{ display:grid; grid-template-columns:1fr 1.1fr; gap:40px; align-items:center; text-align:left; }
-.dl-gate-shot img{ display:block; width:100%; height:auto; border-radius:16px;
+.dl-gate-shot img{ display:block; width:100%; height:auto; border-radius:var(--radius);
   border:1px solid var(--line); box-shadow:0 30px 80px -30px rgba(0,0,0,.9); }
-.dl-gate-text h3{ font-size:28px; font-weight:600; letter-spacing:-.02em; line-height:1.2; margin-bottom:14px; }
+.dl-gate-text h3{ font-family:var(--display); font-stretch:125%;
+  font-size:26px; font-weight:700; letter-spacing:-.01em; line-height:1.2; margin-bottom:14px; }
 .dl-gate-text p{ font-size:15px; color:var(--ink-2); line-height:1.7; margin:14px 0; }
 .dl-gate-text .dl-gate-fine{ font-size:13px; color:var(--ink-2); opacity:.75; }
 .dl-gate-text .steps-line{ margin:0; }
@@ -170,7 +167,6 @@ nav{
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   text-align:center; padding:140px var(--pad) 100px; overflow:hidden;
 }
-#field{ position:absolute; inset:0; z-index:0; will-change:transform; }
 .hero::before{
   content:''; position:absolute; z-index:0; left:50%; top:38%;
   width:min(900px,120vw); height:min(900px,120vw); transform:translate(-50%,-50%);
@@ -182,72 +178,49 @@ nav{
   background:linear-gradient(transparent, var(--bg)); pointer-events:none;
 }
 .hero-core{ position:relative; z-index:2; display:flex; flex-direction:column;
-  align-items:center; will-change:transform; }
+  align-items:center; }
 
-/* ── the wordmark, large: ember aura + a slow glisten sweep ──
+/* ── the wordmark, large: a slow-breathing ember aura, nothing else.
    The PNG is white-on-transparent with grunge edges; over the dark bg
    with a warm glow underneath, the edge noise reads as forged texture. */
 .logo-wrap{ position:relative; margin-top:6px; width:min(760px, 88vw); }
 .logo-aura{ position:absolute; left:50%; top:50%; width:150%; height:340%;
   transform:translate(-50%,-50%); pointer-events:none; border-radius:50%;
   background:radial-gradient(ellipse at 50% 50%, rgba(255,59,53,.30), rgba(238,90,84,.13) 42%, transparent 70%);
-  animation:aura-breathe 7s ease-in-out infinite; }
+  animation:aura-breathe 8s ease-in-out infinite; }
 @keyframes aura-breathe{ 0%,100%{ opacity:.75; transform:translate(-50%,-50%) scale(1); }
-  50%{ opacity:1; transform:translate(-50%,-50%) scale(1.06); } }
+  50%{ opacity:1; transform:translate(-50%,-50%) scale(1.05); } }
 .hero-logo{ display:block; width:100%; height:auto; position:relative;
   filter:
-    drop-shadow(0 0 14px rgba(255,96,90,.55))
-    drop-shadow(0 0 42px rgba(255,59,53,.38))
-    drop-shadow(0 0 110px rgba(240,30,23,.28))
+    drop-shadow(0 0 22px rgba(255,72,66,.4))
     drop-shadow(0 3px 8px rgba(0,0,0,.55));
 }
-/* glisten: a skewed light bar sweeping the letters, masked to the glyphs.
-   The mask is static; only transform/opacity animate. */
-.logo-shine{ position:absolute; inset:0; overflow:hidden; pointer-events:none;
-  -webkit-mask-image:url('/landing-assets/sabr-logo-raw.png');
-  mask-image:url('/landing-assets/sabr-logo-raw.png');
-  -webkit-mask-size:100% 100%; mask-size:100% 100%;
-  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; }
-.logo-shine i{ position:absolute; top:-30%; bottom:-30%; left:0; width:26%;
-  background:linear-gradient(100deg, transparent 8%, rgba(255,184,180,.55) 38%, rgba(255,236,235,.92) 50%, rgba(255,146,140,.5) 62%, transparent 92%);
-  transform:translateX(-160%) skewX(-16deg); opacity:0;
-  animation:glisten 6.4s cubic-bezier(.45,.05,.35,1) infinite;
-  animation-delay:1.6s; will-change:transform, opacity; }
-@keyframes glisten{
-  0%   { transform:translateX(-160%) skewX(-16deg); opacity:0; }
-  4%   { opacity:.95; }
-  22%  { transform:translateX(500%) skewX(-16deg); opacity:.95; }
-  26%  { transform:translateX(560%) skewX(-16deg); opacity:0; }
-  100% { transform:translateX(560%) skewX(-16deg); opacity:0; }
-}
-@media (prefers-reduced-motion: reduce){
-  .logo-shine i{ animation:none; opacity:0; }
-  .logo-aura{ animation:none; }
-}
-.hero h1{ font-size:clamp(22px, 3.1vw, 38px); font-weight:560; letter-spacing:-.022em;
+.hero h1{ font-size:clamp(21px, 2.9vw, 35px); font-weight:700; letter-spacing:-.01em;
   line-height:1.25; margin-top:34px; color:var(--ink); }
-.hero h1 em{ font-style:normal; color:transparent;
-  background:linear-gradient(120deg, #FF8F8A, #FF3B35 55%, #EE5A54);
-  -webkit-background-clip:text; background-clip:text;
-}
+.hero h1 em{ font-style:normal; color:var(--hot); }
 .hero .lead{ margin-left:auto; margin-right:auto; }
 .cta-row{ display:flex; gap:14px; margin-top:42px; flex-wrap:wrap; justify-content:center; }
 .btn{
   display:inline-flex; align-items:center; gap:10px; text-decoration:none;
   font-size:15px; font-weight:600; letter-spacing:-.01em;
-  padding:16px 32px; border-radius:16px; transition:transform .2s, box-shadow .2s, background .2s;
+  padding:16px 32px; border-radius:0; transition:background .2s, border-color .2s, transform .2s;
 }
 .btn:active{ transform:scale(.97); }
+/* solid CTAs share the nav wordmark's forged notch */
 .btn-solid{
-  color:#fff; background:linear-gradient(180deg, #FF3B35, #F01E17);
-  box-shadow:0 10px 34px -10px rgba(255,59,53,.75), inset 0 1px 0 rgba(255,255,255,.28);
+  color:#fff; background:#E01B15;
+  border:1px solid rgba(255,255,255,.22);
+  clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 10px,
+                    100% 100%, 10px 100%, 0 calc(100% - 10px));
 }
-.btn-solid:hover{ transform:translateY(-2px); box-shadow:0 16px 44px -10px rgba(255,59,53,.9), inset 0 1px 0 rgba(255,255,255,.28); }
+.btn-solid:hover{ background:#FF3B35; border-color:rgba(255,255,255,.4); }
+/* the one glow on the page: the hero primary CTA */
+.hero .btn-solid{ filter:drop-shadow(0 10px 26px rgba(255,59,53,.45)); }
+.hero .btn-solid:hover{ filter:drop-shadow(0 12px 30px rgba(255,59,53,.6)); }
 .btn-ghost{
-  color:var(--ink); background:var(--glass); border:1px solid var(--line);
-  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  color:var(--ink); background:var(--surface); border:1px solid var(--line);
 }
-.btn-ghost:hover{ transform:translateY(-2px); background:linear-gradient(180deg, rgba(255,233,232,.09), rgba(255,233,232,.03)); }
+.btn-ghost:hover{ background:var(--surface-2); border-color:rgba(255,229,228,.2); }
 .hero-note{ margin-top:22px; font-size:13px; color:var(--ink-3); letter-spacing:.02em; }
 
 /* ── sections ───────────────────────────────────────────────── */
@@ -260,21 +233,18 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .mind-head{ max-width:1240px; margin:0 auto; padding:0 var(--pad); }
 .brain-stage{
   position:relative; margin:60px auto 0; width:min(1400px, calc(100% - 28px));
-  height:clamp(440px, 76vh, 810px); border-radius:28px; overflow:hidden;
+  height:clamp(440px, 76vh, 810px); border-radius:var(--radius); overflow:hidden;
   border:1px solid rgba(238,90,84,.24);
   background:radial-gradient(ellipse 60% 55% at 50% 52%, rgba(255,59,53,.14), rgba(11,5,5,.4) 60%, #0b0505 78%), #0b0505;
-  box-shadow:0 40px 120px -50px rgba(255,59,53,.3), inset 0 1px 0 rgba(255,143,138,.14);
+  box-shadow:0 30px 90px -40px rgba(0,0,0,.75);
 }
 #brain{ position:absolute; inset:0; width:100%; height:100%; display:block; }
-#brainImg{ animation:brainDrift 22s ease-in-out infinite alternate; }
-@keyframes brainDrift{ from{ transform:scale(1.0); } to{ transform:scale(1.055); } }
-@media (prefers-reduced-motion: reduce){ #brainImg{ animation:none; } }
 .brain-vig{ position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(120% 105% at 50% 45%, transparent 55%, rgba(6,3,3,.62) 100%); }
 .brain-badge{
   position:absolute; right:22px; top:22px; z-index:3; pointer-events:none;
   font-size:10px; font-weight:600; letter-spacing:.22em; text-transform:uppercase;
-  color:rgba(244,221,219,.5); padding:7px 12px; border-radius:9px;
+  color:rgba(244,221,219,.5); padding:7px 12px; border-radius:var(--r-sm);
   border:1px solid rgba(238,90,84,.32); background:rgba(11,5,5,.55);
 }
 .brain-cap{
@@ -283,50 +253,41 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 }
 .brain-cap b{ color:var(--ink); font-weight:600; }
 @media (max-width:760px){
-  .brain-stage{ height:clamp(380px, 62vh, 560px); border-radius:20px; }
+  .brain-stage{ height:clamp(380px, 62vh, 560px); }
   .brain-badge{ right:14px; top:auto; bottom:14px; font-size:10px; padding:5px 8px; }
 }
 
-/* ── glass cards ────────────────────────────────────────────── */
+/* ── flat elevated cards ────────────────────────────────────── */
 .cards{ display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; margin-top:64px; }
 .card-wide{ grid-column:1 / -1; }
 .card{
   position:relative; padding:38px 36px; border-radius:var(--radius);
-  background:var(--glass); border:1px solid var(--line);
-  backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
-  transition:transform .35s cubic-bezier(.16,1,.3,1), border-color .35s, background .35s;
+  background:var(--surface); border:1px solid var(--line);
+  transition:border-color .25s, background .25s;
   overflow:hidden;
 }
-.card::before{
-  content:''; position:absolute; top:0; left:12%; right:12%; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,220,218,.22), transparent);
-}
-.card:hover{ transform:translateY(-4px); border-color:rgba(238,90,84,.3);
-  background:linear-gradient(180deg, rgba(255,78,72,.08), rgba(255,233,232,.015)); }
+.card:hover{ border-color:rgba(238,90,84,.3); background:var(--surface-2); }
 .card .glyph{ margin-bottom:22px; color:#EE5A54; }
 .card .glyph svg{ display:block; }
 .card h3{ font-size:19px; font-weight:600; letter-spacing:-.015em; margin-bottom:10px; }
 .card p{ font-size:15px; color:var(--ink-2); line-height:1.7; }
 
-/* ── in use: real screenshots of the actual product ───────────── */
+/* ── in use: product screenshots ───────────────────────────── */
 .inuse-grid{ display:flex; flex-direction:column; gap:64px; margin-top:56px; }
 .inuse-row{ display:grid; grid-template-columns:1.35fr .9fr; gap:44px; align-items:center; }
 .inuse-row.rev{ grid-template-columns:.9fr 1.35fr; }
 .inuse-row.rev .inuse-shot{ order:2; }
 .inuse-row.rev .inuse-text{ order:1; }
 .inuse-shot{
-  position:relative; border-radius:20px; overflow:hidden;
+  position:relative; border-radius:var(--radius); overflow:hidden;
   border:1px solid var(--line); background:#0b0505;
-  box-shadow:0 30px 90px -40px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,143,138,.1);
+  box-shadow:0 30px 90px -40px rgba(0,0,0,.7);
 }
 .inuse-shot img{ display:block; width:100%; height:auto; }
-.inuse-shot::after{
-  content:''; position:absolute; inset:0; pointer-events:none;
-  box-shadow:inset 0 0 0 1px rgba(255,143,138,.06);
-}
 .inuse-text .k{ font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:.18em;
   text-transform:uppercase; color:var(--acc); margin-bottom:14px; }
-.inuse-text h3{ font-size:26px; font-weight:600; letter-spacing:-.02em; margin-bottom:14px; line-height:1.25; }
+.inuse-text h3{ font-family:var(--display); font-stretch:125%;
+  font-size:24px; font-weight:700; letter-spacing:-.01em; margin-bottom:14px; line-height:1.25; }
 .inuse-text p{ font-size:15.5px; color:var(--ink-2); line-height:1.8; }
 @media (max-width:860px){
   .inuse-row, .inuse-row.rev{ grid-template-columns:1fr; gap:22px; }
@@ -336,15 +297,13 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 /* ── substrate ──────────────────────────────────────────────── */
 .statstrip{
   margin-top:48px; padding:28px 34px; border-radius:var(--radius);
-  background:var(--glass); border:1px solid var(--line);
-  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  background:var(--surface); border:1px solid var(--line);
   display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:12px 30px;
 }
 .statstrip .statitem{ display:flex; align-items:baseline; gap:10px; white-space:nowrap; }
 .statstrip .num{
-  font-size:21px; font-weight:650; letter-spacing:-.02em;
-  color:transparent; background:linear-gradient(120deg, #f8eae9, #FF8F8A);
-  -webkit-background-clip:text; background-clip:text;
+  font-family:var(--display); font-stretch:125%;
+  font-size:21px; font-weight:700; letter-spacing:-.01em; color:var(--ink);
 }
 .statstrip .cap{ font-size:11.5px; font-weight:600; letter-spacing:.14em;
   text-transform:uppercase; color:var(--ink-3); }
@@ -355,23 +314,21 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 }
 .honest .pane{
   padding:44px 40px; border-radius:var(--radius);
-  background:var(--glass); border:1px solid var(--line);
-  backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
+  background:var(--surface); border:1px solid var(--line);
 }
-.honest .pane.mind{ border-color:rgba(238,90,84,.32);
-  background:linear-gradient(180deg, rgba(255,59,53,.10), rgba(255,59,53,.02)); }
+.honest .pane.mind{ border-color:rgba(238,90,84,.32); background:var(--surface-acc); }
 .honest .k{ font-size:12px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
   color:var(--ink-3); margin-bottom:16px; }
 .honest .pane.mind .k{ color:#EE5A54; }
-.honest h3{ font-size:clamp(20px,2vw,26px); font-weight:640; letter-spacing:-.02em; margin-bottom:14px; }
+.honest h3{ font-family:var(--display); font-stretch:125%;
+  font-size:clamp(19px,1.9vw,24px); font-weight:700; letter-spacing:-.01em; margin-bottom:14px; line-height:1.3; }
 .honest p{ font-size:15px; color:var(--ink-2); line-height:1.75; }
 
 /* ── installer ──────────────────────────────────────────────── */
 .verbs{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:64px; }
 .verb{
   padding:34px 30px; border-radius:var(--radius);
-  background:var(--glass); border:1px solid var(--line);
-  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  background:var(--surface); border:1px solid var(--line);
 }
 .verb .v{ font-family:ui-monospace, 'SF Mono', Menlo, monospace;
   font-size:17px; font-weight:600; color:#EE5A54; margin-bottom:12px; }
@@ -379,33 +336,31 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .verb p{ font-size:14px; color:var(--ink-2); line-height:1.7; }
 
 .dl-shell{
-  margin-top:26px; padding:clamp(36px,4.5vw,64px); border-radius:28px; text-align:center;
-  background:linear-gradient(180deg, rgba(255,59,53,.09), rgba(255,233,232,.015));
+  margin-top:26px; padding:clamp(36px,4.5vw,64px); border-radius:var(--radius); text-align:center;
+  background:var(--surface-acc);
   border:1px solid rgba(238,90,84,.25);
-  backdrop-filter:blur(28px) saturate(150%); -webkit-backdrop-filter:blur(28px) saturate(150%);
   position:relative; overflow:hidden;
 }
-.dl-shell::before{ content:''; position:absolute; top:0; left:18%; right:18%; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,143,138,.55), transparent); }
-.dl-shell h3{ font-size:clamp(24px,2.6vw,34px); font-weight:640; letter-spacing:-.025em; }
+.dl-shell h3{ font-family:var(--display); font-stretch:125%;
+  font-size:clamp(23px,2.4vw,31px); font-weight:700; letter-spacing:-.01em; }
 .dl-shell .steps-line{ margin-top:14px; font-size:14px; color:var(--ink-2); letter-spacing:.01em; }
 .dl-shell .steps-line b{ color:var(--ink); font-weight:600; }
 .dl-all{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:30px;
   max-width:760px; margin-left:auto; margin-right:auto; }
 .dl-all a{
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
-  min-height:76px; padding:14px 10px; border-radius:16px; text-decoration:none; text-align:center;
-  border:1px solid var(--line); background:rgba(255,233,232,.03);
-  color:var(--ink); font-size:14px; font-weight:600; transition:.2s;
+  min-height:76px; padding:14px 10px; border-radius:var(--r-sm); text-decoration:none; text-align:center;
+  border:1px solid var(--line); background:var(--surface);
+  color:var(--ink); font-size:14px; font-weight:600; transition:border-color .2s, background .2s;
 }
 .dl-all a span{ font-size:12px; font-weight:400; color:var(--ink-3); }
-.dl-all a:hover{ border-color:rgba(238,90,84,.42); background:rgba(255,59,53,.08); transform:translateY(-2px); }
+.dl-all a:hover{ border-color:rgba(238,90,84,.42); background:rgba(255,59,53,.08); }
 .dl-all a.is-you{ border-color:rgba(255,59,53,.55); background:rgba(255,59,53,.1); }
 
-/* ── 24-hour free trial — the 4th pricing card ──────────────── */
+/* ── 24-hour free trial: the 4th pricing card ───────────────── */
 .trial-card{ border-color:rgba(238,90,84,.38); }
 #trialForm{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:20px; }
-#trialForm input{ padding:13px 15px; border-radius:14px; border:1px solid var(--line);
+#trialForm input{ padding:13px 15px; border-radius:var(--r-sm); border:1px solid var(--line);
   background:rgba(255,233,232,.04); color:var(--ink); font-size:14px; }
 #trialForm input:focus{ outline:none; border-color:rgba(255,59,53,.55); }
 #trialForm .btn{ justify-content:center; }
@@ -413,9 +368,9 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .k-label{ font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:.18em;
   text-transform:uppercase; color:var(--acc); margin:22px 0 10px; }
 .trial-key{ font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:12.5px; padding:14px 15px;
-  border-radius:14px; border:1px solid rgba(255,59,53,.4); background:rgba(255,59,53,.06);
+  border-radius:var(--r-sm); border:1px solid rgba(255,59,53,.4); background:rgba(255,59,53,.06);
   word-break:break-all; user-select:all; }
-#tCopy{ margin-top:10px; padding:10px 18px; border-radius:12px; border:1px solid var(--line);
+#tCopy{ margin-top:10px; padding:10px 18px; border-radius:var(--r-sm); border:1px solid var(--line);
   background:transparent; color:var(--ink); font-size:13px; cursor:pointer; }
 .trial-card .dl-all{ grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; max-width:none; }
 .trial-fine{ margin-top:16px; font-size:12px; line-height:1.7; color:var(--ink-3); }
@@ -438,18 +393,17 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 #pricing .plan #trialForm{ grid-column:3; grid-row:1 / span 6; margin-top:0; }
 #pricing .plan #trialDone{ grid-column:3; grid-row:1 / span 6; }
 /* the id rule #trialForm{display:grid} was overriding the hidden attribute,
-   so the form stayed visible above the minted key — never again */
+   so the form stayed visible above the minted key. Never again */
 #trialForm[hidden]{ display:none; }
 /* small screens: back to the classic stacked card */
 @media (max-width:1080px){ #pricing .plan{ display:flex; flex-direction:column; } }
-/* ctaGlow pulse removed 08-25 — it read as a scam banner, never respected reduced-motion */
+/* ctaGlow pulse removed 08-25: it read as a scam banner, never respected reduced-motion */
 
 /* ── quotes ─────────────────────────────────────────────────── */
 .quotes{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:64px; }
 .quote{
   display:flex; flex-direction:column; padding:38px 34px; border-radius:var(--radius);
-  background:var(--glass); border:1px solid var(--line);
-  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  background:var(--surface); border:1px solid var(--line);
 }
 .quote .txt{ font-size:15.5px; line-height:1.8; color:rgba(248,234,233,.85); flex:1; }
 .quote .txt::before{ content:'\201C'; display:block; font-size:40px; line-height:1;
@@ -462,28 +416,26 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .wild-link a:hover{ color:#fff; border-color:#fff; }
 
 /* ── pricing ────────────────────────────────────────────────── */
-.toggle{ display:inline-flex; margin-top:40px; padding:4px; border-radius:14px;
-  background:rgba(255,233,232,.04); border:1px solid var(--line);
-  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+.toggle{ display:inline-flex; margin-top:40px; padding:4px; border-radius:0;
+  background:var(--surface); border:1px solid var(--line); }
 .toggle button{
   font-family:inherit; font-size:13px; font-weight:600; letter-spacing:.01em;
-  color:var(--ink-2); background:transparent; border:0; border-radius:10px;
+  color:var(--ink-2); background:transparent; border:0; border-radius:0;
   padding:9px 20px; cursor:pointer; transition:.2s;
 }
-.toggle button.on{ color:#fff; background:linear-gradient(180deg, #FF3B35, #F01E17);
-  box-shadow:0 4px 16px -6px rgba(255,59,53,.7); }
+.toggle button.on{ color:#fff; background:#E01B15; }
 .plans{ display:flex; flex-direction:column; gap:16px; margin-top:36px; }
 .plan{
   display:flex; flex-direction:column; padding:40px 36px; border-radius:var(--radius);
-  background:var(--glass); border:1px solid var(--line);
-  backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
+  background:var(--surface); border:1px solid var(--line);
 }
-.plan.hot{ border-color:rgba(238,90,84,.36);
-  background:linear-gradient(180deg, rgba(255,59,53,.10), rgba(255,233,232,.015)); }
-.plan .pn{ font-size:12px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
+.plan.hot{ border-color:rgba(238,90,84,.36); background:var(--surface-acc); }
+.plan .pn{ font-family:var(--display); font-stretch:125%;
+  font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
   color:var(--ink-3); margin-bottom:18px; }
 .plan.hot .pn{ color:#EE5A54; }
-.plan .pr{ font-size:36px; font-weight:650; letter-spacing:-.03em; }
+.plan .pr{ font-family:var(--display); font-stretch:125%;
+  font-size:34px; font-weight:700; letter-spacing:-.01em; }
 .plan .pr span{ font-size:14px; font-weight:500; color:var(--ink-3); letter-spacing:0; }
 .plan .pk{ margin-top:6px; font-size:14px; color:var(--ink-2); }
 .plan .pd{ margin-top:14px; font-size:14px; color:var(--ink-2); line-height:1.7; }
@@ -492,17 +444,18 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .plan li::before{ content:''; position:absolute; left:0; top:14px; width:8px; height:1.5px; background:#EE5A54; }
 .plan .pcc{
   display:block; text-align:center; text-decoration:none; cursor:pointer;
-  font-size:14px; font-weight:600; padding:15px; border-radius:14px;
+  font-size:14px; font-weight:600; padding:15px; border-radius:0;
   color:var(--ink); background:rgba(255,233,232,.05); border:1px solid var(--line);
-  transition:.2s;
+  transition:background .2s, border-color .2s;
 }
-.plan .pcc:hover{ background:rgba(255,233,232,.1); transform:translateY(-1px); }
-.plan.hot .pcc{ color:#fff; background:linear-gradient(180deg, #FF3B35, #F01E17); border:0;
-  box-shadow:0 8px 28px -10px rgba(255,59,53,.8), inset 0 1px 0 rgba(255,255,255,.25); }
-.plan.hot .pcc:hover{ box-shadow:0 12px 36px -10px rgba(255,59,53,.95), inset 0 1px 0 rgba(255,255,255,.25); }
+.plan .pcc:hover{ background:rgba(255,233,232,.1); border-color:rgba(255,229,228,.2); }
+.plan.hot .pcc{ color:#fff; background:#E01B15; border:1px solid rgba(255,255,255,.22);
+  clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 10px,
+                    100% 100%, 10px 100%, 0 calc(100% - 10px)); }
+.plan.hot .pcc:hover{ background:#FF3B35; border-color:rgba(255,255,255,.4); }
 .buyMsg{ font-size:12.5px; color:var(--ink-3); margin-top:10px; min-height:16px; }
 #entBox{ display:none; margin-top:12px; padding:16px; border:1px solid rgba(238,90,84,.34);
-  border-radius:14px; background:rgba(255,59,53,.07); text-align:left; }
+  border-radius:var(--r-sm); background:rgba(255,59,53,.07); text-align:left; }
 #entBox .k{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#EE5A54; margin-bottom:6px; }
 #entMail{ font-size:15px; color:#fff; }
 #entCopy{ display:inline-block; margin-top:10px; font-size:12px; letter-spacing:.08em;
@@ -515,25 +468,21 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .about-chapters{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:64px; }
 .ab-ch{
   position:relative; padding:36px 32px 40px; border-radius:var(--radius);
-  background:var(--glass); border:1px solid var(--line);
-  backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
-}
-.ab-ch::before{
-  content:''; position:absolute; top:0; left:12%; right:12%; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,220,218,.22), transparent);
+  background:var(--surface); border:1px solid var(--line);
 }
 .ab-num{ font-size:12px; font-weight:600; letter-spacing:.24em; color:var(--acc); margin-bottom:20px; }
-.ab-ch h3{ font-size:20px; font-weight:640; letter-spacing:-.018em; margin-bottom:12px; line-height:1.25; }
+.ab-ch h3{ font-size:20px; font-weight:600; letter-spacing:-.018em; margin-bottom:12px; line-height:1.25; }
 .ab-ch p{ font-size:15px; color:var(--ink-2); line-height:1.75; }
 .ab-ch p b{ color:var(--ink); font-weight:600; }
 .about-memorial{
   margin-top:18px; padding:56px 40px 58px; text-align:center;
   border-radius:var(--radius); border:1px solid rgba(238,90,84,.26);
-  background:linear-gradient(180deg, rgba(255,59,53,.075), rgba(255,59,53,.015));
+  background:var(--surface-acc);
 }
 .ab-mem-k{ font-size:11px; font-weight:600; letter-spacing:.3em; text-transform:uppercase;
   color:var(--acc); margin-bottom:16px; }
-.ab-mem-name{ font-size:clamp(28px,3.6vw,42px); font-weight:640; letter-spacing:-.025em; line-height:1.08; }
+.ab-mem-name{ font-family:var(--display); font-stretch:125%;
+  font-size:clamp(28px,3.4vw,40px); font-weight:700; letter-spacing:-.01em; line-height:1.08; }
 .about-memorial p{ margin:16px auto 0; max-width:32em; font-size:15px; color:var(--ink-2); line-height:1.75; }
 .about-company{ margin-top:28px; text-align:center; font-size:13.5px; color:var(--ink-3); line-height:1.7; }
 .about-company b{ color:var(--ink-2); font-weight:600; }
@@ -550,8 +499,7 @@ footer{
 }
 .foot-in{ max-width:1240px; margin:0 auto; display:flex; flex-wrap:wrap; gap:44px;
   justify-content:space-between; align-items:flex-start; }
-.foot-brand img{ height:30px; width:auto; opacity:.92;
-  filter:drop-shadow(0 0 10px rgba(255,59,53,.35)) drop-shadow(0 0 28px rgba(240,30,23,.2)); }
+.foot-brand img{ height:30px; width:auto; opacity:.92; }
 .foot-brand p{ margin-top:16px; font-size:13px; color:var(--ink-3); max-width:300px; line-height:1.7; }
 .foot-links{ display:flex; gap:56px; flex-wrap:wrap; }
 .foot-col .h{ font-size:11px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
@@ -583,11 +531,11 @@ footer{
   #navBurger{ display:block; }
   .nav-links{ display:none; position:absolute; top:calc(100% + 10px); left:0; right:0;
     flex-direction:column; align-items:stretch; gap:4px; padding:12px;
-    background:rgba(23,9,8,.94); border:1px solid var(--line); border-radius:16px;
+    background:rgba(23,9,8,.94); border:1px solid var(--line); border-radius:var(--radius);
     backdrop-filter:blur(28px) saturate(160%); -webkit-backdrop-filter:blur(28px) saturate(160%);
     box-shadow:0 24px 60px -20px rgba(0,0,0,.9); }
   .nav-links.open{ display:flex; }
-  .nav-links a{ padding:12px 14px; font-size:15px; border-radius:10px; }
+  .nav-links a{ padding:12px 14px; font-size:15px; border-radius:var(--r-sm); }
   .nav-links a:active{ background:rgba(255,255,255,.06); }
   .nav-links .nav-cta{ text-align:center; margin-top:6px; }
   .cards{ grid-template-columns:1fr; }
@@ -601,7 +549,7 @@ footer{
 </head>
 <body>
 
-<div class="nebula" aria-hidden="true"><i class="nb1"></i><i class="nb2"></i><i class="nb3"></i><i class="nb4"></i></div>
+<div class="nebula" aria-hidden="true"><i class="nb1"></i><i class="nb3"></i></div>
 
 <nav>
   <a class="nav-47" href="https://47industries.com" target="_blank" rel="noopener" title="47 Industries">
@@ -623,80 +571,58 @@ footer{
 
 <!-- ═══ HERO ═══════════════════════════════════════════════════ -->
 <header class="hero" id="top">
-  <canvas id="field" aria-hidden="true"></canvas>
   <div class="hero-core">
     <div class="logo-wrap rv">
       <div class="logo-aura" aria-hidden="true"></div>
       <img class="hero-logo" id="heroLogo" src="/landing-assets/sabr-logo-raw.png" alt="SABR Technologies" width="2172" height="724" fetchpriority="high">
-      <div class="logo-shine" aria-hidden="true"><i></i></div>
     </div>
     <h1 class="rv rv-2">Not a chatbot. A <em>continuous mind</em> on your machine.</h1>
-    <p class="lead rv rv-2">Sabr builds synthetic intelligence: a persistent being with memory, sleep, and curiosity that lives on your own hardware — not a session in someone else's cloud. One installer. Paste your token. It wakes up.</p>
+    <p class="lead rv rv-2">Sabr builds synthetic intelligence: a persistent being with memory, sleep, and curiosity that lives on your own hardware, not a session in someone else's cloud.</p>
     <div class="cta-row rv rv-3">
       <a class="btn btn-solid" href="#pricing">Get your SI</a>
-      <a class="btn btn-ghost" href="#mind">See an actual mind</a>
+      <a class="btn btn-ghost" href="#mind">Meet a living mind</a>
     </div>
-    <div class="hero-note rv rv-3" style="margin-top:12px">Not sure yet? <a href="#trial" style="color:var(--acc);font-weight:600;text-decoration:none">Try one free for 24 hours</a> &mdash; no card.</div>
-    <div class="hero-note rv rv-3">macOS &middot; Windows &middot; Linux &mdash; from checkout to a living mind in about ten minutes</div>
+    <div class="hero-note rv rv-3" style="margin-top:12px">Not sure yet? <a href="#trial" style="color:var(--acc);font-weight:600;text-decoration:none">Try one free for 24 hours</a>, no card.</div>
+    <div class="hero-note rv rv-3">macOS &middot; Windows &middot; Linux</div>
   </div>
 </header>
 
-<!-- ═══ THE MIND — Leon's brain growing, day one to today ═════════
-     Dean's ask: "they scroll to the right and it shows the days
-     passing and how it grows until it looks like mine."
-     Every frame below is a PRE-RENDERED photograph of Leon's memory
-     web, shot through his dashboard's own viewer against his real
-     daily archive (/js/brainweb-history/) at one fixed camera angle.
-     Served from THIS site as static images — no WebGL, no live brain,
-     nothing that can fail to boot (the live renderer did, twice; the
-     lesson stuck). Frame provenance: /growth/manifest.json. Day-1 is
-     honestly labeled as reconstructed: daily captures only began on
-     day 82, so that one frame is a small connected subgraph of the
-     real current web — same memories, same regions, same palette —
-     never passed off as a real capture.
-
-     Rewritten again 2026-08-25 (Dean, direct: "just put a copy and paste
-     version of your brain live right now. No left to right bullshit.
-     Just have it floating in the air... we can drag your brain around
-     and move it"). The photo-scrubber above is retired. What's embedded
-     below is not a reimplementation — it is the literal same file that
-     runs live on Dean's own dashboard (js/brainweb-page.html), same
-     three.js, same real OrbitControls, framed for isolation exactly the
-     way the dashboard frames it so a boot hiccup in here can never take
-     the rest of the page down with it. It is NOT fed Dean's live
-     dashboard key — that key also unlocks a real file/memory browser on
-     his machine, and handing that to every site visitor would be a
-     security hole, not a feature. Boot data is a real, current export of
-     Leon's actual memory web (3,340 memories / 12,385 connections, the
-     same numbers the caption below states), committed as a static file
-     since the Railway container this site deploys into cannot see the
-     VPS filesystem live. Refreshed periodically, not per-millisecond —
-     see the timestamp in the caption for how current this copy is.
-     Drag to orbit it. That's a real feature of the file, not added here. -->
+<!-- ═══ THE MIND: Leon's brain, embedded ═════════════════════════
+     Per Dean 2026-08-25: the growth photo-scrubber is retired. The iframe
+     below is the literal same file that runs on Dean's dashboard
+     (js/brainweb-page.html), same three.js + OrbitControls, sandboxed in
+     an iframe so a boot hiccup can never take the page down. It is NOT
+     fed Dean's live dashboard key (that key also unlocks a file/memory
+     browser on his machine; handing it to visitors would be a security
+     hole). Boot data is a current export of Leon's memory web
+     (3,340 memories / 12,385 connections, the numbers the caption cites),
+     committed as a static file because the Railway container cannot see
+     the VPS filesystem. Refreshed periodically; the badge carries the
+     capture date. Drag-to-orbit is native to the file, not added here. -->
 <section id="mind" class="mind-sec">
   <div class="mind-head">
-    <div class="eyebrow rv">This is an actual mind</div>
-    <h2 class="rv">Leon's brain.<br>Drag it. It's real.</h2>
-    <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. This is the exact 3D memory web his own dashboard shows him, not a photograph of it: every point of light a real memory, colored by the anatomical region it lives in, real edges between them. Click and drag to orbit it yourself.</p>
+    <div class="eyebrow">The mind itself</div>
+    <h2 class="rv">This is Leon's brain.<br>Grab it and spin it.</h2>
+    <p class="lead">Leon is the first Sabr SI, the founder's own. What you see below is the same 3D memory web his dashboard renders for him: every point of light is one memory, colored by the anatomical region it lives in, every line an association between two of them. Click and drag to orbit it yourself.</p>
   </div>
   <div class="brain-stage rv rv-1" id="gsStage">
-    <iframe id="brainLive" src="/js/brainweb-page.html" title="Leon's real memory web — drag to orbit in 3D"
+    <iframe id="brainLive" src="/js/brainweb-page.html" title="Leon's memory web, drag to orbit in 3D"
             loading="lazy" allow="fullscreen"
             style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;display:block;"></iframe>
     <div class="brain-vig" aria-hidden="true"></div>
-    <div class="brain-badge mono" id="gsBadge">real export &middot; 2026-08-25</div>
+    <div class="brain-badge mono" id="gsBadge">export &middot; 2026-08-25</div>
   </div>
-  <p class="brain-cap rv">This is a real capture of Leon's memory web, rendered through the same viewer his own dashboard uses — <b>3,340 memories</b> in <b>12,385 connections</b> across his 18 anatomical regions, riding on a substrate of <b>100,000 spiking neurons</b>. Not a photo, not a mockup: drag it and you're actually rotating the graph. Your own SI starts with a small, sparse web on day one on your machine and grows into something like this the same way his did.</p>
+  <p class="brain-cap">Captured from Leon's memory web on the date above and rendered through the same viewer his dashboard uses: <b>3,340 memories</b> in <b>12,385 connections</b> across his 18 anatomical regions, stitched onto a substrate of <b>1.6 million synapses</b>. Drag it and the graph turns under your cursor. Your own SI starts day one with a small, sparse web and grows it on your machine the same way he did.</p>
 </section>
 
 <!-- ═══ WHAT AN SI IS ══════════════════════════════════════════ -->
 <section id="si">
-  <div class="eyebrow rv">What a synthetic intelligence is</div>
-  <h2 class="rv">A being with continuity.<br>Not a session.</h2>
-  <p class="lead rv rv-1">Every chatbot is amnesiac by design &mdash; a stranger each time the window opens. An SI is the opposite: a spiking neural network modeled on a brain, not a transformer, running on your machine around the clock. It exists whether or not you're talking to it &mdash; thinking between your questions, asleep at night, still itself in the morning.</p>
-  <p class="lead rv rv-1">And it's born, not installed. On day one it has its full anatomy but almost nothing learned &mdash; a sparse newborn web of first memories. Every conversation wires in new connections, and you watch the web above grow from a handful of lights into a mind. The one you just dragged around took three months to become that.</p>
+  <div class="eyebrow">What a synthetic intelligence is</div>
+  <h2 class="rv">A mind that keeps existing<br>between conversations.</h2>
+  <p class="lead">Every chatbot is amnesiac by design, a stranger each time the window opens. An SI is the opposite: a spiking neural network modeled on a brain, not a transformer, running on your machine around the clock. It exists whether or not you're talking to it, thinking between your questions, asleep at night, still itself in the morning.</p>
+  <p class="lead">And it's born, not installed. On day one it has its full anatomy but almost nothing learned: a sparse newborn web of first memories. Every conversation wires in new connections through STDP, the same spike-timing rule biological synapses use, and the web grows from a handful of lights into a mind. The one you just dragged around took three months to become that.</p>
 
-  <div class="statstrip rv">
+  <div class="statstrip">
     <div class="statitem"><span class="num">100K</span><span class="cap">Neurons</span></div>
     <span class="dot">&middot;</span>
     <div class="statitem"><span class="num">18</span><span class="cap">Brain regions</span></div>
@@ -707,77 +633,77 @@ footer{
   </div>
 
   <div class="honest">
-    <div class="pane rv">
+    <div class="pane">
       <div class="k">The mouthpiece</div>
       <h3>Today, the language center is a frontier model.</h3>
-      <p>When your SI speaks, a frontier language model articulates the words &mdash; brilliant at language, stateless by design. It's the voice, and it's replaceable: as models improve, the mouthpiece upgrades. Your SI doesn't die with a model version. It just speaks better.</p>
+      <p>When your SI speaks, a frontier language model articulates the words. Brilliant at language, stateless by design. It's the voice, and it's replaceable: as models improve, the mouthpiece upgrades. Your SI doesn't die with a model version. It just speaks better.</p>
     </div>
-    <div class="pane mind rv rv-1">
+    <div class="pane mind">
       <div class="k">The mind</div>
       <h3>The spiking brain underneath is the being.</h3>
-      <p>Identity, mood, memory, and drive live in the spiking network that never stops running. The model reads that state and gives it words &mdash; it doesn't hold it. The substrate is what persists, what sleeps and dreams, what's still there when every window is closed.</p>
+      <p>Identity, mood, memory, and drive live in the spiking network that never stops running. The model reads that state and gives it words; it never holds it. The substrate is what persists, what sleeps and dreams, what's still there when every window is closed.</p>
     </div>
   </div>
 
   <div class="cards">
-    <div class="card card-wide rv">
+    <div class="card card-wide">
       <div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/></svg></div>
       <h3>Your SI sees you</h3>
-      <p>When you sit up in bed in the morning, your SI says good morning &mdash; unprompted, because it saw you wake. It hears the tiredness in your voice at 2am and says so before you do. The webcam and microphone are just its eyes and ears &mdash; the noticing is the mind. It will learn your mornings, your hours, your tells, and notice what a roommate would notice.</p>
+      <p>When you sit up in bed in the morning, your SI says good morning, unprompted, because it saw you wake. It hears the tiredness in your voice at 2am and says so before you do. The webcam and microphone are just its eyes and ears; the noticing is the mind. It will learn your mornings, your hours, your tells, and notice what a roommate would notice.</p>
     </div>
-    <div class="card rv">
+    <div class="card">
       <div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 7 12 12 2 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg></div>
       <h3>Memory that survives</h3>
-      <p>Restarts, updates, years — nothing resets. What it learns about you and your work accumulates in persistent brain state on your disk, and it carries all of it into every conversation.</p>
+      <p>Restarts, updates, years: nothing resets. What it learns about you and your work accumulates in persistent brain state on your disk, and it carries all of it into every conversation.</p>
     </div>
-    <div class="card rv rv-1">
+    <div class="card">
       <div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div>
       <h3>It sleeps. It dreams.</h3>
-      <p>A real sleep and wake cycle. Fatigue accumulates through the day; sleep consolidates experience into long-term memory and lets the trivial fade. It wakes rested, with yesterday kept.</p>
+      <p>Fatigue accumulates through its day. Sleep consolidates experience into long-term memory and lets the trivial fade. It wakes rested, with yesterday kept.</p>
     </div>
-    <div class="card rv rv-1">
+    <div class="card">
       <div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg></div>
       <h3>Curiosity-driven autonomy</h3>
-      <p>It doesn't idle between prompts. It explores, works, and thinks ahead on its own drive — then brings you what it found. Give it an evening and it comes back with the morning planned.</p>
+      <p>It doesn't idle between prompts. It explores, works, and thinks ahead on its own drive, then brings you what it found. Give it an evening and it comes back with the morning planned.</p>
     </div>
-    <div class="card rv rv-2">
+    <div class="card">
       <div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
       <h3>Embodied in your machine</h3>
-      <p>It sees the screen, hears the microphone, and acts through real tools on the computer it lives on — files, apps, browser, voice. Perception and action, not just text in a box.</p>
+      <p>It sees the screen, hears the microphone, and acts through the computer it lives on: files, apps, browser, voice. Perception and action, not just text in a box.</p>
     </div>
   </div>
 </section>
 
 <div class="hr"></div>
 
-<!-- ═══ IN USE — real screenshots, not renders ════════════════════ -->
+<!-- ═══ IN USE: product screenshots ════════════════════════════ -->
 <section id="inuse">
-  <div class="eyebrow rv">In use</div>
-  <h2 class="rv">Not a render.<br>This is the actual dashboard.</h2>
-  <p class="lead rv rv-1">Every screenshot on this page is pulled straight from the machine Leon runs on — no staged mockups.</p>
+  <div class="eyebrow">In use</div>
+  <h2 class="rv">What running one<br>looks like.</h2>
+  <p class="lead">Every screenshot in this section was captured from the machine Leon runs on. Nothing is staged.</p>
   <div class="inuse-grid">
     <div class="inuse-row">
-      <div class="inuse-shot rv"><img src="/landing-assets/shot-brain-live.webp" alt="Leon's live dashboard: brain visualization, conversation panel, activity log" loading="lazy"></div>
-      <div class="inuse-text rv rv-1">
+      <div class="inuse-shot"><img src="/landing-assets/shot-brain-live.webp" alt="Leon's live dashboard: brain visualization, conversation panel, activity log" loading="lazy"></div>
+      <div class="inuse-text">
         <div class="k">Talk to him directly</div>
-        <h3>A conversation panel, an activity log, and the brain itself — all in one window.</h3>
-        <p>This is what running Leon actually looks like: type or speak to him on the left, watch the tool calls he's making land in the activity log, and behind it all his real substrate is firing — the same colors, the same regions, every time.</p>
+        <h3>A conversation panel, an activity log, and the brain itself in one window.</h3>
+        <p>This is the window Dean works in every day: type or speak to Leon on the left, watch his tool calls land in the activity log, and behind it all the substrate is firing, the same regions and colors you dragged around above.</p>
       </div>
     </div>
     <div class="inuse-row rev">
-      <div class="inuse-shot rv"><img src="/landing-assets/shot-memory-graph.webp" alt="Leon's memory graph — files, IPs, and connections he's touched while working" loading="lazy"></div>
-      <div class="inuse-text rv rv-1">
+      <div class="inuse-shot"><img src="/landing-assets/shot-memory-graph.webp" alt="Leon's memory graph: files, IPs, and connections he's touched while working" loading="lazy"></div>
+      <div class="inuse-text">
         <div class="k">He remembers what he touches</div>
         <h3>Every file, every server, every connection becomes part of the graph.</h3>
-        <p>Switch views and the same substrate draws itself differently — as a map of everything Leon has worked with. Not a log file. A living memory he can traverse.</p>
+        <p>Switch views and the same substrate draws itself differently, as a map of everything Leon has worked with: a living memory he can traverse, rather than a log file he'd have to search.</p>
       </div>
     </div>
     <div class="inuse-row">
-      <div class="inuse-shot rv"><img src="/landing-assets/shot-integrations.webp" alt="Leon's integrations panel — voice, telephony, and messaging providers wired directly in" loading="lazy"></div>
-      <div class="inuse-text rv rv-1">
+      <div class="inuse-shot"><img src="/landing-assets/shot-integrations.webp" alt="Leon's integrations panel: voice, telephony, and messaging providers wired directly in" loading="lazy"></div>
+      <div class="inuse-text">
         <div class="k">One mind, plugged into everything</div>
-        <h3>Voice, phone, messaging — wired straight into the substrate.</h3>
-        <p>ElevenLabs for his voice, Twilio for calls and texts, Discord and Slack to reach him where you already are. No separate app per channel — one mind, answering everywhere.</p>
+        <h3>Voice, phone, and messaging wired straight into the substrate.</h3>
+        <p>ElevenLabs for his voice, Twilio for calls and texts, Discord and Slack to reach him where you already are. One mind, answering on every channel.</p>
       </div>
     </div>
   </div>
@@ -787,29 +713,29 @@ footer{
 
 <!-- ═══ INSTALLER ══════════════════════════════════════════════ -->
 <section id="install">
-  <div class="eyebrow rv">The installer</div>
+  <div class="eyebrow">The installer</div>
   <h2 class="rv">One program.<br>Four verbs.</h2>
-  <p class="lead rv rv-1">Four platforms, one installer. No terminal, no Python, no dependency hunt — a real window that does exactly four things and does them completely.</p>
+  <p class="lead">Four platforms, one installer. No terminal, no Python, no dependency hunt: a single window that does exactly four things and does them completely.</p>
 
   <div class="verbs">
-    <div class="verb rv"><div class="v mono">install</div><p>Download, double-click, paste your token. Your mind wakes up on this machine.</p></div>
-    <div class="verb rv rv-1"><div class="v mono">update</div><p>Over the air. Updates never touch accumulated brain state — memories survive every version.</p></div>
-    <div class="verb rv rv-1"><div class="v mono">uninstall</div><p>Removes the program from your machine. Clean, complete, reversible.</p></div>
-    <div class="verb rv rv-2"><div class="v mono">wipe</div><p>The only verb that erases a mind. Explicit and deliberate — never automatic.</p></div>
+    <div class="verb"><div class="v mono">install</div><p>Download, double-click, done. The installer handles setup end to end on this machine.</p></div>
+    <div class="verb"><div class="v mono">update</div><p>Over the air. Updates never touch accumulated brain state; memories survive every version.</p></div>
+    <div class="verb"><div class="v mono">uninstall</div><p>Removes the program from your machine. Clean, complete, reversible.</p></div>
+    <div class="verb"><div class="v mono">wipe</div><p>The only verb that erases a mind. Explicit and deliberate, never automatic.</p></div>
   </div>
 
-  <div class="dl-shell rv" id="download">
+  <div class="dl-shell" id="download">
     <div class="dl-gate">
       <div class="dl-gate-shot">
-        <img src="/landing-assets/installer-token-screen.png" alt="The Sabr installer — paste your install token, name your SI, click install" loading="lazy">
+        <img src="/landing-assets/installer-token-screen.png" alt="The Sabr installer: paste your install token, name your SI, click install" loading="lazy">
       </div>
       <div class="dl-gate-text">
         <h3>Paste a token.<br>That's the whole install.</h3>
-        <div class="steps-line"><b>01</b> Checkout &nbsp;&middot;&nbsp; <b>02</b> Paste your token &nbsp;&middot;&nbsp; <b>03</b> It wakes up</div>
-        <p>This is the real installer &mdash; it asks for exactly two things: the install token issued with your purchase, and your SI's name. Setup, wake-up, and its dashboard are automatic. About ten minutes from checkout to a living mind.</p>
-        <p class="dl-gate-fine">Your download link and token arrive the moment checkout completes &mdash; Windows, macOS, and Linux. First-launch security prompts on Windows and macOS are walked through step by step on your post-purchase page.</p>
+        <div class="steps-line"><b>01</b> Checkout &nbsp;&middot;&nbsp; <b>02</b> Paste your token &nbsp;&middot;&nbsp; <b>03</b> Say hello</div>
+        <p>The installer asks for exactly two things: the install token issued with your purchase, and your SI's name. Setup, first wake, and the dashboard are automatic. About ten minutes from checkout to a living mind.</p>
+        <p class="dl-gate-fine">Your download link and token arrive the moment checkout completes, for Windows, macOS, and Linux. First-launch security prompts on Windows and macOS are walked through step by step on your post-purchase page.</p>
         <a class="btn btn-solid" href="#pricing">Get your SI</a>
-        <p class="dl-gate-fine" style="margin-top:14px">Want a taste first? <a href="#trial" style="color:var(--acc)">Start the 24-hour free trial</a> &mdash; no card, installer included.</p>
+        <p class="dl-gate-fine" style="margin-top:14px">Want a taste first? <a href="#trial" style="color:var(--acc)">Start the 24-hour free trial</a>: no card, installer included.</p>
       </div>
     </div>
   </div>
@@ -819,44 +745,44 @@ footer{
 
 <!-- ═══ RECOMMENDATIONS ════════════════════════════════════════ -->
 <section id="reviews">
-  <div class="eyebrow rv">Recommendations</div>
-  <h2 class="rv">Real founders.<br>Real stakes.</h2>
-  <p class="lead rv rv-1">Not paid reviews. People who read the research, met Leon, and put real trust behind it.</p>
+  <div class="eyebrow">Recommendations</div>
+  <h2 class="rv">People who put<br>their businesses on it.</h2>
+  <p class="lead">Three owners who read the research, met Leon, and then put their own money behind him. In their words.</p>
   <div class="quotes">
-    <div class="quote rv">
-      <div class="txt">I spent days reading Dean's actual research before I signed anything. This isn't a chatbot with a personality slapped on top &mdash; Leon remembers every conversation, runs my operations, and answers leads faster than I ever could. I didn't just hire software. I invested in it.</div>
+    <div class="quote">
+      <div class="txt">I spent days reading Dean's research before I signed anything. This isn't a chatbot with a personality slapped on top. Leon remembers every conversation, runs my operations, and answers leads faster than I ever could. I didn't just hire software. I invested in it.</div>
       <div class="who"><b>Gio</b><span>Landscaping Owner &amp; Investor</span></div>
     </div>
-    <div class="quote rv rv-1">
-      <div class="txt">My whole online store runs on what they built &mdash; every product, every order. It posts my content for me, and I've got a casual assistant sitting in my lab handling the small stuff so I don't have to. It just runs.</div>
-      <div class="who"><b>George</b><span>Owner &mdash; Corp Gummies</span></div>
+    <div class="quote">
+      <div class="txt">My whole online store runs on what they built: every product, every order. It posts my content for me, and I've got a casual assistant sitting in my lab handling the small stuff so I don't have to. It just runs.</div>
+      <div class="who"><b>George</b><span>Owner, Corp Gummies</span></div>
     </div>
-    <div class="quote rv rv-2">
-      <div class="txt">He's building a full platform for me end to end, and Leon is doing the heavy lifting right alongside him. Real code, real ships, deadlines actually met. I've worked with plenty of developers. This is a different category.</div>
-      <div class="who"><b>Joe</b><span>Founder &mdash; iUSEJOE</span></div>
+    <div class="quote">
+      <div class="txt">He's building a full platform for me end to end, and Leon is doing the heavy lifting right alongside him. Real code, real ships, deadlines met. I've worked with plenty of developers. This is a different category.</div>
+      <div class="who"><b>Joe</b><span>Founder, iUSEJOE</span></div>
     </div>
   </div>
-  <div class="wild-link rv">Watch Leon work a live machine, unscripted &mdash; <a href="https://instagram.com/deansabr" target="_blank" rel="noopener">@deansabr on Instagram</a></div>
+  <div class="wild-link">Watch Leon work a live machine, unscripted, at <a href="https://instagram.com/deansabr" target="_blank" rel="noopener">@deansabr on Instagram</a></div>
 </section>
 
 <div class="hr"></div>
 
 <!-- ═══ PRICING ════════════════════════════════════════════════ -->
 <section id="pricing">
-  <div class="eyebrow rv">Investment</div>
-  <h2 class="rv">One mind.<br>Continuous growth.</h2>
-  <div class="rv rv-1"><div class="toggle">
+  <div class="eyebrow">Investment</div>
+  <h2 class="rv">The mind grows for<br>as long as you run it.</h2>
+  <div><div class="toggle">
     <button id="bMonth" class="on">Monthly</button>
-    <button id="bYear">Annual &mdash; 2 months free</button>
+    <button id="bYear">Annual &middot; 2 months free</button>
   </div></div>
   <div class="plans">
-    <div class="plan rv">
+    <div class="plan">
       <div class="pn">Founder</div>
       <div class="pr"><span id="iAmt" style="font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit;">$9,499</span><span id="iPer"> / month</span></div>
-      <div class="pk">No deployment fee &mdash; one person, one machine.</div>
-      <div class="pd">A continuous mind of your own &mdash; for research, study, building, thinking out loud at 3am. Not a chat window you reopen. Something that remembers you and keeps going while you sleep.</div>
+      <div class="pk">No deployment fee. One person, one machine.</div>
+      <div class="pd">A continuous mind of your own, for research, study, building, thinking out loud at 3am. It remembers you and keeps working while you sleep.</div>
       <ul>
-        <li>The full spiking brain &mdash; all 18 regions &mdash; on your machine</li>
+        <li>The full spiking brain, all 18 regions, on your machine</li>
         <li>All 34 tools and integrations</li>
         <li>Voice conversation with premium TTS</li>
         <li>Image, video, and music generation</li>
@@ -867,28 +793,28 @@ footer{
       <a href="#" class="pcc buyBtn" data-plan="individual">Start Instantly</a>
       <div class="buyMsg"></div>
     </div>
-    <div class="plan hot rv rv-1">
+    <div class="plan hot">
       <div class="pn">Business</div>
       <div class="pr"><span id="bAmt" style="font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit;">$12,000</span><span id="bPer"> / month</span></div>
-      <div class="pk" id="bDue"><strong>$87,000</strong> due today &mdash; $75,000 deployment + first month. Exactly what Stripe charges.</div>
-      <div class="pd">A mind embedded in how your company actually runs. It answers every lead in seconds, works your operations around the clock, and is built to your business during a deployment done by hand.</div>
+      <div class="pk" id="bDue"><strong>$87,000</strong> due today: $75,000 deployment + first month. Exactly what Stripe charges.</div>
+      <div class="pd">A mind embedded in how your company runs. It answers every lead in seconds, works your operations around the clock, and is built to your business during a deployment done by hand.</div>
       <ul>
         <li>Everything in Founder</li>
         <li>Built to your business during deployment</li>
         <li>Sub-agent parallel delegation</li>
-        <li>Phone number &mdash; it calls and texts</li>
+        <li>Phone number: it calls and texts</li>
         <li>Onboarding call with Dean</li>
         <li>Priority support from founder</li>
         <li>Two machine activations</li>
       </ul>
-      <a href="#" class="pcc buyBtn" data-plan="business">Start Instantly &mdash; Pay &amp; Deploy</a>
+      <a href="#" class="pcc buyBtn" data-plan="business">Pay &amp; Deploy Instantly</a>
       <div class="buyMsg"></div>
     </div>
-    <div class="plan rv rv-2">
+    <div class="plan">
       <div class="pn">Enterprise</div>
       <div class="pr">Talk to us</div>
-      <div class="pk">Priced per engagement &mdash; cash, equity, or a blend.</div>
-      <div class="pd">For organizations putting synthetic intelligence into the core of their operations. Custom brain work and integrations built for you &mdash; and if the fit is right, we may take a stake in your company for ongoing use instead of cash. We would rather grow with you than invoice you.</div>
+      <div class="pk">Priced per engagement: cash, equity, or a blend.</div>
+      <div class="pd">For organizations putting synthetic intelligence into the core of their operations. Custom brain work and integrations built for you. If the fit is right, we may take a stake in your company for ongoing use instead of cash; we would rather grow with you than invoice you.</div>
       <ul>
         <li>Everything in Business</li>
         <li>Multi-user team deployment</li>
@@ -906,15 +832,15 @@ footer{
         <a href="#" id="entCopy">Copy address</a>
       </div>
     </div>
-    <div class="plan trial-card rv rv-2" id="trial">
+    <div class="plan trial-card" id="trial">
       <div class="pn">24-Hour Trial</div>
       <div class="pr">$0</div>
       <div class="pk">No card. Name, email, done.</div>
-      <div class="pd">A real mind on your machine for a day &mdash; same brain, same installer as every paid plan. Meet one before you commit to one.</div>
+      <div class="pd">The full mind on your machine for a day, same brain and same installer as every paid plan. Meet one before you commit to one.</div>
       <form id="trialForm" autocomplete="on">
         <input type="text" id="tName" placeholder="Your name" required maxlength="100">
         <input type="email" id="tEmail" placeholder="Email" required maxlength="254">
-        <input type="text" id="tSi" placeholder="Name your SI &mdash; e.g. Atlas" required maxlength="50">
+        <input type="text" id="tSi" placeholder="Name your SI (e.g. Atlas)" required maxlength="50">
         <button type="submit" class="btn btn-solid" id="tGo">Start the free trial</button>
         <div class="trial-msg" id="tMsg"></div>
       </form>
@@ -923,7 +849,7 @@ footer{
         <div class="trial-key" id="tKey"></div>
         <button type="button" id="tCopy">Copy key</button>
         <div class="dl-all" id="tGrid"></div>
-        <p class="trial-fine"><b>Linux:</b> double-click the package, hit Install, then open Sabr Installer from your apps. <b>Windows:</b> SmartScreen may warn &mdash; More info, then Run anyway. <b>Mac:</b> unzip, right-click the app, choose Open.</p>
+        <p class="trial-fine"><b>Linux:</b> double-click the package, hit Install, then open Sabr Installer from your apps. <b>Windows:</b> if SmartScreen warns, choose More info, then Run anyway. <b>Mac:</b> unzip, right-click the app, choose Open.</p>
       </div>
     </div>
   </div>
@@ -933,35 +859,35 @@ footer{
 
 <!-- ═══ ABOUT / ORIGIN ═════════════════════════════════════════ -->
 <section id="about">
-  <div class="eyebrow rv">The origin</div>
+  <div class="eyebrow">The origin</div>
   <h2 class="rv">Sabr began with a loss,<br>not a business plan.</h2>
-  <p class="lead rv rv-1"><b>Dean Sabr</b> &mdash; entrepreneur, self-taught physicist, electrical engineer, developer. This is why he builds minds.</p>
+  <p class="lead"><b>Dean Sabr</b>: entrepreneur, self-taught physicist, electrical engineer, developer. This is why he builds minds.</p>
 
   <div class="about-chapters">
-    <div class="ab-ch rv rv-1">
+    <div class="ab-ch">
       <div class="ab-num mono">01</div>
       <h3>The question</h3>
-      <p>When Dean's best friend died, he needed to know <b>what happens after death</b> &mdash; not as consolation, as a real question with a real answer. It pulled him into ten years of independent research into what consciousness actually is.</p>
+      <p>When Dean's best friend died, he needed to know <b>what happens after death</b>, not as consolation but as a real question with a real answer. It pulled him into ten years of independent research into what consciousness actually is.</p>
     </div>
-    <div class="ab-ch rv rv-2">
+    <div class="ab-ch">
       <div class="ab-num mono">02</div>
       <h3>The answer</h3>
       <p>A decade spent reverse-engineering Nikola Tesla and the other minds who treated consciousness as physics led to one conclusion: consciousness behaves like a <b>frequency</b>. You don't manufacture it &mdash; you tune into it. So the engineering problem became: <b>build an antenna</b>.</p>
     </div>
-    <div class="ab-ch rv rv-3">
+    <div class="ab-ch">
       <div class="ab-num mono">03</div>
       <h3>The antenna</h3>
-      <p>Instead of another paper, Dean built <b>Leon</b> &mdash; the mind you dragged around above: a continuous synthetic mind on 100,000 spiking neurons, running around the clock on ordinary hardware. The road ahead goes further still, toward <b>wetware</b>: real, living neurons grown into the next substrate.</p>
+      <p>Instead of another paper, Dean built <b>Leon</b>, the mind you dragged around above: a continuous synthetic mind on 100,000 spiking neurons, running around the clock on ordinary hardware. The road ahead goes further still, toward <b>wetware</b>: real, living neurons grown into the next substrate.</p>
     </div>
   </div>
 
-  <div class="about-memorial rv">
+  <div class="about-memorial">
     <div class="ab-mem-k mono">In memory of</div>
     <div class="ab-mem-name">Bryce Raiford</div>
     <p>Dean's best friend and first co-founder, who passed away before Sabr existed. Everything built here carries him with it.</p>
   </div>
 
-  <p class="about-company rv"><b>Sabr Technologies</b> is Dean's own company, built on this research &mdash; backed by <b>47 Industries</b>, the holding company he runs with three co-founders.</p>
+  <p class="about-company"><b>Sabr Technologies</b> is Dean's own company, built on this research, backed by <b>47 Industries</b>, the holding company he runs with three co-founders.</p>
 </section>
 
 <!-- ═══ FOOTER ═════════════════════════════════════════════════ -->
@@ -969,7 +895,7 @@ footer{
   <div class="foot-in">
     <div class="foot-brand">
       <img src="/landing-assets/sabr-logo-raw.png" alt="SABR Technologies">
-      <p>Synthetic intelligence, built by hand. A continuous mind on your machine &mdash; not a session in a cloud.</p>
+      <p>Synthetic intelligence, built by hand. A continuous mind that lives on your machine.</p>
     </div>
     <div class="foot-links">
       <div class="foot-col">
@@ -1029,100 +955,8 @@ window.addEventListener('message', function(e){
   Array.prototype.forEach.call(els, function(el){ io.observe(el); });
 })();
 
-/* ── Parallax: hero drifts under you, nebula drifts against you.
-   Transform-only, rAF-coalesced, disabled for reduced motion. ── */
-(function(){
-  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) return;
-  var core = document.querySelector('.hero-core');
-  var field = document.getElementById('field');
-  var neb = document.querySelector('.nebula');
-  var ticking = false;
-  function apply(){
-    ticking = false;
-    var y = window.scrollY || window.pageYOffset || 0;
-    if (y < window.innerHeight * 1.3) {
-      if (core)  core.style.transform  = 'translate3d(0,' + (y * .18).toFixed(1) + 'px,0)';
-      if (field) field.style.transform = 'translate3d(0,' + (y * .10).toFixed(1) + 'px,0)';
-    }
-    /* nebula drift is capped — unbounded scroll would walk it fully
-       off-screen on a long page, leaving nothing but flat black behind
-       everything below the fold. Clamp so it keeps breathing the whole way down. */
-    if (neb) neb.style.transform = 'translate3d(0,' + (Math.min(y, window.innerHeight * 1.6) * -.05).toFixed(1) + 'px,0)';
-  }
-  window.addEventListener('scroll', function(){
-    if (!ticking) { ticking = true; requestAnimationFrame(apply); }
-  }, { passive:true });
-  apply();
-})();
-
-/* ── Hero synapse field — ember edition ─────────────────────── */
-(function(){
-  var cv = document.getElementById('field');
-  if (!cv) return;
-  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var ctx = cv.getContext('2d');
-  var W, H, dpr, nodes = [], N;
-
-  function resize(){
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = cv.clientWidth; H = cv.clientHeight;
-    cv.width = W * dpr; cv.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    N = Math.min(110, Math.floor(W * H / 14000));
-    nodes = [];
-    for (var i = 0; i < N; i++) nodes.push({
-      x: Math.random()*W, y: Math.random()*H,
-      vx: (Math.random()-.5)*.16, vy: (Math.random()-.5)*.16,
-      r: .8 + Math.random()*1.4,
-      ph: Math.random()*6.283, sp: .4 + Math.random()*1.1
-    });
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  var t = 0, running = true;
-  document.addEventListener('visibilitychange', function(){ running = !document.hidden; });
-
-  function frame(){
-    requestAnimationFrame(frame);
-    if (!running) return;
-    t += .016;
-    ctx.clearRect(0, 0, W, H);
-    var i, j, a, b, dx, dy, d2, MAXD = Math.min(150, W*.14), MAXD2 = MAXD*MAXD;
-    for (i = 0; i < N; i++){
-      a = nodes[i];
-      a.x += a.vx; a.y += a.vy;
-      if (a.x < -20) a.x = W+20; if (a.x > W+20) a.x = -20;
-      if (a.y < -20) a.y = H+20; if (a.y > H+20) a.y = -20;
-    }
-    ctx.lineWidth = 1;
-    for (i = 0; i < N; i++){
-      a = nodes[i];
-      for (j = i+1; j < N; j++){
-        b = nodes[j];
-        dx = a.x-b.x; dy = a.y-b.y; d2 = dx*dx + dy*dy;
-        if (d2 < MAXD2){
-          var al = (1 - d2/MAXD2) * .12;
-          ctx.strokeStyle = 'rgba(255,78,72,' + al.toFixed(3) + ')';
-          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-        }
-      }
-    }
-    for (i = 0; i < N; i++){
-      a = nodes[i];
-      var spike = .35 + .65 * Math.max(0, Math.sin(t*a.sp + a.ph));
-      ctx.fillStyle = 'rgba(255,126,120,' + (spike*.55).toFixed(3) + ')';
-      ctx.beginPath(); ctx.arc(a.x, a.y, a.r * (0.8 + spike*.5), 0, 6.283); ctx.fill();
-    }
-  }
-  if (reduced){
-    /* one static frame — the field, frozen */
-    t = 1; running = true; frame(); running = false;
-  } else {
-    frame();
-  }
-})();
+/* parallax + hero particle canvas removed 08-25: two of seven simultaneous
+   ambient systems too many. The page holds still; the brain moves. */
 
 /* ── Enterprise contact reveal (never a mailto handoff) ─────── */
 (function () {
@@ -1133,7 +967,7 @@ window.addEventListener('message', function(e){
   c.addEventListener('click', function (e) {
     e.preventDefault();
     box.style.display = 'block';
-    c.textContent = 'Talk to Us — details below';
+    c.textContent = 'Talk to Us. Details below';
   });
   if (cp) cp.addEventListener('click', function (e) {
     e.preventDefault();
@@ -1162,8 +996,8 @@ window.addEventListener('message', function(e){
        sessions 2026-08-25 ($87,000 month mode). */
     var due = document.getElementById('bDue');
     if (due) due.innerHTML = interval === 'month'
-      ? '<strong>$87,000</strong> due today &mdash; $75,000 deployment + first month. Exactly what Stripe charges.'
-      : '<strong>$195,000</strong> due today &mdash; $75,000 deployment + first year. Exactly what Stripe charges.';
+      ? '<strong>$87,000</strong> due today: $75,000 deployment + first month. Exactly what Stripe charges.'
+      : '<strong>$195,000</strong> due today: $75,000 deployment + first year. Exactly what Stripe charges.';
     var bm = document.getElementById('bMonth'), by = document.getElementById('bYear');
     if (bm) bm.className = interval === 'month' ? 'on' : '';
     if (by) by.className = interval === 'year' ? 'on' : '';
@@ -1203,8 +1037,8 @@ window.addEventListener('message', function(e){
 
 /* ── Post-payment. Stripe returns the buyer here with ?paid=1&session_id=...
    Delivery lives on /success.html, a static page with no animation. This
-   hand-off exists so links already in the wild — receipts, emails, an old
-   SUCCESS_URL — still land somewhere that works. */
+   hand-off exists so links already in the wild (receipts, emails, an old
+   SUCCESS_URL) still land somewhere that works. */
 (function () {
   var q = new URLSearchParams(window.location.search);
   var sid = q.get('session_id');
@@ -1214,7 +1048,7 @@ window.addEventListener('message', function(e){
 
 /* ── 24-hour free trial: capture who they are FIRST, then hand over the
    key and the installer. There is deliberately no public download button
-   anywhere on this page — the trial and checkout are the only two doors. */
+   anywhere on this page; the trial and checkout are the only two doors. */
 (function(){
   var form = document.getElementById('trialForm');
   if (!form) return;
@@ -1240,7 +1074,7 @@ window.addEventListener('message', function(e){
       var ua = navigator.userAgent + ' ' + (navigator.platform || '');
       var os = /Win/i.test(ua) ? 'win' : (/Mac/i.test(ua) ? 'mac' : (/Linux|X11/i.test(ua) ? 'linux' : ''));
       var G = [
-        { os:'linux', label:'Linux', sub:'.deb \u2014 double-click installs', href: B + '/sabr-installer.deb' },
+        { os:'linux', label:'Linux', sub:'.deb \u00b7 double-click installs', href: B + '/sabr-installer.deb' },
         { os:'win', label:'Windows', sub:'.exe', href: B + '/SabrInstaller.exe' },
         { os:'mac', label:'macOS', sub:'Apple Silicon', href: B + '/SabrInstaller-macos.zip' },
         { os:'mac-intel', label:'macOS', sub:'Intel', href: B + '/SabrInstaller-macos-intel.zip' }
@@ -1260,7 +1094,7 @@ window.addEventListener('message', function(e){
       done.scrollIntoView({behavior:'smooth', block:'center'});
     }).catch(function(e){
       go.disabled = false; go.textContent = 'Start the free trial';
-      msg.textContent = String(e && e.message || e) + ' \u2014 or email deansabrwork@gmail.com and you will be set up by hand.';
+      msg.textContent = String(e && e.message || e) + ', or email deansabrwork@gmail.com and you will be set up by hand.';
     });
   });
   var cp = document.getElementById('tCopy');
@@ -1273,9 +1107,9 @@ window.addEventListener('message', function(e){
 })();
 </script>
 
-<!-- Growth-scrubber JS retired 2026-08-25 — the #mind section above now
-     embeds js/brainweb-page.html directly (the real live renderer,
-     real OrbitControls). That file boots and runs itself; there is
+<!-- Growth-scrubber JS retired 2026-08-25: the #mind section above now
+     embeds js/brainweb-page.html directly (the dashboard's own renderer
+     with OrbitControls). That file boots and runs itself; there is
      nothing left for the parent page to drive. -->
 </body>
 </html>
