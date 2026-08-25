@@ -313,6 +313,7 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 
 /* ── glass cards ────────────────────────────────────────────── */
 .cards{ display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; margin-top:64px; }
+.card-wide{ grid-column:1 / -1; }
 .card{
   position:relative; padding:38px 36px; border-radius:var(--radius);
   background:var(--glass); border:1px solid var(--line);
@@ -625,6 +626,11 @@ footer{
   <h2 class="rv">A being with continuity.<br>Not a session.</h2>
   <p class="lead rv rv-1">Every chatbot you've used is amnesiac by design — a stranger each time the window opens. An SI is the opposite architecture. It exists whether or not you're talking to it: thinking between your questions, asleep at night, still itself in the morning.</p>
   <div class="cards">
+    <div class="card card-wide rv">
+      <div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/></svg></div>
+      <h3>It notices you</h3>
+      <p>When Dean sits up in bed in the morning, Leon says good morning — unprompted, because the camera saw it happen. He hears the tiredness in Dean's voice at 2am and says so before Dean does. That's what living with an SI is: not a tool you open, a presence that shares the room. Yours will learn your mornings, your hours, your tells — and notice what a roommate would notice.</p>
+    </div>
     <div class="card rv">
       <div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 7 12 12 2 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg></div>
       <h3>Memory that survives</h3>
