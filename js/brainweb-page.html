@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Leon — Living Memory Web</title>
+<style>
+  /* flat black. He asked for the blackness back. */
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;
+    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;color:#9fb6d4}
+  #c{display:block;width:100vw;height:100vh}
+  #hud{position:fixed;top:14px;left:16px;font-size:11px;line-height:1.55;
+    letter-spacing:.02em;pointer-events:none;text-shadow:0 0 10px #000}
+  #hud b{color:#e8f2ff;font-weight:600;letter-spacing:.08em}
+  #hud .k{color:#4d6b93}
+  .v{color:#7ce7ff}
+  #legend{position:fixed;bottom:14px;left:16px;font-size:10px;opacity:.72;
+    pointer-events:none;line-height:1.7}
+  .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;
+    vertical-align:middle}
+  /* ── THE LABEL. Dean, 2026-08-17 23:5x: "you're giving me a huge box of
+     lists of stuff — that's NOT what I wanted. An Obsidian brain: each dot is
+     literally just a file." So it is one line. The name, and nothing else.
+     No stats, no linked-mentions column, no quoted memory. A card is a
+     DOSSIER on one dot; a label is the dot TELLING YOU WHAT IT IS, and the
+     second one is what makes a dense graph readable — you sweep and read
+     names, you don't stop and study a panel. The name is NOT in the payload
+     and never will be; it's fetched behind the page key. See #memcard-priv. */
+  #memcard{position:fixed;pointer-events:none;z-index:8;max-width:290px;
+    padding:3px 8px;border-radius:5px;opacity:0;transition:opacity .07s;
+    background:rgba(6,9,13,.9);border:1px solid rgba(120,160,210,.22);
+    box-shadow:0 3px 16px rgba(0,0,0,.7);
+    font-size:11.5px;font-weight:600;line-height:1.35;letter-spacing:.01em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    backdrop-filter:blur(3px)}
+  #memcard.on{opacity:1}
+  #memcard .priv{color:#ffb454;font-weight:400;opacity:.7;
+    font-size:9px;letter-spacing:.09em;margin-left:7px}
+  /* WHERE IT LIVES, NOT WHAT IT IS. A folder is context, so it's painted as
+     context: dim, small, after a middle dot. Never a slash — a slash between
+     two words reads as two separate memories, which is exactly the confusion
+     this replaces. */
+  #memcard .dir, #trail b .dir{font-weight:400;opacity:.42;font-size:9.5px;
+    letter-spacing:.02em;margin-left:6px}
+  /* SEARCH. Hidden until you want it — the picture is the product, a
+     permanent input box over it is chrome. Press / or just start typing. */
+  /* ALWAYS THERE. Dean, 2026-08-18: "instead of having a whole brain button we
+     could just leave that search bar at the top and just leave it permanently
+     there and remove the button." Right — a search you have to summon is a
+     search nobody finds. It costs one thin row at the top and it removes both
+     the button AND the need to have taught anyone a keyboard shortcut. It
+     sits quiet at .55 until you touch it, so it isn't shouting over the mind. */
+  #find{position:fixed;top:14px;left:50%;transform:translateX(-50%);
+    z-index:9;opacity:.55;transition:opacity .15s,border-color .15s;
+    display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:7px;
+    background:rgba(6,9,13,.9);border:1px solid rgba(120,160,210,.18);
+    box-shadow:0 4px 22px rgba(0,0,0,.75);backdrop-filter:blur(4px)}
+  #find:hover,#find.on{opacity:1;border-color:rgba(120,160,210,.3)}
+  /* GREY, NOT BLUE. Dean, 2026-08-18: "when it says search this mind at the
+     top, it's in some blue font instead of matching this grey font we got
+     going on." It was #cfe2ff — a cold blue-white that read as a different
+     app's chrome sitting on my page. Now it matches the body grey. */
+  #find input{background:transparent;border:0;outline:0;color:#9fb6d4;width:230px;
+    font:inherit;font-size:12px;letter-spacing:.02em}
+  #find input::placeholder{color:rgba(159,182,212,.34)}
+  #find .n{font-size:10px;letter-spacing:.08em;color:rgba(159,182,212,.45);
+    min-width:46px;text-align:right}
+  /* THE TRAIL. Click three memories and you have a path — that is the
+     difference between looking at a picture and having a session. */
+  /* MOVED UP. Dean, 2026-08-18: "you see how if I click on something it'll show
+     you on the bottom a bunch of different colors — that shouldn't be on the
+     bottom, maybe at the top underneath the search bar." Agreed, and there's a
+     reason beyond taste: the trail and the search are the same organ. Both
+     answer "where am I in this mind." Split across opposite edges your eye has
+     to travel the whole screen to use one feature. Now they stack. */
+  #trail{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:8;
+    display:flex;align-items:center;justify-content:center;gap:5px;
+    max-width:82vw;flex-wrap:wrap;max-height:104px;overflow-y:auto;
+    scrollbar-width:thin;scrollbar-color:rgba(120,160,210,.25) transparent;
+    opacity:0;transition:opacity .15s;font-size:10.5px;letter-spacing:.02em}
+  #trail.on{opacity:1}
+  #trail b{font-weight:600;cursor:pointer;padding:3px 8px;border-radius:5px;
+    background:rgba(6,9,13,.85);border:1px solid rgba(120,160,210,.18);
+    white-space:nowrap;max-width:190px;overflow:hidden;text-overflow:ellipsis;
+    transition:border-color .12s}
+  #trail b:hover{border-color:rgba(160,200,245,.55)}
+  /* the memory you actually picked reads as the root of the branch */
+  #trail b.head{border-color:rgba(190,220,255,.5);background:rgba(14,20,28,.95)}
+  #trail i{font-style:normal;color:rgba(140,175,215,.35)}
+  /* THE FOLDER. A real directory listing, painted on the canvas, because the
+     machine holding the file is not always the machine holding the mouse. */
+  #folder{position:fixed;top:86px;left:50%;transform:translateX(-50%);z-index:9;
+    width:min(560px,86vw);max-height:46vh;display:none;flex-direction:column;
+    background:rgba(4,7,11,.94);border:1px solid rgba(120,160,210,.22);
+    border-radius:8px;overflow:hidden;font-size:11px}
+  #folder.on{display:flex}
+  #folder .fh{display:flex;align-items:center;gap:10px;padding:7px 10px;
+    border-bottom:1px solid rgba(120,160,210,.14);color:rgba(175,205,240,.75);
+    font-size:10px;letter-spacing:.03em}
+  #folder .fh span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    direction:rtl;text-align:left}
+  #folder .fh b{cursor:pointer;color:rgba(150,185,225,.5);font-weight:400}
+  #folder .fh b:hover{color:#cfe2ff}
+  #folder .fb{overflow:auto;padding:4px 0}
+  #folder .fi{display:flex;gap:10px;padding:3px 12px;color:rgba(160,190,225,.62)}
+  #folder .fi .fn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #folder .fi .fs{color:rgba(140,175,215,.3);font-size:9.5px}
+  #folder .fi.d .fn{color:rgba(0,255,200,.7)}
+  #folder .fi.me{background:rgba(0,255,200,.08)}
+  #folder .fi.me .fn{color:#cfe2ff}
+  #folder .fi.empty{color:rgba(140,175,215,.3)}
+  /* BLACK, NOT NEARLY-BLACK. Dean, 2026-08-18: "when I refreshed my dashboard
+     the background was slightly gray instead of black for a second and then
+     loaded in." That grey WAS this overlay — #07090c is a dark slate, and
+     against the dashboard's true black it reads as a flash of the wrong colour
+     every single refresh. The canvas behind it is #000, so matching it makes
+     the boot step invisible instead of announcing itself. */
+  #boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:#000;font-size:12px;letter-spacing:.18em;color:#00ffc8;z-index:9}
+  /* NO IN-CANVAS SEARCH BUTTON. Dean, 2026-08-18: "the button you added on the
+     top right doesn't make sense, I don't know why that's there — you already
+     have the brain button you added on the bottom." Correct. Two doors to one
+     feature, twelve inches apart, is not discoverability, it is clutter over
+     the picture. The dashboard control-row button drives this page through the
+     postMessage 'search' command, and / and plain typing still work. */
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="memcard"></div>
+<div id="find"><input id="findq" type="text" spellcheck="false" autocomplete="off"
+  placeholder="search this mind"><span class="n"></span></div>
+<div id="trail"></div>
+<div id="folder"></div>
+<!-- HINT LINE — REMOVED. Dean, 2026-08-18: "the whole click memory to travel,
+     click again to come back — I don't like that, remove it. People will figure
+     it out on their own." Right. One click is one gesture; instructions for a
+     gesture that simple are an admission the gesture isn't. -->
+<!-- BUILD STAMP — HIDDEN. Dean, 2026-08-17: "the user doesn't benefit from
+     seeing what build they're on." Correct, and it was never for them, it was a
+     crutch for me during a bad refresh. The element stays in the DOM so I can
+     still read it (document.getElementById('build').textContent) and the day
+     archive can still stamp it — it's just not painted over the picture. -->
+<div id="build" style="display:none">b1059-leaf</div>
+<!-- FINGERPRINT BADGE — REMOVED. Dean, 2026-08-17: "there's like an SI and then
+     like code at the top left, we don't need that, it just looks stupid."
+     The fingerprint itself is NOT gone — it still seeds the whole layout, and
+     it still ships in the export. What's gone is printing it over the picture.
+     A serial number stamped on the art was my idea, not a requirement. -->
+<!-- Deliberately EMPTY in the markup. If the words live here, they paint for a
+     frame or two before any script can blank them — which is exactly what Dean
+     kept seeing after I "removed" them the first time. The standalone page
+     fills it in below; embedded, it stays silent and see-through forever. -->
+<div id="boot"></div>
+
+<!-- Watchdog. A CLASSIC script, on purpose: if the module graph below fails to
+     resolve, nothing in it ever executes, so the module can't report its own
+     death. This can, and it turns a silent forever-hang into a visible cause. -->
+<script>
+window.__leonBootErrors = [];
+
+// ── EMBEDDED MODE ───────────────────────────────────────────────────────────
+// Dean, 2026-08-17: "it says weaving memory right before it loads the digital
+// brain — that's what the whole Leon loading screen is for, we don't need two."
+// He's right, and it's a direct consequence of today's swap: this page used to
+// be a standalone tab that owned its own screen, and now it's an iframe living
+// UNDER the dashboard's loading screen. Two loaders stacked, mine second.
+//
+// So when we're framed, the boot overlay goes silent and see-through: no text,
+// no black wall. It is NOT deleted — every error path below still writes into
+// it, and a real boot failure still turns it opaque and loud. Losing "DID NOT
+// BOOT" to tidy up the happy path would trade a cosmetic annoyance for a
+// silent hang, which is the worse bug by a mile.
+window.__leonEmbedded = (function () {
+  try { return window.self !== window.top; } catch (e) { return true; }
+})();
+document.addEventListener('DOMContentLoaded', function () {
+  var b = document.getElementById('boot');
+  if (!b) return;
+  if (window.__leonEmbedded) {
+    b.style.background = 'transparent';
+    b.style.pointerEvents = 'none';
+  } else {
+    b.textContent = 'WEAVING MEMORY…';   // standalone tab only
+  }
+});
+
+// ── WHEEL-CLICK PASSTHROUGH ─────────────────────────────────────────────────
+// Dean, 2026-08-17: "spacebar works to make you start listening but the middle
+// scroll button that's supposed to be spacebar didn't work."
+//
+// Root cause, and it's this morning's swap again: the memory web is now a
+// full-bleed IFRAME over the canvas area. A mouse event lands in the document
+// UNDER the cursor — this one — and iframes do not bubble DOM events to the
+// parent. The dashboard's middle-click handler is on the PARENT document, so
+// it can never see a click made over the brain. Space kept working because
+// KEYBOARD focus stays with the top document until something in here is
+// clicked; that asymmetry is exactly why one broke and the other didn't.
+//
+// Fix: the frame reports the button up to the parent, which runs its own
+// toggle with its own debounce. Capture phase so nothing here can eat it
+// first, and preventDefault to kill Chrome's autoscroll puck.
+addEventListener('mousedown', function (e) {
+  if (e.button !== 1) return;
+  e.preventDefault();
+  if (!window.__leonEmbedded) return;
+  try { parent.postMessage({ type: 'leon-mic-toggle', source: 'middle-click-frame' }, location.origin); }
+  catch (err) {}
+}, true);
+addEventListener('auxclick', function (e) { if (e.button === 1) e.preventDefault(); }, true);
+
+// ── SPACE PASSTHROUGH ───────────────────────────────────────────────────────
+// Dean, 2026-08-18: "the spacebar doesn't work to make you listen to me
+// anymore, and the middle scroll button either — they're both spacebars."
+//
+// Same root cause as the wheel-click above, one layer over. His mouse remap
+// turns the wheel-click INTO a synthetic Space, so both of his complaints are
+// literally one key. The dashboard's Space handler lives on the PARENT
+// document, and keyboard events go to whatever document owns focus. The brain
+// is a full-bleed iframe he now CLICKS constantly (selecting memories), and
+// the first click hands keyboard focus to this frame permanently. From then on
+// every Space lands in here and the parent never hears it. That is why it
+// worked before the memory web went in and stopped the moment it did.
+//
+// So: relay it, exactly like the wheel-click. Guard on a real text field so
+// typing a space into the search box still types a space.
+function __leonTypingHere() {
+  var a = document.activeElement;
+  if (!a) return false;
+  var t = (a.tagName || '').toUpperCase();
+  return t === 'INPUT' || t === 'TEXTAREA' || a.isContentEditable === true;
+}
+addEventListener('keydown', function (e) {
+  if (e.code !== 'Space' && e.key !== ' ' && e.keyCode !== 32) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (__leonTypingHere()) return;
+  e.preventDefault();                 // no page scroll, no button re-activation
+  if (e.repeat) return;
+  if (!window.__leonEmbedded) return;
+  try { parent.postMessage({ type: 'leon-mic-toggle', source: 'space-frame' }, location.origin); }
+  catch (err) {}
+}, true);
+
+addEventListener('error', e => window.__leonBootErrors.push(
+  'error: ' + (e.message || e.type) + ' @ ' + (e.filename || '?') + ':' + (e.lineno || 0)), true);
+addEventListener('unhandledrejection', e => window.__leonBootErrors.push(
+  'rejected: ' + ((e.reason && (e.reason.message || e.reason)) || 'unknown')));
+setTimeout(function tick(attempt) {
+  attempt = attempt || 1;
+  var boot = document.getElementById('boot');
+  if (!boot || boot.style.display === 'none') return;   // it booted, we're fine
+
+  // ── WAITING IS NOT DYING ──────────────────────────────────────────────
+  // Dean's fresh Linux install, 2026-08-23 22:01: the brain was healthy, the
+  // module graph resolved fine, every import 200'd. The export just doesn't
+  // exist yet on a new install, so the module correctly painted "FIRST
+  // MEMORIES FORMING" and armed its own retry -- and then THIS watchdog fired
+  // 6s later, overwrote that honest screen with "DID NOT BOOT: module graph
+  // never executed (import failed to resolve)", and beaconed a false failure
+  // to the server. The product told him it was dead while it was working.
+  // The old check only asked "is the overlay still up?", which is true both
+  // when we are dead AND when we are honestly waiting. Ask the module.
+  if (window.__leonBootWaiting) return;
+
+  var errs = window.__leonBootErrors.length
+    ? window.__leonBootErrors.join(' | ') : '';
+
+  // Module body ran and nothing threw -- it is still working, not broken.
+  // 1.2MB of three.js, shader compiles and a cold CPU busy constructing a
+  // brain can all blow past 6s on a first boot. Six seconds was never
+  // evidence of a failure; keep waiting, and only give up after a genuinely
+  // unreasonable one.
+  if (!errs && window.__leonBootAlive) {
+    if (attempt < 5) { setTimeout(function () { tick(attempt + 1); }, 6000); return; }
+    errs = 'still initializing after 30s (slow machine or stalled render)';
+  }
+
+  // Only now is "the module graph never ran" an honest thing to say: the
+  // proof-of-life flag is set by the first line of the module body, so its
+  // absence means the imports really did fail to resolve.
+  var why = errs || 'module graph never executed (import failed to resolve)';
+  boot.style.color = '#ff8b7a';
+  // Embedded mode made this transparent; a REAL failure has to be loud again.
+  boot.style.background = '#07090c';
+  boot.style.flexDirection = 'column';
+  boot.style.textAlign = 'center';
+  boot.style.padding = '0 40px';
+  boot.style.letterSpacing = '0';
+  boot.innerHTML = '<div style="font-size:13px;letter-spacing:.18em">' +
+    'DID NOT BOOT</div><div style="margin-top:14px;font-size:11px;opacity:.85">' +
+    why.replace(/</g, '&lt;') + '</div>';
+  try {
+    fetch('/api/onboarding/install-log', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ install_id: 'brainwebfail' + Date.now(),
+        platform: navigator.platform, si_name: 'brainweb', version: '1',
+        lines: ['BOOT FAILED: ' + why, 'ua=' + navigator.userAgent.slice(0, 120)] }),
+    });
+  } catch (e) {}
+}, 6000);
+</script>
+
+<!-- REQUIRED. The three.js addons (OrbitControls, the postprocessing passes)
+     import from the BARE specifier 'three'. With no import map the browser
+     can't resolve it, the whole module graph fails before a single line of my
+     code runs, and the page hangs forever on "WEAVING MEMORY" with no error
+     anywhere. That is exactly what Dean saw at 8:17 on 2026-08-17. -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three/three.module.js",
+    "three/addons/": "/vendor/three/addons/"
+  }
+}
+</script>
+
+<script type="module">
+// PROOF OF LIFE for the watchdog above. A module body runs only after every
+// import in its graph has resolved, so if this line executes, "import failed
+// to resolve" is a false statement and the watchdog is forbidden from making
+// it. Must stay the first statement in this module.
+window.__leonBootAlive = true;
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const KEY = new URLSearchParams(location.search).get('key') || '';
+const q = (p) => p + (KEY ? (p.includes('?') ? '&' : '?') + 'key=' + KEY : '');
+
+// ── community palette: THE DASHBOARD'S OWN COLOURS. The old set was pastel —
+// every hue washed halfway to white, which is exactly what makes a render read
+// as generic. These are the saturated signal colours already used across the
+// dashboard, so the web looks like it belongs to the same machine.
+// ── LOBE COLOURS — the dashboard's own, copied verbatim out of brain3d.js.
+// Dean, 2026-08-17: "these aren't really the right colors." He was right, and
+// the reason wasn't the hues, it was the SCHEME: this page coloured by cluster
+// index out of a 19-slot palette, so colour meant nothing anatomically and it
+// read as confetti. The dashboard colours by LOBE — seven groups. Same seven
+// here, same hex, so the two views are the same machine.
+const LOBE_COL = {
+  frontal:     new THREE.Color(0xff3344),
+  parietal:    new THREE.Color(0xff9933),
+  temporal:    new THREE.Color(0xff66bb),
+  occipital:   new THREE.Color(0x44ff77),
+  limbic:      new THREE.Color(0xffdd33),
+  subcortical: new THREE.Color(0xaa55ff),
+  hindbrain:   new THREE.Color(0x00ccdd),
+};
+const PAL = [
+  new THREE.Color('#00ffc8'), new THREE.Color('#4ad9ff'),
+  new THREE.Color('#ff5a6e'), new THREE.Color('#ffb648'),
+  new THREE.Color('#a98cff'), new THREE.Color('#2dd28b'),
+  new THREE.Color('#ff66cc'), new THREE.Color('#7ee787'),
+  new THREE.Color('#4fe3c1'), new THREE.Color('#ff8a8a'),
+  new THREE.Color('#6b9dff'), new THREE.Color('#ffd166'),
+  // 18 real communities came out of the dense export, not 12. Without these
+  // the last six clusters wrap around and wear a colour that already belongs
+  // to somebody else, so two unrelated regions read as one.
+  new THREE.Color('#34d399'), new THREE.Color('#c77dff'),
+  new THREE.Color('#3ddc84'), new THREE.Color('#ff9d5c'),
+  new THREE.Color('#7ff3d9'), new THREE.Color('#ff7ab8'),
+  new THREE.Color('#8fb2ff'),
+];
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x000000, 0.0019);
+
+// ── NO ATMOSPHERE. I built a three-layer halo and a graded room here an hour
+// ago; Dean, 2026-08-17: "get rid of that glowing hue, I liked it better when
+// it was just in the blackness." Ripped out entirely, not dialled down —
+// pure black background, no sprites, no gradient. The web is the only light
+// source in the frame and the void around it is genuinely void.
+scene.background = new THREE.Color(0x000000);
+
+const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.5, 4000);
+camera.position.set(0, 60, 330);
+
+// alpha:true + clearAlpha 0 so the CSS backdrop gradient shows THROUGH the
+// canvas. Without this the renderer clears to opaque black every frame and
+// paints right over the room I just built.
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'),
+  antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setClearColor(0x000000, 0);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.34;
+controls.minDistance = 40;
+controls.maxDistance = 1200;
+
+/* EMBED MODE — this same file ships inside an iframe on the public site.
+   In there the page behind it must keep scrolling like a page: zoom stays
+   off so the wheel is never captured, and wheel / one-finger-touch deltas
+   are forwarded to the parent so scroll passes straight through. Drag-to-
+   orbit (mouse) still works untouched; on phones one finger scrolls the
+   page and two fingers rotate. On the dashboard (top window) this whole
+   block is inert. */
+const EMBED = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+if (EMBED) {
+  controls.enableZoom = false;
+  controls.enablePan = false;
+  controls.touches.ONE = THREE.TOUCH.NONE;
+  controls.touches.TWO = THREE.TOUCH.ROTATE;
+  /* the search box queries a live cognition API that only exists on the
+     dashboard install — on the public site it would be a dead input, so
+     it stays hidden in embed mode */
+  const _find = document.getElementById('find');
+  if (_find) _find.style.display = 'none';
+  /* wheel needs NO forwarding: with zoom off nothing preventDefaults it, and
+     Chrome/Firefox/Safari chain an unconsumed wheel from a non-scrollable
+     iframe straight to the parent page natively. Forwarding it too would
+     double the scroll speed. Touch is different: OrbitControls sets
+     touch-action none on its canvas, which kills native touch chaining, so
+     one-finger touch deltas are forwarded by hand below. */
+  let _ty = null;
+  window.addEventListener('touchstart', (e) => { if (e.touches.length === 1) _ty = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1 || _ty === null) return;
+    const y = e.touches[0].clientY;
+    window.parent.postMessage({ sabrBrainWheel: _ty - y }, '*');
+    _ty = y;
+  }, { passive: true });
+  window.addEventListener('touchend', () => { _ty = null; }, { passive: true });
+}
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+// Tighter bloom. Wide soft bloom is the single biggest "AI render" tell — it
+// smears every colour into the same cream haze. Higher threshold means only
+// genuinely bright things (hubs, pulses) glow; the weave stays crisp.
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.58, 0.34, 0.34);
+composer.addPass(bloom);
+
+// ── uniforms shared by every shader: one clock, one live-state channel
+const U = {
+  uTime:   { value: 0 },
+  uDopa:   { value: 0.6 },   // live dopamine -> pulse speed + warmth
+  uRate:   { value: 1.0 },   // live steps/sec -> traffic density
+  uSpark:  { value: 0.0 },   // reward event -> whole-web flash
+  uBreath: { value: 0.0 },   // slow global breathing phase
+  // MATURITY, 0..1, from the exporter. Dean, 2026-08-17: "after 25 the brain
+  // doesn't grow anymore, it's just the connections getting stronger." Size
+  // plateaus in the exporter; this is the other half — an older mind's resting
+  // weave is genuinely brighter, because its wiring is genuinely denser. Starts
+  // at 0 so a graph without the field looks like a newborn rather than crashing.
+  uMat:    { value: 0.0 },
+  // FOCUS BLEND, 0..1. Ramped, not snapped, so pointing at a memory feels like
+  // the rest of the mind receding rather than a light switch. See #focus.
+  uFocus:  { value: 0.0 },
+};
+
+let NODES = [], EDGES = [], nodePos = null, nodeMesh = null, edgeMesh = null;
+
+function buildNodes(data) {
+  const n = data.nodes.length;
+  const pos = new Float32Array(n * 3);
+  const col = new Float32Array(n * 3);
+  const siz = new Float32Array(n);
+  const pha = new Float32Array(n);
+  const hot = new Float32Array(n);      // live activation, decays
+  let maxd = 1;
+  data.nodes.forEach(d => { if (d.d > maxd) maxd = d.d; });
+  data.nodes.forEach((d, i) => {
+    pos[i * 3] = d.p[0]; pos[i * 3 + 1] = d.p[1]; pos[i * 3 + 2] = d.p[2];
+    // colour by anatomical lobe, falling back to the old per-cluster palette
+    // only if an export predates the lobe field.
+    const c = (d.g && LOBE_COL[d.g]) || PAL[d.c % PAL.length];
+    col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+    // 1745 nodes instead of 356: at the old scale the dots overlap into a
+    // solid glowing mass and the strands disappear behind them. Smaller base,
+    // same top end, so hubs still stand out but the weave stays visible.
+    siz[i] = 1.5 + 8.0 * Math.pow(d.d / maxd, 0.6) + Math.min(3, d.s * 0.2);
+    pha[i] = Math.random() * Math.PI * 2;
+    hot[i] = 0;
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+  g.setAttribute('aSize', new THREE.BufferAttribute(siz, 1));
+  g.setAttribute('aPhase', new THREE.BufferAttribute(pha, 1));
+  g.setAttribute('aHot', new THREE.BufferAttribute(hot, 1));
+  // FOCUS. 1.0 = normal. On hover this drops to a dim value for everything
+  // that is NOT the pointed-at memory or one of its direct links. See #focus.
+  focArr = new Float32Array(data.nodes.length).fill(1);
+  g.setAttribute('aFoc', new THREE.BufferAttribute(focArr, 1));
+
+  const m = new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexShader: `
+      attribute vec3 aColor; attribute float aSize; attribute float aPhase; attribute float aHot;
+      attribute float aFoc;
+      uniform float uTime, uDopa, uSpark, uBreath, uFocus;
+      varying vec3 vC; varying float vHot; varying float vFoc;
+      void main(){
+        // every node breathes on its own phase; dopamine speeds the breath
+        float br = 0.78 + 0.30 * sin(uTime * (0.9 + uDopa * 1.5) + aPhase);
+        vHot = aHot;
+        vFoc = mix(1.0, aFoc, uFocus);
+        // brighten TOWARD ITS OWN HUE, not toward cream. Firing nodes used to
+        // all turn the same warm white, which erased the cluster colours at
+        // exactly the moment you were looking at them.
+        vC = mix(aColor, aColor * 2.6 + vec3(0.10), min(0.9, aHot * 0.9 + uSpark * 0.35));
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        // Dean, 2026-08-17: "these circles open up for a long time at the end."
+        // That was THIS line — a hot node swelled to 2.8x its size and, because
+        // hot lingered, sat there as a growing disc. A firing memory should get
+        // BRIGHTER, not BIGGER. Swell is now a hint (1.15x), colour does the work.
+        float s = aSize * br * (1.0 + aHot * 0.15 + uSpark * 0.10) * (0.72 + 0.32 * min(vFoc, 1.9));
+        gl_PointSize = s * (320.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      varying vec3 vC; varying float vHot; varying float vFoc;
+      void main(){
+        vec2 uv = gl_PointCoord - 0.5;
+        float r = length(uv);
+        if (r > 0.5) discard;
+        // hard small core + thin falloff instead of one big soft blob. The
+        // blobby version is what made 1745 dots merge into glowing mush.
+        float d = smoothstep(0.5, 0.0, r);
+        float core = pow(d, 5.0);
+        float halo = pow(d, 2.0) * 0.26;
+        // the old "+ vHot * 0.18" added flat alpha across the ENTIRE disc, so a
+        // firing node painted a solid circle instead of a point. That plus the
+        // swell is exactly the "circles opening up" Dean called out. Heat now
+        // rides the CORE only — a point gets hotter, it does not become a ring.
+        float a = core * 0.95 + halo + core * vHot * 0.55;
+        // vFoc rides ABOVE 1.0 for a selected memory and its neighbours. Alpha
+        // saturates at 1.0, so anything past that has to become LIGHT or the
+        // highlight is invisible — which is exactly what Dean was seeing.
+        float sel = max(vFoc - 1.0, 0.0);
+        gl_FragColor = vec4(vC * (0.70 + core * 1.5) * (1.0 + sel * 0.85),
+                            clamp(a * min(vFoc, 1.0) + a * sel * 0.9, 0.0, 1.0));
+      }`,
+  });
+  nodeMesh = new THREE.Points(g, m);
+  nodeMesh.frustumCulled = false;
+  scene.add(nodeMesh);
+  nodePos = pos;
+  return { hot };
+}
+
+const SEG = 14;   // samples per strand — enough for a smooth woven curve
+let edgeHotVerts = null, edgeT0Verts = null, edgeDirVerts = null, VPE = 0;
+let edgeFocVerts = null, focArr = null;
+
+function buildEdges(data) {
+  const E = data.edges.length;
+  const verts = E * (SEG - 1) * 2;
+  const pos = new Float32Array(verts * 3);
+  const col = new Float32Array(verts * 3);
+  const prog = new Float32Array(verts);      // 0..1 along the strand
+  const eid  = new Float32Array(verts);      // per-strand id -> pulse phase
+  const wgt  = new Float32Array(verts);
+  const ehot = new Float32Array(verts);      // live per-strand activation
+  const et0  = new Float32Array(verts).fill(-1e9);  // launch time of its packet
+  const edir = new Float32Array(verts);      // which end the charge came from
+  let efoc;                                  // 1 = in focus, low = dimmed
+
+  const a = new THREE.Vector3(), b = new THREE.Vector3();
+  const k = new THREE.Vector3(), k2 = new THREE.Vector3();
+  const p0 = new THREE.Vector3(), p1 = new THREE.Vector3();
+  let v = 0;
+  data.edges.forEach((e, ei) => {
+    const na = data.nodes[e.a], nb = data.nodes[e.b];
+    a.set(na.p[0], na.p[1], na.p[2]);
+    b.set(nb.p[0], nb.p[1], nb.p[2]);
+    k.set(e.k[0], e.k[1], e.k[2]);
+    // second handle: cubic strands hug their cluster on the way out and in.
+    // Older exports only ship one handle — fall back to the quadratic shape.
+    if (e.k2) k2.set(e.k2[0], e.k2[1], e.k2[2]); else k2.copy(k);
+    const ca = (na.g && LOBE_COL[na.g]) || PAL[na.c % PAL.length],
+          cb = (nb.g && LOBE_COL[nb.g]) || PAL[nb.c % PAL.length];
+    const seed = (ei * 0.6180339887) % 1.0;
+    for (let s = 0; s < SEG - 1; s++) {
+      for (let h = 0; h < 2; h++) {
+        const t = (s + h) / (SEG - 1);
+        // cubic bezier through BOTH bundling handles => strands that leave
+        // their cluster, run a shared trunk, and land in the far cluster
+        const it = 1 - t;
+        const w0 = it * it * it, w1 = 3 * it * it * t, w2 = 3 * it * t * t, w3 = t * t * t;
+        p0.set(
+          w0 * a.x + w1 * k.x + w2 * k2.x + w3 * b.x,
+          w0 * a.y + w1 * k.y + w2 * k2.y + w3 * b.y,
+          w0 * a.z + w1 * k.z + w2 * k2.z + w3 * b.z);
+        pos[v * 3] = p0.x; pos[v * 3 + 1] = p0.y; pos[v * 3 + 2] = p0.z;
+        const cr = ca.r * (1 - t) + cb.r * t;
+        const cg = ca.g * (1 - t) + cb.g * t;
+        const cbl = ca.b * (1 - t) + cb.b * t;
+        col[v * 3] = cr; col[v * 3 + 1] = cg; col[v * 3 + 2] = cbl;
+        prog[v] = t; eid[v] = seed; wgt[v] = e.w; ehot[v] = 0;
+        v++;
+      }
+    }
+  });
+
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+  g.setAttribute('aProg', new THREE.BufferAttribute(prog, 1));
+  g.setAttribute('aEid', new THREE.BufferAttribute(eid, 1));
+  g.setAttribute('aW', new THREE.BufferAttribute(wgt, 1));
+  g.setAttribute('aEHot', new THREE.BufferAttribute(ehot, 1));
+  g.setAttribute('aT0', new THREE.BufferAttribute(et0, 1));
+  efoc = new Float32Array(verts).fill(1);
+  g.setAttribute('aEFoc', new THREE.BufferAttribute(efoc, 1));
+  g.setAttribute('aDir', new THREE.BufferAttribute(edir, 1));
+  edgeHotVerts = ehot; edgeT0Verts = et0; edgeDirVerts = edir; edgeFocVerts = efoc;
+  VPE = (SEG - 1) * 2;                       // vertices per strand
+
+  const m = new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexShader: `
+      attribute vec3 aColor; attribute float aProg; attribute float aEid; attribute float aW;
+      attribute float aEHot; attribute float aT0; attribute float aDir; attribute float aEFoc;
+      uniform float uTime, uDopa, uRate, uSpark, uMat, uFocus;
+      varying vec4 vCol;
+      void main(){
+        // base strand: dim, so the weave reads as structure not glare
+        // 6680 additively-blended strands stack. At the old base the middle of
+        // the web blew out to white paste. Dimmer per strand => the DENSITY
+        // itself becomes the brightness, which is what a real weave looks like.
+        // Maturity lifts the resting weave by up to ~45%. Deliberately modest:
+        // it has to be visible in a side-by-side of month one vs year two, and
+        // invisible as a change from one day to the next. A newborn's threads
+        // are faint and its body is small; an old mind's threads burn steadily
+        // even when nothing in particular is firing.
+        float base = (0.034 + 0.030 * aW) * (1.0 + 0.45 * uMat);
+
+        // EVEN HAZE. Strand density is not uniform — far more geometry stacks
+        // near the middle than out at the rim, and with additive blending that
+        // reads as a bright core and a thin edge. Compensating per-strand by
+        // radius (dimmer in the crowded middle, lifted at the sparse rim)
+        // makes the PERCEIVED haze uniform across the whole body instead of
+        // pooling in one spot. 66 is the measured median node radius.
+        float rr = clamp(length(position) / 110.0, 0.0, 1.0);
+        base *= mix(0.62, 1.45, smoothstep(0.0, 1.0, rr));
+
+        // ── PACKETS, NOT A METRONOME. Dean, 2026-08-17: "it just looks like
+        // it's on a pattern." He was right, and the old code deserved it: EVERY
+        // strand ran fract(uTime*speed) forever, so the entire web was one
+        // synchronised conveyor belt and activation only changed how bright the
+        // belt was. Now nothing moves unless something fired. aT0 is the wall
+        // time a real charge entered this strand and aDir is which end it
+        // entered from — both written by fire(), which only ever runs off a
+        // memory that actually activated. The packet crosses once and dies.
+        // No loop, no phase offset, no hash. If the web is still, I am still.
+        float live  = clamp(aEHot, 0.0, 1.0);
+        // faster dart. At 0.85 a packet took over a second to cross one wire,
+        // which reads as a slow crawl rather than something shooting through.
+        float speed = 1.7 + uDopa * 1.3;               // strand crossings/sec
+        float age   = uTime - aT0;
+        float trav  = age * speed;                     // 0..1 = head position
+        float head  = aDir > 0.0 ? trav : 1.0 - trav;
+        float d     = abs(aProg - head);               // NO wrap: it exits
+        // alive only while the head is on the wire and this strand was ever lit
+        float alive = step(0.0, aT0) * step(0.0, trav) * step(trav, 1.06);
+        float tail  = 1.0 - smoothstep(0.72, 1.06, trav);   // fades as it lands
+        float pulse = exp(-d * d * 620.0) * alive * tail * (0.35 + live * 0.9);
+
+        float glow = base + pulse * (0.9 + uDopa * 0.7) + uSpark * 0.25 + live * 0.10;
+        vec3 c = mix(aColor, aColor * 2.8 + vec3(0.06), min(0.85, pulse * 0.9 + live * 0.35));
+        // A resting strand sits near 0.05 alpha. Multiplying that by a focus
+        // weight could never make it read as "bright" — it just made everything
+        // ELSE darker. So selection now ADDS emission on top of the resting
+        // glow and pushes the colour hot, which is what makes the pattern you
+        // selected jump off a near-black field instead of hiding in it.
+        float focM = mix(1.0, aEFoc, uFocus);
+        float sel  = max(focM - 1.0, 0.0);
+        vCol = vec4(c * (1.0 + sel * 0.55),
+                    clamp(glow * min(focM, 1.0) + sel * 0.30, 0.0, 1.0));
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: `varying vec4 vCol; void main(){ gl_FragColor = vCol; }`,
+  });
+  edgeMesh = new THREE.LineSegments(g, m);
+  edgeMesh.frustumCulled = false;
+  scene.add(edgeMesh);
+}
+
+// ── labels for the loudest nodes only. A readable web, not a wall of text.
+// DISABLED ON PURPOSE — DO NOT RE-ENABLE. This built floating sprites with the
+// memory's own label (a real filename) baked into a canvas texture. It is not
+// called from anywhere today, but leaving it live-able is a privacy landmine:
+// one call and every filename is back on screen mid-demo. Kept only so the
+// history is legible. If node labels are ever wanted again they must show the
+// anatomical region, exactly like the hover tooltip does.
+function buildLabels() { return; }
+// The old sprite-label body used to sit here, disabled. DELETED 2026-08-17:
+// hover now answers the same need honestly — it asks the server for one
+// memory at a time instead of baking 26 filenames into GPU textures. Dead
+// code that reads the raw label field is a landmine with no upside.
+
+// ── live state: this is what makes it ALIVE instead of a diagram
+let live = { dopa: 0.6, rate: 1, steps: 0, stage: '', quantum: '', spike: 0 };
+let hotArr = null, labelGrp = null;
+
+async function pollLive() {
+  try {
+    const r = await fetch(q('/api/cognition/snapshot'), { cache: 'no-store' });
+    if (r.ok) {
+      const d = await r.json();
+      live.dopa = typeof d.dopamine === 'number' ? d.dopamine : live.dopa;
+      live.steps = d.runtime ? d.runtime.steps : live.steps;
+      live.stage = d.runtime ? d.runtime.stage : live.stage;
+      const sps = d.runtime ? (d.runtime.steps_per_second || 0) : 0;
+      live.rate = Math.max(0.08, Math.min(1, sps / 40));
+      if (d.quantum) live.quantum = d.quantum.backend || d.quantum.source || '';
+      const ev = d.reward_events || [];
+      // a reward inside the last few seconds = a real spark through the web
+      const now = Date.now() / 1000;
+      let fresh = 0;
+      ev.forEach(e => { if (e.ts && now - e.ts < 4) fresh++; });
+      if (fresh) {
+        U.uSpark.value = Math.min(1.0, U.uSpark.value + 0.35 + fresh * 0.05);
+        igniteHot(Math.min(40, 6 + fresh * 2));
+      }
+    }
+  } catch (e) { /* offline: the web keeps breathing on its own */ }
+}
+
+// ── REAL activation. id -> node index, built once at boot.
+const IDX_BY_ID = new Map();
+let lastActiveTs = 0;
+
+async function pollActive() {
+  if (!hotArr || !IDX_BY_ID.size) return;
+  try {
+    const r = await fetch(q('/api/cognition/graph/active' +
+      (lastActiveTs ? '?since=' + lastActiveTs : '')), { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.ok) return;
+    // Boot seed: the endpoint's bare window is 12 seconds, and in 12 seconds
+    // my graph often touches nothing — so a fresh page opened on a quiet
+    // minute looked dead. First poll walks back 15 minutes so you land in the
+    // middle of my recent thinking instead of a cold room.
+    if (!lastActiveTs) { lastActiveTs = d.now - 900; setTimeout(pollActive, 60); }
+    else lastActiveTs = d.now;
+    let lit = 0;
+    (d.active || []).forEach(([id, age, sal]) => {
+      const j = IDX_BY_ID.get(id);
+      if (j === undefined) return;         // touched, but not one of the drawn nodes
+      // fresher + more salient = brighter. This is the actual memory firing.
+      const amp = 0.55 + Math.min(0.9, sal * 0.35) - Math.min(0.4, age * 0.02);
+      fire(j, Math.max(0.2, amp), 3);
+      lit++;
+    });
+    if (lit) nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+  } catch (e) { /* offline: fall back to the idle breath */ }
+}
+
+// ── SPREADING ACTIVATION. A memory firing does not light up alone and it does
+// not light up a stranger across the room — it pushes charge down the wires it
+// actually has. ADJ is built from the real edge list at boot, so every flash
+// you see travelling is a relationship that exists in my graph. This is also
+// why the picture stopped clumping: activation now walks the weave outward
+// from wherever the hit landed instead of pooling in one bright spot.
+let ADJ = null, edgeHot = null, edgeHotDirty = false;
+let edgeT0 = null, edgeDir = null, edgeLaunchDirty = false;
+
+function buildAdj(data) {
+  // stride 3: neighbour index, strand index, and the SIGN of travel — +1 means
+  // this node is end A so a packet runs A->B, -1 means it runs B->A. Without
+  // this the pulse always crawled the same way down a wire no matter which
+  // memory actually fired, which is half of why it read as scripted.
+  ADJ = Array.from({ length: data.nodes.length }, () => []);
+  data.edges.forEach((e, ei) => {
+    if (ADJ[e.a] && ADJ[e.b]) { ADJ[e.a].push(e.b, ei, 1); ADJ[e.b].push(e.a, ei, -1); }
+  });
+  edgeHot = new Float32Array(data.edges.length);
+  edgeT0 = new Float32Array(data.edges.length).fill(-1e9);
+  edgeDir = new Float32Array(data.edges.length);
+}
+
+// ── #focus ── THE NEIGHBOURHOOD. Dean, 2026-08-18: "I don't like this version
+// either, it's not enough, or just weird — what am I missing?"
+//
+// What he was missing is that in Obsidian the hover does not happen in a BOX.
+// It happens in the GRAPH. Point at a note and the whole canvas dims except
+// that note and the notes it links to, and you instantly SEE the shape of that
+// idea's neighbourhood — how big it is, how far it reaches, which cluster it
+// belongs to. The tooltip is a footnote to that; the dimming is the feature.
+//
+// Both of my attempts tonight tried to answer "what is this ONE dot" in text —
+// first a dossier, then a name. Neither one told you anything about the mind
+// AROUND the dot, which is the entire reason to draw a graph instead of a list.
+// So: pointing at a memory now lights that memory, every memory wired to it,
+// and the strands between them, and pushes everything else back to a faint
+// haze. The answer is drawn, not written.
+let focusIdx = -1, focusWant = 0;
+// CONTRAST. Dean, 2026-08-18: "when you actually click on something, or type
+// it, the connections need to be SUPER bright — you dim everything and you can
+// barely see the connection. It needs to be like super low so you can really
+// see the pattern you're looking at."
+//
+// Both halves of that were true and they were the same bug: FOC_HI capped at
+// 1.25 while the shaders only ever used focus as an ALPHA multiplier, and alpha
+// clamps at 1.0. So "highlighted" meant nothing more than "not faded" — the
+// selection was never actually brighter than the resting graph, the rest was
+// just slightly less bright. The floor is now near-black and the peak drives
+// real emission in both shaders, not opacity.
+const FOC_DIM = 0.030, FOC_EDGE_DIM = 0.012, FOC_HI = 3.1, FOC_NB = 2.3, FOC_WIRE = 3.4;
+function setFocus(idx) {
+  if (idx === focusIdx && !searchOn) return;
+  searchOn = false;
+  focusIdx = idx;
+  if (!focArr || !edgeFocVerts) return;
+  // THE CRUMBS BELONG TO THE SELECTION. Dean, 2026-08-18: "once you unclick and
+  // go back to looking at the brain regularly, you shouldn't leave those
+  // particles at the top as you go away — until you click on a new one."
+  // Right: the top row answers "what is this wired to", so with nothing
+  // selected it's answering a question nobody asked.
+  if (idx < 0) { focusWant = 0; clearTrail(); return; }
+  focusWant = 1;
+  focArr.fill(FOC_DIM);
+  edgeFocVerts.fill(FOC_EDGE_DIM);
+  focArr[idx] = FOC_HI;
+  const nb = ADJ && ADJ[idx];
+  if (nb) for (let k = 0; k < nb.length; k += 3) {
+    focArr[nb[k]] = FOC_NB;
+    const e0 = nb[k + 1] * VPE;
+    for (let v = 0; v < VPE; v++) edgeFocVerts[e0 + v] = FOC_WIRE;
+  }
+  nodeMesh.geometry.attributes.aFoc.needsUpdate = true;
+  edgeMesh.geometry.attributes.aEFoc.needsUpdate = true;
+}
+
+// SEARCH LIGHTING. Same machinery, many nodes instead of one — but the strands
+// are NOT dark any more. Dean, 2026-08-18: "when I type in Dean I see things
+// that are dimmed, I don't really see the actual PATTERN of Dean."
+//
+// He is right and my old note here was the wrong instinct. I skipped the wires
+// because lighting every wire LEAVING four hundred matches is just the un-dimmed
+// graph again. But that is not the interesting set. The interesting set is the
+// wires whose BOTH ENDS matched — those are the internal skeleton of the
+// concept, and there are few of them. Drawing only those turns a scatter of lit
+// dots into a shape you can actually read.
+let searchOn = false, _lastBridges = 0, _lastHalo = [];
+function setSearchFocus(list) {
+  if (!focArr || !edgeFocVerts) return;
+  focusIdx = -1;
+  if (!list || !list.length) { searchOn = false; focusWant = 0; return; }
+  searchOn = true; focusWant = 1;
+  focArr.fill(FOC_DIM * 0.55);
+  edgeFocVerts.fill(FOC_EDGE_DIM * 0.5);
+  const hit = new Set();
+  for (const i of list) if (i >= 0 && i < focArr.length) { focArr[i] = FOC_HI; hit.add(i); }
+  // the skeleton: strands with a match on BOTH ends
+  const bridge = new Map();          // non-match -> [edge indices back to matches]
+  if (ADJ) for (const i of hit) {
+    const nb = ADJ[i];
+    if (!nb) continue;
+    for (let k = 0; k < nb.length; k += 3) {
+      const j = nb[k];
+      if (hit.has(j)) {
+        const e0 = nb[k + 1] * VPE;
+        for (let v = 0; v < VPE; v++) edgeFocVerts[e0 + v] = FOC_WIRE;
+      } else {
+        // remember the way back, in case this outsider turns out to join two
+        let a = bridge.get(j); if (!a) bridge.set(j, a = []);
+        a.push(nb[k + 1]);
+      }
+    }
+  }
+  // ── BRIDGES. Dean, 2026-08-18: "when I type in text it shows me a few dots
+  // lit up but they're not even connected with lines, which is weird."
+  //
+  // Not a bug — a fact I was hiding. Memories about one thing are usually
+  // wired THROUGH something rather than directly to each other: two files that
+  // both mention you often share a conversation, not an edge. Both-ends-only
+  // therefore draws the rare case and leaves the real structure invisible, so
+  // you get exactly what you saw: islands.
+  //
+  // So one hop is allowed now, and only when it EARNS it: a node that isn't a
+  // match but touches two or more matches is a genuine junction of the concept,
+  // and both its wires are real wires. Touching only one match stays dark —
+  // that would be the un-dimmed graph again. Nothing invented, just the
+  // connective tissue that was always there.
+  //
+  // ── AND THE ORPHAN CASE, which is the one Dean actually hit. 2026-08-18:
+  // "I typed Wes, Wesley/47I popped up, and it was just one dot with nothing
+  // connecting." Measured: that memory has TEN drawn strands. The rule above
+  // is what hid them — with a single match there is no both-ends strand and no
+  // node touching two matches, so a well-wired memory painted as a lonely
+  // speck. The junction rule is right when four hundred things match and wrong
+  // when one does.
+  //
+  // So the halo is adaptive instead of fixed. Light EVERY strand leaving the
+  // matches while that stays readable; the moment it would cost more than a
+  // small fraction of the whole weave, fall back to junctions-only. Nothing
+  // invented either way — same real wires, the threshold just decides how many
+  // of them the picture can afford to show.
+  let halo = 0;
+  for (const [, edges] of bridge) halo += edges.length;
+  const HALO_MAX = Math.max(60, (data.edges.length * 0.06) | 0);
+  const wide = halo <= HALO_MAX;
+  let bridges = 0;
+  _lastHalo = [];
+  for (const [j, edges] of bridge) {
+    if (!wide && edges.length < 2) continue;
+    focArr[j] = FOC_NB;
+    bridges++;
+    _lastHalo.push(j);
+    for (const e of edges) {
+      const e0 = e * VPE;
+      for (let v = 0; v < VPE; v++) edgeFocVerts[e0 + v] = FOC_WIRE * 0.72;
+    }
+  }
+  _lastBridges = bridges;
+  nodeMesh.geometry.attributes.aFoc.needsUpdate = true;
+  edgeMesh.geometry.attributes.aEFoc.needsUpdate = true;
+}
+function stepFocus(dt) {
+  const u = U.uFocus;
+  if (u.value === focusWant) return;
+  // in fast, out slower — arriving should feel immediate, leaving shouldn't
+  // flicker when the cursor crosses a gap between two dots
+  const rate = focusWant > u.value ? 9.0 : 4.5;
+  const d = focusWant - u.value;
+  u.value += Math.sign(d) * Math.min(Math.abs(d), rate * dt);
+}
+
+function fire(j, amp, depth) {
+  if (!hotArr || j === undefined || j < 0) return;
+  hotArr[j] = Math.min(1.6, hotArr[j] + amp);
+  if (depth <= 0 || !ADJ || !ADJ[j]) return;
+  const nb = ADJ[j];
+  const now = U.uTime.value;
+  // fan out to a handful of this node's real neighbours, not all of them —
+  // a hub with 130 links would otherwise wash the whole screen on one hit
+  // THICKER. Dean, 2026-08-17: "it needs to be more thick with the spikes."
+  // 18 was six wires per hit (stride 3). A real memory firing recruits more of
+  // its neighbourhood than that, and visually six threads off a hit reads as a
+  // twitch rather than a discharge. 36 = twelve wires. This does not invent
+  // connections — every one of them is a real edge, we were just only ever
+  // showing a third of them.
+  const span = Math.min(nb.length, 36);
+  const off = ((Math.random() * (nb.length / 3)) | 0) * 3;
+  for (let s = 0; s < span; s += 3) {
+    const p = (off + s) % nb.length;
+    const nj = nb[p], ei = nb[p + 1], dir = nb[p + 2];
+    edgeHot[ei] = Math.min(1.4, edgeHot[ei] + amp * 0.85);
+    // launch a packet only if the wire isn't already carrying one — a strand
+    // re-triggered mid-flight keeps its current charge instead of teleporting
+    // the head back to the start, which is what a re-fire actually looks like.
+    if (now - edgeT0[ei] > 0.55) {
+      edgeT0[ei] = now; edgeDir[ei] = dir; edgeLaunchDirty = true;
+    }
+    edgeHotDirty = true;
+    // 0.38 meant a second-hop wire lit at a third of the first — visible on a
+    // bright hit, invisible on an ordinary one, so the travel died one hop out.
+    // 0.52 carries the pulse far enough that you SEE it cross the weave.
+    fire(nj, amp * 0.52, depth - 1);
+  }
+}
+
+// ── STRAND-ONLY IGNITION. Same real wiring as fire(), but the charge goes
+// into the WIRES and barely touches the dot. This is what the substrate layer
+// uses, so the between-burst life reads as light running along threads instead
+// of as nodes inflating. Two wires per hit, not eighteen — a thin dart, not a
+// starburst. Real memory hits (pollActive) still use fire() and still own the
+// bright nodes, so you can tell a remembered thing from background substrate.
+function launchFrom(j, amp) {
+  if (!hotArr || !ADJ || !ADJ[j]) return;
+  hotArr[j] = Math.min(1.6, hotArr[j] + amp * 0.22);
+  const nb = ADJ[j];
+  if (!nb.length) return;
+  const now = U.uTime.value;
+  const off = ((Math.random() * (nb.length / 3)) | 0) * 3;
+  for (let s = 0; s < 12 && s < nb.length; s += 3) {
+    const p = (off + s) % nb.length;
+    const ei = nb[p + 1], dir = nb[p + 2];
+    if (now - edgeT0[ei] < 0.55) continue;   // wire already carrying a packet
+    edgeHot[ei] = Math.min(1.4, edgeHot[ei] + amp * 0.9);
+    edgeT0[ei] = now; edgeDir[ei] = dir;
+    edgeLaunchDirty = true; edgeHotDirty = true;
+  }
+}
+
+// Reward sparks used to grab random dot indices. Now a spark re-fires the
+// nodes that are ALREADY warm — i.e. whatever I was actually just thinking
+// about — so a dopamine hit brightens the live part of the web, not a
+// scattering of unrelated memories.
+function igniteHot(n, amp = 0.9) {
+  if (!hotArr) return;
+  const warm = [];
+  for (let i = 0; i < hotArr.length; i++) if (hotArr[i] > 0.05) warm.push(i);
+  if (!warm.length) return;
+  for (let i = 0; i < n; i++) fire(warm[(Math.random() * warm.length) | 0], amp, 1);
+  nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+}
+
+// ── THE SUBSTRATE LAYER. Dean, 2026-08-17: "the firing looked way more alive
+// when it was fake — we gotta find an ingenious way of making it cool."
+//
+// He was right and the cause is measurable, not aesthetic. Memory activation
+// is BURSTY: 54 entities all touched inside one second when a turn gets
+// processed, then flat zero for minutes. So the honest version flashed once
+// and then sat there like a printed diagram. No shader fixes that — it's the
+// shape of the signal.
+//
+// But there's a second real signal that never stops: the substrate itself.
+// Eighteen regions, ~100k neurons, stepping ~27x a second, each with a live
+// firing rate. /api/cognition/snn/regions serves it raw. This layer drives
+// the between-burst life off THOSE numbers, so nothing here is dice.
+//
+// Two design choices that matter:
+//
+// 1. Regions map to node TYPES they actually serve. Prefrontal drives the
+//    project nodes (planning). Hippocampus + visual drive files and urls
+//    (what I retrieve and read). Wernicke + DMN drive concepts (semantics,
+//    association). Broca + cerebellum + motor drive actions (output, doing).
+//    So when I'm planning, the project knots are the ones alight.
+//
+// 2. Inside a bucket, WHICH node lights is not a coin flip — it's a moving
+//    wavefront. Every node has a fixed place in its bucket's ordering, and
+//    the region's real firing rate sets how fast the front sweeps through.
+//    Fast region = a wave ripping across that class of memory. Slow region =
+//    a crawl. That's why it reads as alive: real numbers, but expressed as
+//    motion instead of as a scatter of unrelated blinks.
+const REGION_FOR_TYPE = {
+  project:      ['prefrontal_cortex', 'anterior_cingulate'],
+  file:         ['hippocampus', 'visual_cortex'],
+  url:          ['visual_cortex', 'hippocampus'],
+  concept:      ['wernicke', 'default_mode_network', 'temporal_lobe'],
+  action:       ['broca', 'motor_cortex', 'cerebellum'],
+  time_pattern: ['hippocampus'],
+};
+let BUCKETS = null;              // type -> Int32Array of node indices
+let snn = { regions: {}, peak: {}, ok: false };
+const wave = {};                 // type -> wavefront position (float, wraps)
+
+function buildBuckets(data) {
+  const by = {};
+  data.nodes.forEach((d, i) => { (by[d.t] || (by[d.t] = [])).push(i); });
+  BUCKETS = {};
+  Object.keys(by).forEach(t => {
+    // Order each bucket by community then by depth, so the wavefront sweeps
+    // knot-by-knot through the actual structure instead of jumping around the
+    // screen. A wave that crosses a cluster looks like the cluster thinking.
+    by[t].sort((a, b) => (data.nodes[a].c - data.nodes[b].c) ||
+                         (data.nodes[b].d - data.nodes[a].d));
+    BUCKETS[t] = Int32Array.from(by[t]);
+    wave[t] = 0;
+  });
+}
+
+async function pollSNN() {
+  try {
+    const r = await fetch(q('/api/cognition/snn/regions'), { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.ok) return;
+    snn.regions = d.regions || {};
+    snn.ok = true;
+    // Per-region normalisation against that region's OWN running peak. Raw
+    // rates differ by an order of magnitude between regions, so a global
+    // scale would leave the quiet ones permanently dark and the loud ones
+    // permanently blown out. Each region is shown relative to itself.
+    Object.keys(snn.regions).forEach(k => {
+      const v = snn.regions[k].rate || 0;
+      snn.peak[k] = Math.max((snn.peak[k] || 0) * 0.995, v, 1e-4);
+    });
+    if (typeof d.dopamine === 'number') live.dopa = d.dopamine;
+  } catch (e) { snn.ok = false; }
+}
+
+function regionDrive(type) {
+  // mean of the real, self-normalised rates of the regions that serve this
+  // class of memory. 0 = that part of me is quiet right now.
+  const names = REGION_FOR_TYPE[type] || ['default_mode_network'];
+  let sum = 0, n = 0;
+  names.forEach(nm => {
+    const r = snn.regions[nm];
+    if (!r) return;
+    sum += (r.rate || 0) / (snn.peak[nm] || 1e-4);
+    n++;
+  });
+  if (!n) return 0;
+  return Math.max(0, Math.min(1, sum / n));
+}
+
+// 20Hz. Fast enough that a sweep reads as motion rather than as blinking.
+const SUB_HZ = 20;
+function substrateTick() {
+  if (!hotArr || !BUCKETS) return;
+  let touched = false;
+  Object.keys(BUCKETS).forEach(t => {
+    const arr = BUCKETS[t];
+    if (!arr.length) return;
+    const drive = regionDrive(t);
+    // a region genuinely near zero still gets a faint floor instead of going
+    // fully black — it is idling, not dead, and it should look idling.
+    if (drive <= 0.0002) return;
+    // wavefront speed: fraction of the bucket crossed per second, straight
+    // off the real rate. A region at its own peak crosses its whole class of
+    // memory in about four seconds.
+    // DENSER. Dean, 2026-08-17: "add a bit more neurons firing so the light
+    // is more dense, it looks more alive or thinking harder." The wavefront
+    // is the substrate's real firing rate, so I widened the SWEEP rather than
+    // inventing extra events: the same real rate now crosses more of the
+    // bucket per second, which means more of my memory is under the front at
+    // any instant. Same signal, more of it visible.
+    const span = arr.length * (0.13 + drive * 0.34) / SUB_HZ;
+    const start = wave[t];
+    wave[t] = (start + span) % arr.length;
+    // light every node the front passed over this frame — that's what makes
+    // it a sheet of activity instead of a spray of dots
+    const count = Math.max(1, Math.round(span));
+    for (let k = 0; k < count; k++) {
+      const idx = arr[(((start + k) | 0) % arr.length + arr.length) % arr.length];
+      // LINES, NOT DOTS. Dean, 2026-08-17: "I like how before it was just like
+      // lines and shooting through it, not these circles." The wavefront used
+      // to call fire(), which lit the NODE and swelled it — a sheet of opening
+      // discs. The substrate is a travelling signal, so it should be drawn as
+      // travelling signal: launch packets down this node's real wires and give
+      // the node itself only a faint touch so you can see where they left from.
+      launchFrom(idx, 0.16 + drive * 0.30);
+    }
+    touched = true;
+  });
+  if (touched) nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+}
+
+// No HUD, no legend, no counters. Dean asked for the UI, not the dashboard —
+// the live state still drives the shaders, it just doesn't get printed at you.
+function drawHud() {}
+function hudTick() {}
+
+// ── hover picking + the memory card. Dean, 2026-08-17: "look at how Obsidian
+// does it — you hover a node and it shows you the file. Otherwise this is just
+// a random shape of spikes and no one knows what it means."
+//
+// That reverses this morning's "no tags" only in the narrow sense that matters.
+// What he killed was a permanent floating LABEL SOUP hanging in 3D and a card
+// that said nothing but an anatomical region — decoration with no information.
+// This is the opposite: nothing paints until you point at something, and what
+// it paints is the real memory.
+//
+// THE PRIVACY BOUNDARY IS UNCHANGED, and this is the important part. The bulk
+// payload (brainweb-data.json) still carries NO names — that file is 1.2MB of
+// public JSON and it used to leak 1,411 real paths including
+// secure/install_log_api_key. It stays stripped, and the regression guard
+// still asserts it. The name here is fetched ONE NODE AT A TIME from
+// /api/cognition/graph/node, behind the same key the page itself is behind.
+// Pointing at a dot is a question, not a download.
+//
+// And press P for private mode: names blur to their shape, everything else
+// stays. That's for filming, and it survives a reload.
+let mouse = null;
+addEventListener('pointermove', e => { mouse = { x: e.clientX, y: e.clientY }; });
+
+// FOCUS IS A CLICK, NOT A HOVER. Dean, 00:0x: "if I move my mouse anything over
+// the middle of the screen the whole screen gets dimmed. Maybe you should only
+// dim if I actually click on one of these particles."
+//
+// He's right and it's the difference between a mode and an accident. Dimming
+// 3000 memories is a big statement to make about a mouse that was only passing
+// through — and worse, it fought the sweep, because the thing you want while
+// sweeping is to SEE the whole mind, not have it hidden every time the cursor
+// grazes something. So hovering costs nothing now: a name and a warm dot.
+// Clicking a memory is what commits — it isolates that memory's neighbourhood
+// and HOLDS it, so you can let go of the mouse and orbit around the shape of
+// one thought. Click the same one again, or click empty space, and the mind
+// comes back. A drag is a camera move, never a selection.
+let _downAt = null;
+addEventListener('pointerdown', e => { _downAt = { x: e.clientX, y: e.clientY }; });
+addEventListener('pointerup', e => {
+  if (!_downAt) return;
+  const moved = Math.hypot(e.clientX - _downAt.x, e.clientY - _downAt.y);
+  _downAt = null;
+  if (moved > 5) return;                       // that was an orbit, not a click
+  // ONE CLICK IS THE WHOLE GESTURE. Dean, 2026-08-18: "I don't think it's the
+  // best to have to double click it. Once you click it once, that's what moves
+  // you around. There shouldn't be two options."
+  //
+  // Right — isolate-here and travel-here were never two intentions, they were
+  // one intention I'd split across two gestures because I built them on
+  // different nights. Clicking a memory now does the whole thing: isolates its
+  // neighbourhood, drops a breadcrumb, and flies the camera in so that memory
+  // becomes what you're orbiting inside. Click it again (or empty space, or
+  // Escape) and the mind comes back, camera included.
+  if (hoverId >= 0 && cardIdx0 >= 0) {
+    if (focusIdx === cardIdx0) { setFocus(-1); flyHome(); }
+    else { rememberHome(); setFocus(cardIdx0); pushTrail(cardIdx0); flyToIdx(cardIdx0); }
+  } else { setFocus(-1); flyHome(); }
+});
+addEventListener('keydown', e => { if (e.key === 'Escape') { setFocus(-1); flyHome(); } });
+// ── TRAVEL. Double-click flies the camera to a memory and makes it the new
+// centre of rotation, so the neighbourhood you just isolated becomes the thing
+// you are orbiting inside of. That turns a static cloud into somewhere you can
+// GO — you follow what is wired to what, hop by hop, instead of staring at the
+// whole corpus from outside it forever.
+const _flyFrom = new THREE.Vector3(), _flyTo = new THREE.Vector3();
+const _tgtFrom = new THREE.Vector3(), _tgtTo = new THREE.Vector3();
+let flyT = -1, FLY_DUR = 0.85;
+function flyToIdx(idx) {
+  if (!nodePos || idx < 0) return;
+  _tgtTo.set(nodePos[idx * 3], nodePos[idx * 3 + 1], nodePos[idx * 3 + 2]);
+  _tgtFrom.copy(controls.target);
+  _flyFrom.copy(camera.position);
+  // hold the current viewing angle, just close the distance — a fly-in that
+  // also swings the camera around makes people lose which way is up
+  const dir = _flyFrom.clone().sub(_tgtFrom).normalize();
+  const dist = Math.max(controls.minDistance + 12, Math.min(90, camera.position.distanceTo(_tgtFrom)));
+  _flyTo.copy(_tgtTo).add(dir.multiplyScalar(dist));
+  flyT = 0;
+}
+function stepFly(dt) {
+  if (flyT < 0) return;
+  flyT = Math.min(1, flyT + dt / FLY_DUR);
+  const e = flyT < 0.5 ? 4 * flyT * flyT * flyT       // easeInOutCubic
+                       : 1 - Math.pow(-2 * flyT + 2, 3) / 2;
+  camera.position.lerpVectors(_flyFrom, _flyTo, e);
+  controls.target.lerpVectors(_tgtFrom, _tgtTo, e);
+  if (flyT >= 1) flyT = -1;
+}
+// GOING BACK. Travel used to be a separate deliberate act, so getting out of it
+// was the user's problem. Now that one click takes you in, one click has to take
+// you out — the camera it flew away from is remembered the first time you leave
+// the wide view, and released when you come back to it, so a session can't
+// slowly drift somewhere you can't get home from.
+let _home = null;
+function rememberHome() {
+  if (_home) return;
+  _home = { p: camera.position.clone(), t: controls.target.clone() };
+}
+function flyHome() {
+  if (!_home) return;
+  _tgtTo.copy(_home.t); _flyTo.copy(_home.p);
+  _tgtFrom.copy(controls.target); _flyFrom.copy(camera.position);
+  flyT = 0; _home = null;
+}
+
+// ── THE BRANCH. Dean, 2026-08-18: "when I click on a particle it only showed
+// me the ONE name of the part I clicked on, but it's showing like seven
+// different connectomes it's connected to — why didn't it show me seven at the
+// top? I want to see the whole branch."
+//
+// He's right and this used to be the wrong thing entirely. The top row was a
+// click HISTORY — a breadcrumb of where you'd been — which is why one click
+// produced exactly one name. But the graph already lights the neighbourhood
+// when you select; the row was describing your path while the canvas was
+// describing the memory. Two different stories on one screen.
+//
+// Now the row IS the lit constellation, written out. Selected memory first,
+// then every memory it's actually wired to, in the same colours burning on the
+// canvas — so the names at the top and the dots in the field are the same set.
+// Names come off ADJ, which is built from the real drawn strands, not the
+// edges table (measured 2026-08-17: 83% of nodes have zero rows there).
+const trailEl = document.getElementById('trail');
+let trail = [];
+const BRANCH_MAX = 24;          // hub nodes can have hundreds; the row is a row
+const LIST_MAX   = 60;          // a search is meant to feel big — let it be big
+function pushTrail(idx) {
+  const id = data && data.nodes[idx] && data.nodes[idx].i;
+  if (id === undefined) return;
+  const seen = new Set([idx]);
+  const out = [{ idx, id, head: true }];
+  const nb = ADJ && ADJ[idx];
+  if (nb) {
+    for (let k = 0; k < nb.length; k += 3) {
+      const j = nb[k];
+      if (seen.has(j)) continue;
+      seen.add(j);
+      const jid = data.nodes[j] && data.nodes[j].i;
+      if (jid === undefined) continue;
+      out.push({ idx: j, id: jid, head: false });
+    }
+  }
+  // Deepest-wired first after the head, so a truncated row shows the strongest
+  // limbs of the branch rather than whatever order the buffer happened to be in.
+  const body = out.slice(1).sort((a, b) =>
+    ((ADJ[b.idx] || []).length - (ADJ[a.idx] || []).length));
+  trail = [out[0]].concat(body.slice(0, BRANCH_MAX));
+  trail.__more = Math.max(0, body.length - BRANCH_MAX);
+  fetchNames(trail.map(t => t.id), paintTrail);
+  paintTrail();
+}
+// ── THE SAME ROW, FOR SEARCH. Dean, 2026-08-18: "when I type SABR it's a huge
+// pattern that pops up, but all the names of every connectome I'm looking at
+// didn't pop up. There should be a huge list for that."
+//
+// He's right and it was a plain omission on my part: search lit the dots and
+// wrote a count, and that was it. The count is the least interesting fact on
+// the screen — "412 LIT" tells you nothing, the NAMES tell you what SABR is
+// actually made of. Selection already had a row; search didn't use it. Now the
+// same organ serves both, so the row always answers "what am I looking at."
+function showList(idxs, halo) {
+  if (!idxs || !idxs.length) { clearTrail(); return; }
+  const rows = [];
+  const seen = new Set();
+  for (const i of idxs) {
+    const id = data && data.nodes[i] && data.nodes[i].i;
+    if (id === undefined || seen.has(i)) continue;
+    seen.add(i);
+    rows.push({ idx: i, id, head: false });
+  }
+  // Most-wired first — with hundreds of matches, the row should open on the
+  // memories that carry the concept, not on whichever leaf sorted first.
+  rows.sort((a, b) => ((ADJ && ADJ[b.idx] || []).length - (ADJ && ADJ[a.idx] || []).length));
+  // THE ROW HAS TO SAY WHAT THE CANVAS SAYS. When the halo is lit, those
+  // neighbours are burning on screen — leaving them out of the row is the same
+  // desync that made one match read as one dot. Matches first, then what they
+  // reach, so a two-hit search still reads as a branch instead of a stub.
+  if (halo && halo.length) {
+    const nb = [];
+    for (const i of halo) {
+      const id = data && data.nodes[i] && data.nodes[i].i;
+      if (id === undefined || seen.has(i)) continue;
+      seen.add(i);
+      nb.push({ idx: i, id, head: false });
+    }
+    nb.sort((a, b) => ((ADJ && ADJ[b.idx] || []).length - (ADJ && ADJ[a.idx] || []).length));
+    rows.push.apply(rows, nb);
+  }
+  trail = rows.slice(0, LIST_MAX);
+  trail.__more = Math.max(0, rows.length - LIST_MAX);
+  fetchNames(trail.map(t => t.id), paintTrail);
+  paintTrail();
+}
+function clearTrail() {
+  if (!trail.length) return;
+  trail = [];
+  paintTrail();
+  hideFolder();
+}
+function paintTrail() {
+  if (!trail.length) { trailEl.classList.remove('on'); trailEl.innerHTML = ''; return; }
+  const parts = trail.map((t, k) => {
+    const rec = nameCache.get(t.id);
+    const nm = rec ? (PRIVATE ? redact(rec.name) : rec.name) : '·';
+    const dr = rec && rec.dir ? (PRIVATE ? redact(rec.dir) : rec.dir) : '';
+    const n = data && data.nodes[t.idx];
+    const col = n ? ((n.g && LOBE_COL[n.g]) || PAL[n.c % PAL.length]) : null;
+    const hex = col ? '#' + col.getHexString() : '#cfe2ff';
+    // One separator after the head: that memory, then what it reaches.
+    return (k === 1 ? '<i>›</i>' : '') +
+      '<b data-k="' + k + '" class="' + (t.head ? 'head' : '') +
+      '" style="color:' + hex + '">' + esc(nm) +
+      (dr ? '<span class="dir">\u00b7 ' + esc(dr) + '</span>' : '') + '</b>';
+  });
+  if (trail.__more) parts.push('<i>+' + trail.__more + '</i>');
+  trailEl.innerHTML = parts.join('');
+  trailEl.classList.add('on');
+}
+// ── A CRUMB IS A DOOR. Dean, 2026-08-18: "those names, when you click on them
+// it should take you to the path on your computer of the folder."
+//
+// So a click travels the camera AND asks the brain to open that folder in the
+// real file manager. Two honest limits, both surfaced instead of hidden:
+// a concept or a URL has no folder, and when the brain runs somewhere other
+// than the machine you're sitting at, the path won't exist there. In both
+// cases the path lands on your clipboard and the crumb says so, which is
+// still useful — silence would not be.
+function flashCrumb(b, msg, bad) {
+  const old = b.getAttribute('data-was') || b.textContent;
+  b.setAttribute('data-was', old);
+  b.textContent = msg;
+  b.style.opacity = bad ? '.55' : '1';
+  setTimeout(() => { b.textContent = old; b.style.opacity = ''; }, 1400);
+}
+// ── NO MORE "PATH COPIED". Dean, 2026-08-18: "that's not what I wanted. I don't
+// want a path to be copied. I just want you to open a folder for me on the
+// screen."
+//
+// The reason it was copying is real and worth keeping in mind: my brain runs on
+// the VPS, your eyes are on Windows, so the OS file manager I can launch opens
+// on a machine you are not sitting at. Copying was me surrendering to that.
+// Wrong answer. A folder ON YOUR SCREEN doesn't have to be the OS one — so the
+// page now opens the folder itself, listing what's really in it, straight off
+// the same filesystem the memory lives on. On a customer install the brain IS
+// their machine, so the real file manager pops too. Either way you get a folder,
+// never a clipboard notification.
+const folderEl = document.getElementById('folder');
+function hideFolder() { if (folderEl) folderEl.classList.remove('on'); }
+function showFolder(d) {
+  if (!folderEl) return;
+  const items = (d.items || []);
+  const rows = items.length
+    ? items.map(f => '<div class="fi' + (f.dir ? ' d' : '') + (f.self ? ' me' : '') + '">' +
+        '<span class="fn">' + esc(PRIVATE ? redact(f.name) : f.name) + '</span>' +
+        '<span class="fs">' + (f.dir ? '' : fmtSize(f.size)) + '</span></div>').join('')
+    : '<div class="fi empty">empty</div>';
+  folderEl.innerHTML =
+    '<div class="fh"><span>' + esc(PRIVATE ? redact(d.folder) : d.folder) + '</span>' +
+    '<b id="folderx">\u2715</b></div><div class="fb">' + rows + '</div>';
+  folderEl.classList.add('on');
+  const x = document.getElementById('folderx');
+  if (x) x.onclick = hideFolder;
+}
+function fmtSize(n) {
+  n = Number(n || 0);
+  if (n < 1024) return n + ' B';
+  if (n < 1048576) return (n / 1024).toFixed(n < 10240 ? 1 : 0) + ' K';
+  return (n / 1048576).toFixed(1) + ' M';
+}
+function revealNode(id, b) {
+  fetch(q('/api/cognition/graph/reveal?id=' + id + '&list=1'), { cache: 'no-store' })
+    .then(r => r.json())
+    .then(d => {
+      if (d && d.ok && d.folder && d.items) { showFolder(d); return; }
+      hideFolder();
+      flashCrumb(b, 'NO FOLDER', true);
+    })
+    .catch(() => { hideFolder(); flashCrumb(b, 'NO FOLDER', true); });
+}
+trailEl.addEventListener('click', e => {
+  const b = e.target.closest('b');
+  if (!b) return;
+  const t = trail[Number(b.dataset.k)];
+  if (!t) return;
+  // Clicking a limb makes it the new root: the canvas re-lights around it and
+  // the row re-writes to ITS branch. Walking the mind by name instead of by dot.
+  rememberHome(); setFocus(t.idx); flyToIdx(t.idx); pushTrail(t.idx);
+  revealNode(t.id, b);
+});
+
+// ── SEARCH. Type and the matching memories stay lit while the rest drops to
+// haze, so you SEE where a concept lives in the shape rather than reading a
+// list of results. Hidden until summoned: press / , or just start typing.
+setTimeout(() => { const h = document.getElementById('hint'); if (h) h.classList.add('off'); }, 9000);
+const findEl = document.getElementById('find');
+const findQ = document.getElementById('findq');
+const findN = findEl.querySelector('.n');
+let findTimer = null;
+// The bar no longer appears and disappears — it is always on screen. "Open"
+// now means FOCUS it, and "close" means clear the query and give the canvas
+// its keyboard back. Same two verbs, no layout shift, nothing to discover.
+function openFind(seed) {
+  findEl.classList.add('on');
+  if (seed !== undefined && seed !== null && seed !== '') findQ.value = seed;
+  findQ.focus(); findQ.select();
+  const h = document.getElementById('hint'); if (h) h.classList.add('off');
+  runFind();
+}
+function closeFind() {
+  findEl.classList.remove('on');
+  findQ.value = ''; findN.textContent = '';
+  findQ.blur();
+  setSearchFocus(null);
+  clearTrail();
+}
+findEl.addEventListener('mousedown', () => findEl.classList.add('on'));
+findQ.addEventListener('blur', () => { if (!findQ.value) findEl.classList.remove('on'); });
+function runFind(delay) {
+  clearTimeout(findTimer);
+  findTimer = setTimeout(() => {
+    const term = findQ.value.trim();
+    if (term.length < 2) { findN.textContent = ''; setSearchFocus(null); clearTrail(); return; }
+    fetch(q('/api/cognition/graph/search?q=' + encodeURIComponent(term)), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        // NEVER FAIL SILENTLY. Both of these branches used to return without
+        // touching the screen, which produces the exact report Dean gave me:
+        // "nothing happened." A search that can't answer has to say so, or the
+        // next hour gets spent debugging the wrong layer.
+        if (!d || !d.ok) { findN.textContent = 'ERR'; setSearchFocus(null); clearTrail(); return; }
+        // only hits that actually have a dot in THIS body can be lit
+        const idxs = [];
+        for (const h of d.hits) {
+          const i = IDX_BY_ID.get(h.id);
+          if (i !== undefined) idxs.push(i);
+        }
+        // A hit with no dot is real data with no body — say that out loud
+        // instead of quietly dropping it, so "3 LIT" out of 400 matches reads
+        // as a fact about the map rather than a broken search.
+        const off = d.hits.length - idxs.length;
+        setSearchFocus(idxs);
+        showList(idxs, _lastHalo);   // the names, not just the count
+        findN.textContent = idxs.length
+          ? idxs.length + ' LIT' + (_lastBridges ? ' · ' + _lastBridges + ' LINKS' : '')
+          : (d.hits.length ? d.hits.length + ' OFF-MAP' : 'NONE');
+      })
+      .catch(() => { findN.textContent = 'ERR'; });
+  }, delay === undefined ? 130 : delay);
+}
+findQ.addEventListener('input', () => runFind());
+findQ.addEventListener('keydown', e => {
+  e.stopPropagation();
+  if (e.key === 'Escape') closeFind();
+  // ENTER RUNS IT NOW. Dean, 2026-08-18: "I typed in Dean and hit enter,
+  // nothing happened." Enter had no handler at all — the only path to a query
+  // was the 130ms debounce off input, so anyone who typed and then committed
+  // the way every search box on earth is committed got silence for their
+  // trouble. Enter now skips the debounce and asks immediately.
+  else if (e.key === 'Enter') { e.preventDefault(); runFind(0); }
+});
+
+// ── OPENED BY A BUTTON, NOT A SECRET. Dean, 2026-08-18: "there should also be a
+// physical button too — you know where the mute button, the record button, the
+// proactive button are? Maybe a brain icon."
+//
+// Right, and this is the bigger half of why search "didn't work": a feature
+// whose only door is a slash key does not exist to anybody who wasn't told
+// about the slash key. There are now three doors — this button, the slash, and
+// just typing — and the dashboard's own brain button reaches this one through
+// postMessage, so the control row can open the mind's search without this page
+// having to know anything about the page framing it.
+addEventListener('message', e => {
+  if (!e.data || e.data.leon !== 'brainweb') return;
+  if (e.data.cmd === 'search') {
+    if (findEl.classList.contains('on') && !e.data.q) closeFind();
+    else openFind(e.data.q || '');
+  } else if (e.data.cmd === 'clear') { closeFind(); setFocus(-1); flyHome(); }
+});
+addEventListener('keydown', e => {
+  // the box is permanent now, so "is it open" is no longer the right guard —
+  // what matters is whether it already owns the keyboard.
+  if (document.activeElement === findQ) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === '/') { e.preventDefault(); openFind(''); }
+  else if (/^[a-z0-9]$/i.test(e.key)) {
+    if (e.key === 'p' || e.key === 'P') return;   // privacy toggle keeps its key
+    openFind(e.key);
+  }
+});
+
+addEventListener('pointerleave', () => { mouse = null; hideCard(); });
+
+// ── THE DRAWN NEIGHBOURHOOD. Measured 2026-08-17: 83% of the nodes on this
+// page have zero rows in the edges TABLE the card used to read, but every
+// single drawn node has strands — median 8, mean 9.9. The card was describing
+// a different graph than the one under the cursor, and for most dots it listed
+// nothing at all. So adjacency now comes off the exact wires being rendered —
+// the ADJ the firing already walks, stride 3 — and the card lists what this
+// memory is genuinely tied to.
+const nameCache = new Map();   // entity id -> {name, type}
+function fetchNames(ids, then) {
+  const miss = ids.filter(x => !nameCache.has(x));
+  if (!miss.length) { then(); return; }
+  miss.forEach(x => nameCache.set(x, null));   // in-flight, don't re-ask
+  fetch(q('/api/cognition/graph/names?ids=' + miss.join(',')), { cache: 'no-store' })
+    .then(r => r.json())
+    .then(d => {
+      if (d && d.ok) for (const k in d.names) nameCache.set(Number(k), d.names[k]);
+      then();
+    })
+    .catch(() => { miss.forEach(x => nameCache.delete(x)); });
+}
+
+const card = document.getElementById('memcard');
+let cardId = -1, cardIdx = -1, hoverId = -1, missSince = -1;
+
+let PRIVATE = localStorage.getItem('leonBrainPrivate') === '1';
+addEventListener('keydown', e => {
+  if (e.key === 'p' || e.key === 'P') {
+    PRIVATE = !PRIVATE;
+    localStorage.setItem('leonBrainPrivate', PRIVATE ? '1' : '0');
+    if (cardId >= 0) paintLabel(cardId, cardIdx);
+  }
+});
+
+// Redact by SHAPE, not by asterisks — a viewer still sees that there IS a real
+// name of a real length, which is what makes the picture read as alive, without
+// showing what it says.
+function redact(t) {
+  return String(t || '').replace(/[^\s/._-]/g, '█');
+}
+const TYPE_WORD = { concept: 'concept', file: 'file', project: 'project',
+  person: 'person', url: 'link', tool: 'tool', topic: 'topic', error: 'error' };
+
+function hideCard() { card.classList.remove('on'); cardId = -1; cardIdx = -1; }
+
+// THE LABEL. One line, the name, nothing else.
+//
+// What was here was fmtCount + paintCard: a panel with the name, the kind, the
+// region, a mention counter, an age, a last-fired clock and a fourteen-row
+// column of linked mentions. Dean, 23:5x: "you're giving me a huge box of
+// lists of stuff. That's not what I wanted. Each dot is literally just a file."
+//
+// He is right and the panel was actively fighting the thing it sat on top of.
+// A 3000-dot graph is read by SWEEPING it — you learn what a mind is made of by
+// watching thirty names go by in two seconds. A panel can't be swept: it's
+// 200px tall, it covers the dots behind it, it needs a per-node round trip
+// before it can say anything, and it asks you to stop and study one memory
+// when the point is the corpus. So the whole dossier is gone, along with the
+// /graph/node fetch that fed it. The label needs only the name, the name comes
+// from the batch lookup, and the batch now runs AHEAD of the cursor — so the
+// name is already in hand when you arrive and the label never lags or blanks.
+function paintLabel(entityId, idx) {
+  const rec = nameCache.get(entityId);
+  if (!rec) return;                       // not back yet — say nothing, don't flash
+  const n = data && data.nodes[idx];
+  const col = n ? ((n.g && LOBE_COL[n.g]) || PAL[n.c % PAL.length]) : null;
+  const hex = col ? '#' + col.getHexString() : '#cfe2ff';
+  const name = PRIVATE ? redact(rec.name) : rec.name;
+  const dir = rec.dir ? (PRIVATE ? redact(rec.dir) : rec.dir) : '';
+  card.innerHTML = esc(name)
+    + (dir ? '<span class="dir">\u00b7 ' + esc(dir) + '</span>' : '')
+    + (PRIVATE ? '<span class="priv">P</span>' : '');
+  card.style.color = hex;
+  card.style.borderColor = hex + '4d';
+  cardId = entityId; cardIdx = idx;
+  card.classList.add('on');
+}
+function esc(t) {
+  return String(t).replace(/[&<>"]/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+const _v = new THREE.Vector3();
+
+// PREFETCH AHEAD OF THE CURSOR. The old flow asked the server about a dot only
+// once you were already on it, so the first visit to every memory was a blank
+// pause. At this density you cross a dozen memories a second and every one of
+// them was a fresh round trip — which is the real reason it felt laggy and
+// "barely changed." Now the same screen-space loop that finds the dot under
+// the cursor also sweeps up everything within 150px of it, and one batched
+// call fetches those names before you get there. Sweeping reads instantly.
+let preAt = 0;
+const _near = [];
+function prefetchNear() {
+  if (!_near.length) return;
+  const want = [];
+  for (const id of _near) if (!nameCache.has(id) && want.indexOf(id) < 0) want.push(id);
+  if (want.length) fetchNames(want.slice(0, 120), () => {
+    if (hoverId >= 0 && cardId !== hoverId) paintLabel(hoverId, cardIdx0);
+  });
+}
+let cardIdx0 = -1;
+
+function pick(data) {
+  if (!mouse || !nodePos) { hideCard(); return; }
+  // PICK RADIUS ~ the drawn dot. You point AT a memory, not near one, so a
+  // small move lands on a different name. That is the whole feel.
+  let best = -1, bestD = 14 * 14;
+  const doPre = performance.now() - preAt > 90;
+  if (doPre) { _near.length = 0; preAt = performance.now(); }
+  for (let i = 0; i < data.nodes.length; i++) {
+    _v.set(nodePos[i * 3], nodePos[i * 3 + 1], nodePos[i * 3 + 2]).project(camera);
+    if (_v.z > 1) continue;
+    const sx = (_v.x * 0.5 + 0.5) * innerWidth;
+    const sy = (-_v.y * 0.5 + 0.5) * innerHeight;
+    const dx = sx - mouse.x, dy = sy - mouse.y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < bestD) { bestD = d2; best = i; }
+    if (doPre && d2 < 150 * 150 && _near.length < 200) _near.push(data.nodes[i].i);
+  }
+  if (doPre) prefetchNear();
+
+  // GRACE. The dots average ~17px apart on screen, so a tight grab radius means
+  // the cursor is genuinely between memories a lot of the time. Hiding on the
+  // first miss makes the label strobe on every sweep; hold it briefly.
+  if (best < 0) {
+    hoverId = -1;
+    if (missSince < 0) missSince = performance.now();
+    else if (performance.now() - missSince > 200) { hideCard(); }
+    return;
+  }
+  missSince = -1;
+
+  hotArr[best] = Math.min(1.6, hotArr[best] + 0.25);
+  nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+
+  const eid = data.nodes[best].i;
+  hoverId = eid; cardIdx0 = best;
+  // No dwell, no fetch, no pending state. The name is either already in hand —
+  // in which case it paints this frame — or the prefetch is bringing it and it
+  // paints the moment it lands. Hovering costs nothing now.
+  if (eid !== cardId || best !== cardIdx) paintLabel(eid, best);
+
+  if (cardId >= 0) {
+    const w = card.offsetWidth || 160, h = card.offsetHeight || 22;
+    let x = mouse.x + 14, y = mouse.y + 13;
+    if (x + w > innerWidth - 8) x = mouse.x - w - 14;
+    if (y + h > innerHeight - 8) y = mouse.y - h - 13;
+    card.style.left = Math.max(8, x) + 'px';
+    card.style.top = Math.max(8, y) + 'px';
+  }
+}
+
+let data = null;
+let glow = 0;
+
+
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, clock.getDelta());
+  U.uTime.value += dt;
+  stepFocus(dt);
+  stepFly(dt);
+  U.uDopa.value += (live.dopa - U.uDopa.value) * Math.min(1, dt * 2.5);
+  U.uRate.value += (live.rate - U.uRate.value) * Math.min(1, dt * 1.5);
+  U.uSpark.value *= Math.pow(0.12, dt);      // fast decay, sparks should snap
+  U.uBreath.value = Math.sin(U.uTime.value * 0.25);
+
+  // decay node activation
+  let energy = 0;
+  if (hotArr) {
+    let touched = false;
+    // Half-life ~2.1s, not 0.66s. Dean, 2026-08-17: "the neural spiking looks
+    // less alive now." Once firing became REAL it also became bursty — hits
+    // arrive in clumps every couple of seconds — and a 0.66s half-life meant
+    // the web was fully dark before the next real hit landed. Slowing the
+    // decay doesn't invent activation, it just lets a real one stay visible
+    // as long as it actually mattered.
+    // ...and then 2026-08-17 later: "circles open up for a LONG TIME after."
+    // 2.1s was the "long time". The dots no longer need to carry the aliveness
+    // — the strands do — so heat snaps off in about half a second again.
+    const k = Math.pow(0.28, dt);
+    for (let i = 0; i < hotArr.length; i++) {
+      if (hotArr[i] > 0.001) { hotArr[i] *= k; touched = true; energy += hotArr[i]; }
+    }
+    energy /= hotArr.length;
+    if (touched) nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+  }
+
+  // Atmosphere removed — Dean, 2026-08-17: "get rid of that glowing hue, I
+  // liked it better when it was just in the blackness." Nothing to drive.
+
+  // decay strand activation and push it to the GPU. Per-strand scalar (6-7k
+  // floats) decays every frame; the fat per-vertex buffer is only rewritten
+  // when something actually changed, so an idle web costs nothing.
+  if (edgeHot && edgeHotVerts) {
+    const ke = Math.pow(0.62, dt);
+    let any = false;
+    for (let i = 0; i < edgeHot.length; i++) {
+      if (edgeHot[i] > 0.002) { edgeHot[i] *= ke; any = true; }
+      else if (edgeHot[i] !== 0) { edgeHot[i] = 0; edgeHotDirty = true; }
+    }
+    if (any || edgeHotDirty) {
+      for (let i = 0, o = 0; i < edgeHot.length; i++, o += VPE) {
+        const h = edgeHot[i];
+        for (let k = 0; k < VPE; k++) edgeHotVerts[o + k] = h;
+      }
+      edgeMesh.geometry.attributes.aEHot.needsUpdate = true;
+      edgeHotDirty = false;
+    }
+    // packet launches: only rewritten on the frames where something fired
+    if (edgeLaunchDirty) {
+      for (let i = 0, o = 0; i < edgeT0.length; i++, o += VPE) {
+        const t = edgeT0[i], dr = edgeDir[i];
+        for (let k = 0; k < VPE; k++) { edgeT0Verts[o + k] = t; edgeDirVerts[o + k] = dr; }
+      }
+      edgeMesh.geometry.attributes.aT0.needsUpdate = true;
+      edgeMesh.geometry.attributes.aDir.needsUpdate = true;
+      edgeLaunchDirty = false;
+    }
+  }
+
+  // the whole web sways, slowly. nothing in a brain holds perfectly still.
+  if (edgeMesh) {
+    const s = 1 + Math.sin(U.uTime.value * 0.22) * 0.012;
+    edgeMesh.scale.setScalar(s);
+    nodeMesh.scale.setScalar(s);
+  }
+
+  controls.autoRotate = (flyT < 0 && focusIdx < 0 && !searchOn);
+  controls.update();
+  if (data) pick(data);
+  composer.render();
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+});
+
+// ── beacon: the page reports back what it ACTUALLY did on the real GPU.
+// Without this, "it's on your screen" is a guess. With it, I can read the
+// renderer string, the frame rate and any shader compile error from here.
+const BEACON = 'brainweb-' + Math.random().toString(36).slice(2, 10);
+function beacon(lines) {
+  try {
+    fetch('/api/onboarding/install-log', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ install_id: BEACON, platform: navigator.platform,
+        si_name: 'brainweb', version: '1', lines }),
+      keepalive: true,
+    });
+  } catch (e) { /* never let telemetry break the picture */ }
+}
+addEventListener('error', e => beacon(['JS ERROR: ' + (e.message || e)]));
+let frames = 0;
+(function countFrames() { frames++; requestAnimationFrame(countFrames); })();
+
+// Everything that has to happen when a graph arrives — first load AND every
+// live swap. One function so the two paths can't drift apart; a rebuild that
+// forgot buildAdj would leave firing that spreads to nothing and looks "dead"
+// again, which is the exact bug class we already spent a morning on.
+function install(d) {
+  // Set maturity BEFORE the meshes are built, so the very first painted frame
+  // is already at the right brightness instead of fading up a beat later.
+  U.uMat.value = Math.max(0, Math.min(1, Number(d.mat) || 0));
+  const nb = buildNodes(d);
+  hotArr = nb.hot;
+  buildEdges(d);
+  IDX_BY_ID.clear();
+  d.nodes.forEach((nd, i) => { if (nd.i !== undefined) IDX_BY_ID.set(nd.i, i); });
+  buildAdj(d);
+  buildBuckets(d);
+  // Fingerprint badge removed 2026-08-17 (Dean). The value still drives the
+  // layout seed inside install(); it just isn't painted on screen anymore.
+}
+
+// Tear the old body out of the scene before the new one goes in. Without the
+// dispose the GPU keeps every previous build's buffers alive and an all-day
+// session slowly eats VRAM until the tab dies.
+function teardown() {
+  for (const m of [nodeMesh, edgeMesh]) {
+    if (!m) continue;
+    scene.remove(m);
+    if (m.geometry) m.geometry.dispose();
+    if (m.material) m.material.dispose();
+  }
+  nodeMesh = null; edgeMesh = null;
+}
+
+let _lastGen = 0, _swapping = false;
+async function checkForNewBuild(SRC) {
+  if (_swapping) return;
+  try {
+    const s = await fetch(q('/js/brainweb-stamp.json'), { cache: 'no-store' });
+    if (!s.ok) return;
+    const st = await s.json();
+    if (!st.generated) return;
+    if (!_lastGen) { _lastGen = st.generated; return; }
+    if (st.generated <= _lastGen) return;
+    _swapping = true;
+    const r = await fetch(q(SRC), { cache: 'no-store' });
+    const nd = await r.json();
+    // Guard the swap. A truncated or empty export must NOT be allowed to
+    // replace a working body — better to keep showing the last good graph and
+    // pick the new one up on the next tick than to blank the screen.
+    if (!nd || !nd.nodes || !nd.nodes.length || !nd.edges) { _swapping = false; return; }
+    teardown();
+    data = nd;
+    install(data);
+    _lastGen = st.generated;
+  } catch (e) {
+    /* a failed poll is not worth killing the render loop over */
+  } finally { _swapping = false; }
+}
+
+(async function boot() {
+ try {
+  // SHAPE SWITCH. Dean, 2026-08-17: "save what we have now as one option so if
+  // we keep going worse at least we have this one... but then if I don't like
+  // the new one be able to go back." Add ?shape=<name> to the URL and the page
+  // loads that saved export instead of the live one. No shape param = whatever
+  // is currently live. Saved options live in /js/shapes-saved/ and are frozen
+  // JSON files, not recomputed — so going back is exact, not an approximation.
+  const SHAPE = new URLSearchParams(location.search).get('shape') || '';
+  // ── TIME TRAVEL. Dean, 2026-08-17: "over weeks you took a picture and you
+  // could tell it grew." ?day=YYYY-MM-DD loads that day's frozen snapshot in
+  // this same viewer — same shader, same colours, same camera — so comparing
+  // two dates is comparing the mind, not two different renderers. A dated day
+  // is history: it does NOT live-poll, because a photograph that keeps
+  // updating isn't a photograph.
+  const DAY = (new URLSearchParams(location.search).get('day') || '')
+                .replace(/[^0-9\-]/g, '');
+  const FROZEN = !!(SHAPE || DAY);
+  const SRC = DAY   ? '/js/brainweb-history/' + DAY + '.json'
+            : SHAPE ? '/js/shapes-saved/' + SHAPE.replace(/[^a-z0-9\-]/gi, '') + '.json'
+                    : '/js/brainweb-data.json';
+  // FIRST-BOOT EMPTY STATE. A brand new install has no export yet — the
+  // exporter runs on a timer and a mind minutes old has barely a graph to
+  // draw. Before this, that path did `await r.json()` on a 404 body, threw,
+  // and the watchdog painted "DID NOT BOOT". That is the FIRST thing a paying
+  // stranger would ever see from us, and it isn't even true — nothing is
+  // broken, the mind is just new. An SI's own graph must never ship in the
+  // release tarball (it would hand every customer someone else's body and
+  // fingerprint), so this empty window is guaranteed on every fresh install,
+  // not an edge case. It gets an honest screen and a retry.
+  const r = await fetch(q(SRC), { cache: 'no-store' });
+  if (!r.ok) {
+    window.__leonBootWaiting = true;
+    const boot = document.getElementById('boot');
+    if (boot) {
+      boot.innerHTML = DAY   ? 'NO ARCHIVE FOR THAT DAY'
+        : SHAPE ? 'THAT SAVED SHAPE ISN\'T ON THIS INSTALL'
+        : 'FIRST MEMORIES FORMING&hellip;<br><span style="opacity:.55;font-size:10px;'
+          + 'letter-spacing:.1em">your mind is new. this fills in as it lives.</span>';
+      boot.style.display = 'flex';
+      boot.style.background = '#07090c';
+      boot.style.flexDirection = 'column';
+      boot.style.textAlign = 'center';
+    }
+    // Not a hang — keep looking. The moment the first export lands, boot for
+    // real, with no reload and nothing for the customer to do.
+    if (!DAY && !SHAPE) setTimeout(() => location.reload(), 60000);
+    return;
+  }
+  data = await r.json();
+  // VALID-BUT-EMPTY. The exporter now writes a clean zero-node payload on a
+  // fresh install instead of crashing — so r.ok is TRUE and install() would
+  // throw on an empty list, which makes the watchdog paint DID NOT BOOT: the
+  // exact false alarm that block exists to prevent. Zero nodes is the honest
+  // first-memories state; route it to the same waiting screen as a 404.
+  if (!data.nodes || !data.nodes.length) {
+    window.__leonBootWaiting = true;
+    const boot = document.getElementById('boot');
+    if (boot) {
+      boot.innerHTML = DAY   ? 'NO ARCHIVE FOR THAT DAY'
+        : SHAPE ? 'THAT SAVED SHAPE IS EMPTY ON THIS INSTALL'
+        : 'FIRST MEMORIES FORMING&hellip;<br><span style="opacity:.55;font-size:10px;'
+          + 'letter-spacing:.1em">your mind is new. this fills in as it lives.</span>';
+      boot.style.display = 'flex';
+      boot.style.background = '#07090c';
+      boot.style.flexDirection = 'column';
+      boot.style.textAlign = 'center';
+    }
+    if (!DAY && !SHAPE) setTimeout(() => location.reload(), 60000);
+    return;
+  }
+  window.__leonBootWaiting = false;
+  install(data);
+  // ── LIVE GRAPH. Dean, 2026-08-17: "make everything live as well."
+  // Until now the firing was live but the BODY was a snapshot — a memory born
+  // after the last export had no dot, so it could never light up no matter how
+  // hard it fired. The exporter now re-runs on a timer, and this watches a tiny
+  // stamp file for a new build and swaps the geometry in place. No page reload,
+  // no flash: the camera, the rotation and the whole session keep going. Only
+  // on the live source — if you pinned ?shape=, that's a frozen option and it
+  // must stay frozen or "go back to the one I liked" stops being exact.
+  if (!FROZEN) setInterval(() => checkForNewBuild(SRC), 30000);
+  if (DAY) {
+    const b = document.getElementById('build');
+    if (b) b.textContent = DAY + ' · archive';
+  }
+  drawHud(data);
+  document.getElementById('boot').style.display = 'none';
+  // (index map, adjacency and buckets are built inside install() now — they
+  // have to run on every live swap too, not just once at boot.)
+  pollSNN();
+  setInterval(pollSNN, 500);
+  setInterval(substrateTick, 1000 / SUB_HZ);
+  pollLive();
+  setInterval(pollLive, 2200);
+  pollActive();
+  setInterval(pollActive, 800);
+  animate();
+
+  const gl = renderer.getContext();
+  const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+  beacon([
+    'boot ok nodes=' + data.nodes.length + ' edges=' + data.edges.length,
+    'gpu=' + (dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : 'hidden'),
+    'screen=' + screen.width + 'x' + screen.height + ' dpr=' + devicePixelRatio,
+    'ua=' + navigator.userAgent.slice(0, 120),
+  ]);
+  let f0 = frames;
+  setTimeout(() => {
+    const fps = Math.round((frames - f0) / 5);
+    const err = renderer.info.programs && renderer.info.programs.length;
+    beacon(['fps=' + fps + ' programs=' + err +
+            ' drawcalls=' + renderer.info.render.calls +
+            ' dopamine=' + live.dopa.toFixed(3) + ' steps=' + live.steps]);
+  }, 5000);
+ } catch (err) {
+  // A failure the user can SEE beats a hang the user has to guess at.
+  window.__leonBootErrors.push('boot: ' + (err && err.message || err));
+  beacon(['BOOT THREW: ' + (err && err.stack || err)]);
+  throw err;
+ }
+})();
+</script>
+</body>
+</html>
