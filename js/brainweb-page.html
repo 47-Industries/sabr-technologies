@@ -1128,7 +1128,10 @@ function substrateTick() {
     }
     touched = true;
   });
-  if (touched) nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+  if (touched) {
+    nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+    window.__subTicks = (window.__subTicks || 0) + 1;   // verification counter
+  }
 }
 
 // No HUD, no legend, no counters. Dean asked for the UI, not the dashboard —
@@ -1936,13 +1939,43 @@ async function checkForNewBuild(SRC) {
   document.getElementById('boot').style.display = 'none';
   // (index map, adjacency and buckets are built inside install() now — they
   // have to run on every live swap too, not just once at boot.)
-  pollSNN();
-  setInterval(pollSNN, 500);
-  setInterval(substrateTick, 1000 / SUB_HZ);
-  pollLive();
-  setInterval(pollLive, 2200);
-  pollActive();
-  setInterval(pollActive, 800);
+  if (EMBED) {
+    /* RECORDED, NOT INVENTED. The public site has no cognition API, so the
+       substrate layer replays a trace of Leon's REAL region firing rates,
+       sampled live from his actual brain (see brainweb-regions-loop.json:
+       100 frames, 3 minutes, looped). Same wavefront code, same real
+       numbers — just a recording instead of a live wire. The three live
+       pollers stay off entirely: no 404 spam every half-second. */
+    fetch('/js/brainweb-regions-loop.json', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(loop => {
+        if (!loop || !loop.frames || !loop.frames.length) return;
+        let fi = 0;
+        const step = () => {
+          const f = loop.frames[fi];
+          fi = (fi + 1) % loop.frames.length;
+          snn.regions = f.regions || {};
+          snn.ok = true;
+          Object.keys(snn.regions).forEach(k => {
+            const v = snn.regions[k].rate || 0;
+            snn.peak[k] = Math.max((snn.peak[k] || 0) * 0.995, v, 1e-4);
+          });
+          if (typeof f.dopamine === 'number') live.dopa = f.dopamine;
+        };
+        step();
+        setInterval(step, (loop.interval || 1.8) * 1000);
+      })
+      .catch(() => {});
+    setInterval(substrateTick, 1000 / SUB_HZ);
+  } else {
+    pollSNN();
+    setInterval(pollSNN, 500);
+    setInterval(substrateTick, 1000 / SUB_HZ);
+    pollLive();
+    setInterval(pollLive, 2200);
+    pollActive();
+    setInterval(pollActive, 800);
+  }
   animate();
 
   const gl = renderer.getContext();
