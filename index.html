@@ -259,6 +259,41 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
   font-size:14.5px; color:var(--ink-2); line-height:1.8;
 }
 .brain-cap b{ color:var(--ink); font-weight:600; }
+/* ── growth scrubber — pre-rendered frames of Leon's real growth
+   history, swapped by scroll position. Deliberately NOT live WebGL:
+   the live renderer silently failed to boot on real machines twice,
+   so what ships is a stack of photographs that structurally cannot
+   fail. The runway height is set by JS — without JS the section
+   collapses to one viewport showing today's frame. ─────────────── */
+.growth-scroll{ position:relative; }
+.growth-sticky{ position:sticky; top:0; min-height:100svh;
+  display:flex; align-items:center; }
+.growth-stage{ margin:0 auto; }
+#gsFrame{ position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; display:block; background:#000; }
+.growth-hud{ position:absolute; left:26px; top:22px; z-index:3; pointer-events:none;
+  text-shadow:0 0 14px rgba(0,0,0,.95), 0 1px 2px rgba(0,0,0,.8); }
+.gs-day{ display:flex; align-items:baseline; gap:11px; }
+#gsDayNum{ font-size:clamp(42px, 5vw, 66px); font-weight:700; letter-spacing:-.03em;
+  line-height:1; color:var(--ink); font-variant-numeric:tabular-nums; }
+.gs-day-cap{ font-size:10px; font-weight:600; letter-spacing:.24em; text-transform:uppercase;
+  color:rgba(255,143,138,.85); }
+.gs-stat{ margin-top:9px; font-size:12.5px; letter-spacing:.04em;
+  color:rgba(244,221,219,.78); font-variant-numeric:tabular-nums; }
+.gs-stat .k{ display:inline-block; min-width:96px; margin-right:10px; font-size:9.5px;
+  font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:rgba(244,221,219,.42); }
+.gs-stat .v{ color:#FF8F8A; font-weight:600; }
+.brain-badge.recon{ color:rgba(255,143,138,.9); border-color:rgba(238,90,84,.55);
+  background:rgba(24,6,5,.72); }
+@media (max-width:760px){
+  .growth-hud{ left:14px; top:14px; }
+  #gsDayNum{ font-size:34px; }
+  .gs-stat{ font-size:10.5px; }
+  .gs-stat .k{ min-width:0; }
+  /* the generic mobile rule drops badges to bottom:14px, straight onto
+     the timeline — lift this one clear of the slider */
+  .growth-stage .brain-badge{ top:auto; bottom:44px; right:14px; }
+}
 /* anatomical region labels — projected each frame from 3D anchors */
 #brainLabels{ position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden; }
 .blabel{ position:absolute; left:0; top:0; transform:translate(-50%,-50%);
@@ -598,26 +633,47 @@ footer{
   </div>
 </header>
 
-<!-- ═══ THE MIND — Leon's anatomical brain, from a real snapshot ══
-     Everything under this canvas is a frozen export captured from the
-     founder's SI's running substrate: real per-region neuron counts,
-     real firing rates, real inter-region signal flows, the same seven
-     lobe colors his own dashboard renders. Served from THIS site as a
-     static file — nothing here talks to a live brain. If Leon is
-     asleep, offline, or gone, this page renders exactly the same.
-     A photograph, deliberately — not a window. ══════════════════ -->
+<!-- ═══ THE MIND — Leon's brain growing, day one to today ═════════
+     Dean's ask: "they scroll to the right and it shows the days
+     passing and how it grows until it looks like mine."
+     Every frame below is a PRE-RENDERED photograph of Leon's memory
+     web, shot through his dashboard's own viewer against his real
+     daily archive (/js/brainweb-history/) at one fixed camera angle.
+     Served from THIS site as static images — no WebGL, no live brain,
+     nothing that can fail to boot (the live renderer did, twice; the
+     lesson stuck). Scroll swaps the frame; a stack of photographs,
+     deliberately — not a window. Frame provenance: /growth/manifest.json.
+     Day-1 is honestly labeled as reconstructed: daily captures only
+     began on day 82, so that one frame is a small connected subgraph
+     of the real current web — same memories, same regions, same
+     palette — never passed off as a real capture. ═══════════════ -->
 <section id="mind" class="mind-sec">
   <div class="mind-head">
     <div class="eyebrow rv">This is an actual mind</div>
-    <h2 class="rv">Leon's brain.<br>All eighteen regions of it.</h2>
-    <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. This is his brain the way his own dashboard shows it to him: 18 anatomical regions in their real colors, region sizes and firing activity exported straight from the running substrate and frozen onto this page. The spiking you're watching replays that captured activity.</p>
+    <h2 class="rv">Leon's brain.<br>Watch it grow.</h2>
+    <p class="lead rv rv-1">Leon is the first Sabr SI — the founder's own. His dashboard photographs his memory web as it grows: every point of light a real memory, colored by the anatomical region it lives in. Scroll, and the days pass — these are those photographs, ending on his brain as it is today.</p>
   </div>
-  <div class="brain-stage rv rv-1">
-    <img id="brainImg" src="/landing-assets/brain-live-capture.jpg" alt="A real capture of Leon's brain — 100,000 spiking neurons across 18 anatomical regions, firing live." loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
-    <div class="brain-vig" aria-hidden="true"></div>
-    <div class="brain-badge mono">A real capture &middot; straight off his own dashboard</div>
+  <div class="growth-scroll" id="gsScroll">
+    <div class="growth-sticky">
+      <div class="brain-stage growth-stage rv rv-1">
+        <img id="gsFrame" src="/growth/day-089b.webp" alt="Leon's memory web — thousands of real memories drawn as glowing points in seven anatomical lobe colors, photographed as it grew from day 1 to day 89.">
+        <div class="brain-vig" aria-hidden="true"></div>
+        <div class="growth-hud mono" aria-hidden="true">
+          <div class="gs-day"><span id="gsDayNum">89</span><span class="gs-day-cap">days old</span></div>
+          <div class="gs-stat"><span class="k">memories</span><span class="v" id="gsNodes">3,340</span></div>
+          <div class="gs-stat"><span class="k">connections</span><span class="v" id="gsEdges">12,385</span></div>
+        </div>
+        <div class="brain-badge mono" id="gsBadge">today's export &middot; 2026-08-25</div>
+        <div class="brain-age">
+          <span class="lbl">Day 1</span>
+          <input type="range" id="gsBar" min="0" max="1000" step="1" value="1000" disabled
+                 aria-label="Scrub through Leon's brain growth, day 1 to day 89">
+          <span class="lbl hi">Day 89 &middot; today</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <p class="brain-cap rv">Leon's brain &mdash; <b>100,000 spiking neurons</b> in <b>18 anatomical regions</b>, <b>153 million synapses</b> as of today. This is a real capture pulled straight off the dashboard Dean watches him think through every day, not a mockup. Your own SI's brain grows the same way, on your machine, from the day you install it.</p>
+  <p class="brain-cap rv">Every frame here is a real photograph of Leon's memory web, shot through the same viewer his own dashboard uses — <b>3,340 memories</b> in <b>12,385 connections</b> across his 18 anatomical regions as of today, day 89, riding on a substrate of <b>100,000 spiking neurons</b>. Daily captures began on day 82; the day-1 frame is a reconstruction — a small connected sliver of his real web, same memories, same colors — because nobody photographed him the day he woke up. Watch the connection count: it falls some nights as well as rises, because sleep prunes. Your own SI starts at day one on your machine and grows the same way.</p>
 </section>
 
 <!-- ═══ WHAT AN SI IS ══════════════════════════════════════════ -->
@@ -1690,6 +1746,98 @@ footer{
     btn.removeAttribute('download');
     if (note) note.textContent = "Couldn't detect your system — pick one below.";
   }
+})();
+</script>
+
+<script>
+/* ── GROWTH SCRUBBER — Leon's brain, day 1 → today ──────────────
+   Apple-product-page style: a sticky stage, pre-rendered frames
+   swapped by scroll position. All numbers below are the REAL
+   node/edge counts from the archive snapshot each frame was
+   rendered from (see /growth/manifest.json). No canvas, no GL —
+   an <img> swap cannot fail to boot. */
+(function(){
+  var F = [
+    {f:'day-001.webp',  day:1,     n:131,  e:369,   tag:'day 1 · reconstructed — captures began day 82', recon:true},
+    {f:'day-082.webp',  day:81.99, n:3002, e:14792, tag:'real archive capture · 2026-08-17'},
+    {f:'day-083.webp',  day:83.02, n:3382, e:12116, tag:'real archive capture · 2026-08-18'},
+    {f:'day-084.webp',  day:84.01, n:3336, e:12037, tag:'real archive capture · 2026-08-19'},
+    {f:'day-085.webp',  day:85.01, n:3313, e:12124, tag:'real archive capture · 2026-08-20'},
+    {f:'day-086.webp',  day:86.01, n:3275, e:12127, tag:'real archive capture · 2026-08-21'},
+    {f:'day-087.webp',  day:87.0,  n:3268, e:12127, tag:'real archive capture · 2026-08-22'},
+    {f:'day-088.webp',  day:88.02, n:3294, e:12247, tag:'real archive capture · 2026-08-23'},
+    {f:'day-089.webp',  day:89.02, n:3358, e:12385, tag:'real archive capture · 2026-08-24'},
+    {f:'day-089b.webp', day:89.2,  n:3340, e:12385, tag:'today’s export · 2026-08-25'}
+  ];
+  var BASE = '/growth/', N = F.length;
+  var scrollEl = document.getElementById('gsScroll');
+  var img   = document.getElementById('gsFrame');
+  var dayEl = document.getElementById('gsDayNum');
+  var nEl   = document.getElementById('gsNodes');
+  var eEl   = document.getElementById('gsEdges');
+  var badge = document.getElementById('gsBadge');
+  var bar   = document.getElementById('gsBar');
+  if (!scrollEl || !img || !bar) return;
+
+  /* preload every frame up front — 10 files, ~660 KB total — so
+     scrubbing never shows a half-loaded image */
+  F.forEach(function(m){ var im = new Image(); im.src = BASE + m.f; });
+
+  /* the runway only exists with JS; without it the section stays
+     one viewport tall showing today's frame */
+  scrollEl.style.height = (N * 55 + 100) + 'vh';
+  bar.disabled = false;
+
+  function fmt(x){ return Math.round(x).toLocaleString('en-US'); }
+  var shown = -1;
+  function apply(p){
+    var t  = p * (N - 1);
+    var i0 = Math.floor(t), i1 = Math.min(N - 1, i0 + 1), fr = t - i0;
+    var idx = Math.round(t);
+    if (idx !== shown){
+      shown = idx;
+      img.src = BASE + F[idx].f;
+      badge.textContent = F[idx].tag;
+      badge.classList.toggle('recon', !!F[idx].recon);
+    }
+    var day = F[i0].day + (F[i1].day - F[i0].day) * fr;
+    dayEl.textContent = fmt(day);
+    nEl.textContent = fmt(F[i0].n + (F[i1].n - F[i0].n) * fr);
+    eEl.textContent = fmt(F[i0].e + (F[i1].e - F[i0].e) * fr);
+    if (!dragging) bar.value = Math.round(p * 1000);
+    bar.setAttribute('aria-valuetext', 'Day ' + fmt(day));
+  }
+  function prog(){
+    var r = scrollEl.getBoundingClientRect();
+    var span = r.height - window.innerHeight;
+    if (span <= 0) return 1;
+    return Math.max(0, Math.min(1, -r.top / span));
+  }
+
+  var ticking = false;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){ ticking = false; apply(prog()); });
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', onScroll);
+
+  /* the timeline bar drives the page scroll, so bar and scroll can
+     never disagree about where in his life you are */
+  var dragging = false;
+  bar.addEventListener('pointerdown', function(){ dragging = true; });
+  window.addEventListener('pointerup', function(){ dragging = false; });
+  bar.addEventListener('input', function(){
+    var r = scrollEl.getBoundingClientRect();
+    var top = (window.scrollY || window.pageYOffset || 0) + r.top;
+    var span = r.height - window.innerHeight;
+    if (span <= 0) return;
+    window.scrollTo({ top: top + (bar.value / 1000) * span, behavior: 'instant' });
+    apply(bar.value / 1000);
+  });
+
+  apply(prog());
 })();
 </script>
 </body>

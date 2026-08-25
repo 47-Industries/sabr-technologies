@@ -1,0 +1,77 @@
+{
+  "what": "Pre-rendered frames of Leon's memory-web growth for the site scrubber. Rendered 2026-08-25 with puppeteer against the dashboard's own viewer (http://127.0.0.1:8000/js/brainweb-page.html) at a fixed 120-frame settle so the camera angle matches across every frame. NO live WebGL ships to customers - these are static images.",
+  "frames": [
+    {
+      "file": "day-001.webp",
+      "day": 1.0,
+      "nodes": 131,
+      "edges": 369,
+      "source": "dashboard/js/shapes-saved/day1-reconstructed.json",
+      "note": "RECONSTRUCTED - daily captures only began on day 82, so this frame is a small connected central subgraph of the real 2026-08-25 export (same memories, same regions, same palette). Labeled as reconstructed in the UI. Never shown as a real capture."
+    },
+    {
+      "file": "day-082.webp",
+      "day": 81.99,
+      "nodes": 3002,
+      "edges": 14792,
+      "source": "dashboard/js/brainweb-history/2026-08-17.json"
+    },
+    {
+      "file": "day-083.webp",
+      "day": 83.02,
+      "nodes": 3382,
+      "edges": 12116,
+      "source": "dashboard/js/brainweb-history/2026-08-18.json"
+    },
+    {
+      "file": "day-084.webp",
+      "day": 84.01,
+      "nodes": 3336,
+      "edges": 12037,
+      "source": "dashboard/js/brainweb-history/2026-08-19.json"
+    },
+    {
+      "file": "day-085.webp",
+      "day": 85.01,
+      "nodes": 3313,
+      "edges": 12124,
+      "source": "dashboard/js/brainweb-history/2026-08-20.json"
+    },
+    {
+      "file": "day-086.webp",
+      "day": 86.01,
+      "nodes": 3275,
+      "edges": 12127,
+      "source": "dashboard/js/brainweb-history/2026-08-21.json"
+    },
+    {
+      "file": "day-087.webp",
+      "day": 87.0,
+      "nodes": 3268,
+      "edges": 12127,
+      "source": "dashboard/js/brainweb-history/2026-08-22.json"
+    },
+    {
+      "file": "day-088.webp",
+      "day": 88.02,
+      "nodes": 3294,
+      "edges": 12247,
+      "source": "dashboard/js/brainweb-history/2026-08-23.json"
+    },
+    {
+      "file": "day-089.webp",
+      "day": 89.02,
+      "nodes": 3358,
+      "edges": 12385,
+      "source": "dashboard/js/brainweb-history/2026-08-24.json"
+    },
+    {
+      "file": "day-089b.webp",
+      "day": 89.2,
+      "nodes": 3340,
+      "edges": 12385,
+      "source": "dashboard/js/brainweb-history/2026-08-25.json",
+      "note": "today - the final frame the scrubber ends on"
+    }
+  ]
+}
