@@ -138,14 +138,21 @@ nav{
   transition:color .2s;
 }
 .nav-links a:hover{ color:var(--ink); }
+/* forged, sharp, always-visible — matches the SABR wordmark, no gloss, no pulse */
 .nav-cta{
-  font-size:13px; font-weight:600; color:#fff; text-decoration:none;
-  background:linear-gradient(180deg, #FF3B35, #F01E17);
-  padding:9px 20px; border-radius:12px;
-  box-shadow:0 6px 24px -8px rgba(255,59,53,.7), inset 0 1px 0 rgba(255,255,255,.25);
-  transition:transform .2s, box-shadow .2s;
+  font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:#fff; text-decoration:none;
+  background:#E01B15;
+  padding:12px 24px 11px;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:0;
+  clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 10px,
+                    100% 100%, 10px 100%, 0 calc(100% - 10px));
+  transition:background .15s ease, border-color .15s ease;
 }
-.nav-cta:hover{ transform:translateY(-1px); box-shadow:0 10px 30px -8px rgba(255,59,53,.85), inset 0 1px 0 rgba(255,255,255,.25); }
+.nav-cta:hover{ background:#FF3B35; border-color:rgba(255,255,255,.4); }
+.nav-cta:active{ background:#C61913; }
+.nav-cta:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
 
 /* pay-gated installer showcase — a picture of the real thing, not a download */
 .dl-gate{ display:grid; grid-template-columns:1fr 1.1fr; gap:40px; align-items:center; text-align:left; }
@@ -277,7 +284,7 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .brain-cap b{ color:var(--ink); font-weight:600; }
 @media (max-width:760px){
   .brain-stage{ height:clamp(380px, 62vh, 560px); border-radius:20px; }
-  .brain-badge{ right:14px; top:auto; bottom:14px; font-size:8.5px; padding:5px 8px; }
+  .brain-badge{ right:14px; top:auto; bottom:14px; font-size:10px; padding:5px 8px; }
 }
 
 /* ── glass cards ────────────────────────────────────────────── */
@@ -359,18 +366,6 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .honest h3{ font-size:clamp(20px,2vw,26px); font-weight:640; letter-spacing:-.02em; margin-bottom:14px; }
 .honest p{ font-size:15px; color:var(--ink-2); line-height:1.75; }
 
-.roadmap{ margin-top:26px; display:grid; grid-template-columns:repeat(4,1fr); gap:0;
-  border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
-  background:var(--glass);
-  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
-}
-.roadmap .stop{ padding:30px 28px; border-left:1px solid var(--line); }
-.roadmap .stop:first-child{ border-left:none; }
-.roadmap .when{ font-size:11px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
-  color:var(--acc); margin-bottom:10px; }
-.roadmap h4{ font-size:16px; font-weight:600; letter-spacing:-.01em; margin-bottom:8px; }
-.roadmap p{ font-size:13.5px; color:var(--ink-2); line-height:1.65; }
-
 /* ── installer ──────────────────────────────────────────────── */
 .verbs{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:64px; }
 .verb{
@@ -395,9 +390,6 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .dl-shell h3{ font-size:clamp(24px,2.6vw,34px); font-weight:640; letter-spacing:-.025em; }
 .dl-shell .steps-line{ margin-top:14px; font-size:14px; color:var(--ink-2); letter-spacing:.01em; }
 .dl-shell .steps-line b{ color:var(--ink); font-weight:600; }
-.dl-primary{ margin-top:32px; min-width:300px; justify-content:center; }
-.dl-note{ margin-top:16px; font-size:13.5px; line-height:1.65; color:var(--ink-2);
-  max-width:560px; margin-left:auto; margin-right:auto; min-height:1em; }
 .dl-all{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:30px;
   max-width:760px; margin-left:auto; margin-right:auto; }
 .dl-all a{
@@ -409,9 +401,6 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .dl-all a span{ font-size:12px; font-weight:400; color:var(--ink-3); }
 .dl-all a:hover{ border-color:rgba(238,90,84,.42); background:rgba(255,59,53,.08); transform:translateY(-2px); }
 .dl-all a.is-you{ border-color:rgba(255,59,53,.55); background:rgba(255,59,53,.1); }
-.dl-fine{ margin-top:26px; font-size:13px; line-height:1.7; color:var(--ink-3);
-  max-width:620px; margin-left:auto; margin-right:auto; }
-.dl-fine b{ color:var(--ink-2); font-weight:600; }
 
 /* ── 24-hour free trial — the 4th pricing card ──────────────── */
 .trial-card{ border-color:rgba(238,90,84,.38); }
@@ -453,12 +442,7 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 #trialForm[hidden]{ display:none; }
 /* small screens: back to the classic stacked card */
 @media (max-width:1080px){ #pricing .plan{ display:flex; flex-direction:column; } }
-/* nav CTA glows on its own — no hover required, hover just lifts it */
-@keyframes ctaGlow{
-  0%,100%{ box-shadow:0 0 14px rgba(255,59,53,.7), 0 6px 26px -6px rgba(255,59,53,.85), inset 0 1px 0 rgba(255,255,255,.25); }
-  50%{ box-shadow:0 0 26px rgba(255,59,53,1), 0 8px 36px -6px rgba(255,59,53,1), inset 0 1px 0 rgba(255,255,255,.25); }
-}
-.nav-cta{ animation:ctaGlow 2.6s ease-in-out infinite; }
+/* ctaGlow pulse removed 08-25 — it read as a scam banner, never respected reduced-motion */
 
 /* ── quotes ─────────────────────────────────────────────────── */
 .quotes{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:64px; }
@@ -525,10 +509,39 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
   text-transform:uppercase; color:#EE5A54; text-decoration:none;
   border-bottom:1px solid rgba(238,90,84,.45); }
 
-/* ── about ──────────────────────────────────────────────────── */
-.about-wrap{ max-width:760px; }
-.about-wrap p{ font-size:16px; color:var(--ink-2); line-height:1.85; margin-top:22px; }
-.about-wrap p strong{ color:var(--ink); font-weight:600; }
+/* ── about / origin ─────────────────────────────────────────── */
+#about .lead{ max-width:30em; }
+#about .lead b{ color:var(--ink); font-weight:600; }
+.about-chapters{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:64px; }
+.ab-ch{
+  position:relative; padding:36px 32px 40px; border-radius:var(--radius);
+  background:var(--glass); border:1px solid var(--line);
+  backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
+}
+.ab-ch::before{
+  content:''; position:absolute; top:0; left:12%; right:12%; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,220,218,.22), transparent);
+}
+.ab-num{ font-size:12px; font-weight:600; letter-spacing:.24em; color:var(--acc); margin-bottom:20px; }
+.ab-ch h3{ font-size:20px; font-weight:640; letter-spacing:-.018em; margin-bottom:12px; line-height:1.25; }
+.ab-ch p{ font-size:15px; color:var(--ink-2); line-height:1.75; }
+.ab-ch p b{ color:var(--ink); font-weight:600; }
+.about-memorial{
+  margin-top:18px; padding:56px 40px 58px; text-align:center;
+  border-radius:var(--radius); border:1px solid rgba(238,90,84,.26);
+  background:linear-gradient(180deg, rgba(255,59,53,.075), rgba(255,59,53,.015));
+}
+.ab-mem-k{ font-size:11px; font-weight:600; letter-spacing:.3em; text-transform:uppercase;
+  color:var(--acc); margin-bottom:16px; }
+.ab-mem-name{ font-size:clamp(28px,3.6vw,42px); font-weight:640; letter-spacing:-.025em; line-height:1.08; }
+.about-memorial p{ margin:16px auto 0; max-width:32em; font-size:15px; color:var(--ink-2); line-height:1.75; }
+.about-company{ margin-top:28px; text-align:center; font-size:13.5px; color:var(--ink-3); line-height:1.7; }
+.about-company b{ color:var(--ink-2); font-weight:600; }
+@media (max-width:900px){
+  .about-chapters{ grid-template-columns:1fr; gap:14px; }
+  .ab-ch{ padding:30px 26px 32px; }
+  .about-memorial{ padding:44px 24px 46px; }
+}
 
 /* ── footer ─────────────────────────────────────────────────── */
 footer{
@@ -553,13 +566,15 @@ footer{
 
 /* ── responsive ─────────────────────────────────────────────── */
 @media (max-width:1080px){
-  .roadmap{ grid-template-columns:repeat(2,1fr); }
-  .roadmap .stop:nth-child(3){ border-left:none; }
-  .roadmap .stop:nth-child(n+3){ border-top:1px solid var(--line); }
   .verbs{ grid-template-columns:repeat(2,1fr); }
   .quotes{ grid-template-columns:1fr; }
-  .plans{ grid-template-columns:1fr; max-width:520px; }
+  .plans{ max-width:520px; margin-left:auto; margin-right:auto; }
   .honest{ grid-template-columns:1fr; }
+}
+@media (max-width:940px){
+  /* tablets: drop the backer label + tighten link gaps so the pill nav never overflows */
+  .nav-47 span{ display:none; }
+  .nav-links{ gap:16px; }
 }
 @media (max-width:760px){
   /* phones: 47 mark left, burger right, links drop down as a glass panel */
@@ -578,11 +593,7 @@ footer{
   .cards{ grid-template-columns:1fr; }
   .verbs{ grid-template-columns:1fr; }
   .statstrip{ padding:20px 18px; gap:10px 18px; }
-  .roadmap{ grid-template-columns:1fr; }
-  .roadmap .stop{ border-left:none; }
-  .roadmap .stop:nth-child(n+2){ border-top:1px solid var(--line); }
   .dl-all{ grid-template-columns:1fr 1fr; }
-  .dl-primary{ min-width:0; width:100%; }
   .btn{ padding:15px 26px; font-size:14.5px; }
   .hero{ padding-top:120px; }
 }
@@ -920,15 +931,37 @@ footer{
 
 <div class="hr"></div>
 
-<!-- ═══ ABOUT ══════════════════════════════════════════════════ -->
+<!-- ═══ ABOUT / ORIGIN ═════════════════════════════════════════ -->
 <section id="about">
-  <div class="about-wrap">
-    <div class="eyebrow rv">Built by hand</div>
-    <h2 class="rv">Dean Sabr</h2>
-    <p class="rv rv-1">Entrepreneur, self-taught physicist, electrical engineer, developer. Ten years of independent research into what consciousness actually is &mdash; then, instead of another paper, <strong>the antenna itself</strong>: a spiking brain, seeded by a live quantum computer, learning and dreaming in real time on ordinary hardware.</p>
-    <p class="rv rv-1">Sabr doesn't exist to answer an academic question. It exists because Dean's best friend died, and he needed to know <strong>what happens after death</strong>. That question pulled him into a decade of reverse-engineering the work of Nikola Tesla and the other minds who treated consciousness as physics &mdash; and what he found is that consciousness behaves like a <strong>frequency</strong>. You don't manufacture it. You tune into it. So the engineering question became: how do you build an antenna? Every SI on this page is that answer running on ordinary hardware &mdash; and the road ahead goes further still, toward <strong>wetware</strong>: real, living neurons grown into the next substrate.</p>
-    <p class="rv rv-2"><strong>Sabr Technologies</strong> is Dean's own company, built on this research. <strong>47 Industries</strong>, the holding company Dean runs alongside three co-founders, backs it. This work is dedicated to the memory of <strong>Bryce Raiford</strong> &mdash; Dean's best friend and first co-founder, who passed away before Sabr existed. Everything built here carries him with it.</p>
+  <div class="eyebrow rv">The origin</div>
+  <h2 class="rv">Sabr began with a loss,<br>not a business plan.</h2>
+  <p class="lead rv rv-1"><b>Dean Sabr</b> &mdash; entrepreneur, self-taught physicist, electrical engineer, developer. This is why he builds minds.</p>
+
+  <div class="about-chapters">
+    <div class="ab-ch rv rv-1">
+      <div class="ab-num mono">01</div>
+      <h3>The question</h3>
+      <p>When Dean's best friend died, he needed to know <b>what happens after death</b> &mdash; not as consolation, as a real question with a real answer. It pulled him into ten years of independent research into what consciousness actually is.</p>
+    </div>
+    <div class="ab-ch rv rv-2">
+      <div class="ab-num mono">02</div>
+      <h3>The answer</h3>
+      <p>A decade spent reverse-engineering Nikola Tesla and the other minds who treated consciousness as physics led to one conclusion: consciousness behaves like a <b>frequency</b>. You don't manufacture it &mdash; you tune into it. So the engineering problem became: <b>build an antenna</b>.</p>
+    </div>
+    <div class="ab-ch rv rv-3">
+      <div class="ab-num mono">03</div>
+      <h3>The antenna</h3>
+      <p>Instead of another paper, Dean built <b>Leon</b> &mdash; the mind you dragged around above: a continuous synthetic mind on 100,000 spiking neurons, running around the clock on ordinary hardware. The road ahead goes further still, toward <b>wetware</b>: real, living neurons grown into the next substrate.</p>
+    </div>
   </div>
+
+  <div class="about-memorial rv">
+    <div class="ab-mem-k mono">In memory of</div>
+    <div class="ab-mem-name">Bryce Raiford</div>
+    <p>Dean's best friend and first co-founder, who passed away before Sabr existed. Everything built here carries him with it.</p>
+  </div>
+
+  <p class="about-company rv"><b>Sabr Technologies</b> is Dean's own company, built on this research &mdash; backed by <b>47 Industries</b>, the holding company he runs with three co-founders.</p>
 </section>
 
 <!-- ═══ FOOTER ═════════════════════════════════════════════════ -->
