@@ -166,7 +166,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="6c775f322ee93faf4a397c1a042371177eb10db03e0581ae3cbb1ca7efc01a02"
+EXPECTED_RELEASE_SHA256="e2b6d9e12712c5991d4ac9681862cdcbd54a7cce4091e40f2b5854b5a2c465ad"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -1046,6 +1046,13 @@ spin_start "Installing voice & audio (optional)..."
       pyttsx3 faster-whisper deepgram-sdk elevenlabs \
       sounddevice soundfile \
       vosk webrtcvad >>/tmp/leon_pip.log 2>&1 || true
+
+# networkx, own line (one failure domain per line — see the note above).
+# Optional: without it the brainweb exporter falls back from Louvain to label
+# propagation — works, just visibly worse clustering. Pure-python wheel,
+# installs everywhere; unpinned so pip picks the newest the venv's Python
+# supports (3.5+ needs py3.11, older pythons resolve to an older networkx).
+"$VPYTHON" -m pip install $PIPFLAGS --quiet networkx >>/tmp/leon_pip.log 2>&1 || true
 
 # pyaudio, isolated, and told where Homebrew put the header. The probe above
 # already installed portaudio via brew; without these flags the compiler still
