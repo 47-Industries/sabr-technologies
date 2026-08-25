@@ -762,7 +762,7 @@ footer{
       <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos-intel.zip" download data-os="mac-intel"><b>macOS</b><span>Intel &middot; .zip</span></a>
     </div>
 
-    <div class="dl-fine">Windows is not code-signed yet &mdash; SmartScreen will show &ldquo;Windows protected your PC&rdquo;: click More info, then Run anyway. macOS builds are not signed yet either &mdash; macOS may call the app &ldquo;damaged&rdquo;. It is not. Double-click it once and let macOS block it (that first attempt is what makes the button appear), then open System Settings &rsaquo; Privacy &amp; Security, scroll down, and click Open Anyway. If the button never appears, run <code>xattr -dr com.apple.quarantine ~/Downloads/Sabr\ Installer.app</code> once in Terminal. First launch only.</div>
+    <div class="dl-fine">Windows is not code-signed yet &mdash; SmartScreen will show &ldquo;Windows protected your PC&rdquo;: click More info, then Run anyway. macOS builds are not signed yet either &mdash; on first launch macOS will block the app, saying it &ldquo;could not verify&rdquo; it (older Macs say &ldquo;damaged&rdquo;). It is not malware. Click <b>Done</b> &mdash; not &ldquo;Move to Trash&rdquo; &mdash; then open System Settings &rsaquo; Privacy &amp; Security, scroll down, click <b>Open Anyway</b>, and enter your Mac password. That first blocked attempt is what makes the button appear. If it never appears, run <code>xattr -dr com.apple.quarantine ~/Downloads/Sabr\ Installer.app</code> once in Terminal. First launch only.</div>
     <div class="dl-fine"><b>Free to download. Activation is not.</b> Your install token is issued with your purchase at checkout. Run the installer, paste the token when it asks, and it handles the rest on its own &mdash; setup, wake-up, and your SI's dashboard. About ten minutes start to finish.</div>
   </div>
 </section>
@@ -1652,9 +1652,9 @@ footer{
   var map = {
     win:   { label: 'Download for Windows', href: B + '/SabrInstaller.exe', note: '' },
     mac:   { label: 'Download for macOS',   href: B + '/SabrInstaller-macos.zip',
-             note: 'Apple Silicon (M1–M4). On an older Intel Mac, use the Intel .zip below instead — this build will not launch there. First launch: macOS may call it “damaged” — it is not. Double-click it once, let macOS block it (that attempt makes the button appear), then System Settings › Privacy &amp; Security › scroll down › Open Anyway.' },
+             note: 'Apple Silicon (M1–M4). On an older Intel Mac, use the Intel .zip below instead — this build will not launch there. First launch: macOS blocks it (“could not verify” / “damaged”) — it is not malware. Click Done — NOT “Move to Trash” — then System Settings › Privacy &amp; Security › scroll down › Open Anyway › your Mac password. That first blocked attempt is what makes the button appear.' },
     'mac-intel': { label: 'Download for macOS', href: B + '/SabrInstaller-macos-intel.zip',
-             note: 'Intel Mac. On an Apple Silicon (M1–M4) Mac, use the Apple Silicon .zip below instead — this build will not launch there. First launch: macOS may call it “damaged” — it is not. Double-click it once, let macOS block it (that attempt makes the button appear), then System Settings › Privacy &amp; Security › scroll down › Open Anyway.' },
+             note: 'Intel Mac. On an Apple Silicon (M1–M4) Mac, use the Apple Silicon .zip below instead — this build will not launch there. First launch: macOS blocks it (“could not verify” / “damaged”) — it is not malware. Click Done — NOT “Move to Trash” — then System Settings › Privacy &amp; Security › scroll down › Open Anyway › your Mac password. That first blocked attempt is what makes the button appear.' },
     linux: { label: 'Download for Linux',   href: B + '/sabr-installer', note: 'Make it executable, then run it.' }
   };
 
