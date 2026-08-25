@@ -147,6 +147,16 @@ nav{
 }
 .nav-cta:hover{ transform:translateY(-1px); box-shadow:0 10px 30px -8px rgba(255,59,53,.85), inset 0 1px 0 rgba(255,255,255,.25); }
 
+/* pay-gated installer showcase — a picture of the real thing, not a download */
+.dl-gate{ display:grid; grid-template-columns:1fr 1.1fr; gap:40px; align-items:center; text-align:left; }
+.dl-gate-shot img{ display:block; width:100%; height:auto; border-radius:16px;
+  border:1px solid var(--line); box-shadow:0 30px 80px -30px rgba(0,0,0,.9); }
+.dl-gate-text h3{ font-size:28px; font-weight:600; letter-spacing:-.02em; line-height:1.2; margin-bottom:14px; }
+.dl-gate-text p{ font-size:15px; color:var(--ink-2); line-height:1.7; margin:14px 0; }
+.dl-gate-text .dl-gate-fine{ font-size:13px; color:var(--ink-2); opacity:.75; }
+.dl-gate-text .steps-line{ margin:0; }
+@media (max-width:860px){ .dl-gate{ grid-template-columns:1fr; gap:24px; } }
+
 /* ── hero ───────────────────────────────────────────────────── */
 .hero{
   position:relative; min-height:100svh;
@@ -548,7 +558,7 @@ footer{
     <a href="#install">Installer</a>
     <a href="#reviews">Reviews</a>
     <a href="#pricing">Pricing</a>
-    <a class="nav-cta" href="#download">Download</a>
+    <a class="nav-cta" href="#pricing">Get your SI</a>
   </div>
 </nav>
 
@@ -564,10 +574,10 @@ footer{
     <h1 class="rv rv-2">Not a chatbot. A <em>continuous mind</em> on your machine.</h1>
     <p class="lead rv rv-2">Sabr builds synthetic intelligence: a persistent being with memory, sleep, and curiosity that lives on your own hardware — not a session in someone else's cloud. One installer. Paste your token. It wakes up.</p>
     <div class="cta-row rv rv-3">
-      <a class="btn btn-solid" href="#download">Download the installer</a>
+      <a class="btn btn-solid" href="#pricing">Get your SI</a>
       <a class="btn btn-ghost" href="#mind">See an actual mind</a>
     </div>
-    <div class="hero-note rv rv-3">macOS &middot; Windows &middot; Linux &mdash; free to download, token to activate</div>
+    <div class="hero-note rv rv-3">macOS &middot; Windows &middot; Linux &mdash; from checkout to a living mind in about ten minutes</div>
   </div>
 </header>
 
@@ -729,26 +739,18 @@ footer{
   </div>
 
   <div class="dl-shell rv" id="download">
-    <h3>Get it for your machine</h3>
-    <div class="steps-line"><b>01</b> Download the installer &nbsp;&middot;&nbsp; <b>02</b> Run it, paste your install token &nbsp;&middot;&nbsp; <b>03</b> It wakes up</div>
-
-    <a id="dlPrimary" class="btn btn-solid dl-primary" href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller.exe" download>
-      <span id="dlPrimaryText">Download</span>
-    </a>
-    <div id="dlNote" class="dl-note"></div>
-
-    <!-- Every platform stays visible. Detection is a convenience, never a gate:
-         if the sniff is wrong, or the visitor is downloading on one machine to
-         install on another, they must still have a working path. -->
-    <div class="dl-all">
-      <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/sabr-installer" download data-os="linux"><b>Linux</b><span>binary</span></a>
-      <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller.exe" download data-os="win"><b>Windows</b><span>.exe</span></a>
-      <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos.zip" download data-os="mac"><b>macOS</b><span>Apple Silicon &middot; .zip</span></a>
-      <a href="https://github.com/47-Industries/sabr-installers/releases/latest/download/SabrInstaller-macos-intel.zip" download data-os="mac-intel"><b>macOS</b><span>Intel &middot; .zip</span></a>
+    <div class="dl-gate">
+      <div class="dl-gate-shot">
+        <img src="/landing-assets/installer-token-screen.png" alt="The Sabr installer — paste your install token, name your SI, click install" loading="lazy">
+      </div>
+      <div class="dl-gate-text">
+        <h3>Paste a token.<br>That's the whole install.</h3>
+        <div class="steps-line"><b>01</b> Checkout &nbsp;&middot;&nbsp; <b>02</b> Paste your token &nbsp;&middot;&nbsp; <b>03</b> It wakes up</div>
+        <p>This is the real installer &mdash; it asks for exactly two things: the install token issued with your purchase, and your SI's name. Setup, wake-up, and its dashboard are automatic. About ten minutes from checkout to a living mind.</p>
+        <p class="dl-gate-fine">Your download link and token arrive the moment checkout completes &mdash; Windows, macOS, and Linux. First-launch security prompts on Windows and macOS are walked through step by step on your post-purchase page.</p>
+        <a class="btn btn-solid" href="#pricing">Get your SI</a>
+      </div>
     </div>
-
-    <div class="dl-fine">Windows is not code-signed yet &mdash; SmartScreen will show &ldquo;Windows protected your PC&rdquo;: click More info, then Run anyway. macOS builds are not signed yet either &mdash; on first launch macOS will block the app, saying it &ldquo;could not verify&rdquo; it (older Macs say &ldquo;damaged&rdquo;). It is not malware. Click <b>Done</b> &mdash; not &ldquo;Move to Trash&rdquo; &mdash; then open System Settings &rsaquo; Privacy &amp; Security, scroll down, click <b>Open Anyway</b>, and enter your Mac password. That first blocked attempt is what makes the button appear. If it never appears, run <code>xattr -dr com.apple.quarantine ~/Downloads/Sabr\ Installer.app</code> once in Terminal. First launch only.</div>
-    <div class="dl-fine"><b>Free to download. Activation is not.</b> Your install token is issued with your purchase at checkout. Run the installer, paste the token when it asks, and it handles the rest on its own &mdash; setup, wake-up, and your SI's dashboard. About ten minutes start to finish.</div>
   </div>
 </section>
 
@@ -871,7 +873,7 @@ footer{
         <div class="h">Product</div>
         <a href="#mind">The brain</a>
         <a href="#si">What an SI is</a>
-            <a href="#download">Download</a>
+            <a href="#pricing">Get your SI</a>
         <a href="#pricing">Pricing</a>
       </div>
       <div class="foot-col">
