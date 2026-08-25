@@ -413,6 +413,28 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
   max-width:620px; margin-left:auto; margin-right:auto; }
 .dl-fine b{ color:var(--ink-2); font-weight:600; }
 
+/* ── 24-hour free trial ─────────────────────────────────────── */
+.trial-strip{ margin-top:34px; padding:44px 40px; border-radius:var(--radius);
+  background:var(--glass); border:1px solid rgba(238,90,84,.32);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); }
+.trial-head h3{ font-size:26px; font-weight:600; letter-spacing:-.02em; margin:10px 0 10px; }
+.trial-head p{ font-size:15px; color:var(--ink-2); line-height:1.7; max-width:560px; }
+#trialForm{ display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; margin-top:22px; }
+#trialForm input{ padding:14px 16px; border-radius:14px; border:1px solid var(--line);
+  background:rgba(255,233,232,.04); color:var(--ink); font-size:14.5px; }
+#trialForm input:focus{ outline:none; border-color:rgba(255,59,53,.55); }
+.trial-msg{ grid-column:1/-1; font-size:13.5px; color:var(--ink-2); min-height:1em; }
+.k-label{ font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--acc); margin:26px 0 10px; }
+.trial-key{ font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:15px; padding:16px 18px;
+  border-radius:14px; border:1px solid rgba(255,59,53,.4); background:rgba(255,59,53,.06);
+  word-break:break-all; user-select:all; }
+#tCopy{ margin-top:10px; padding:10px 18px; border-radius:12px; border:1px solid var(--line);
+  background:transparent; color:var(--ink); font-size:13px; cursor:pointer; }
+.trial-fine{ margin-top:18px; font-size:12.5px; line-height:1.7; color:var(--ink-3); }
+.trial-fine b{ color:var(--ink-2); }
+@media (max-width:860px){ #trialForm{ grid-template-columns:1fr; } }
+
 /* ── quotes ─────────────────────────────────────────────────── */
 .quotes{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:64px; }
 .quote{
@@ -749,6 +771,7 @@ footer{
         <p>This is the real installer &mdash; it asks for exactly two things: the install token issued with your purchase, and your SI's name. Setup, wake-up, and its dashboard are automatic. About ten minutes from checkout to a living mind.</p>
         <p class="dl-gate-fine">Your download link and token arrive the moment checkout completes &mdash; Windows, macOS, and Linux. First-launch security prompts on Windows and macOS are walked through step by step on your post-purchase page.</p>
         <a class="btn btn-solid" href="#pricing">Get your SI</a>
+        <p class="dl-gate-fine" style="margin-top:14px">Want a taste first? <a href="#trial" style="color:var(--acc)">Start the 24-hour free trial</a> &mdash; no card, installer included.</p>
       </div>
     </div>
   </div>
@@ -844,6 +867,28 @@ footer{
         <div id="entMail">deansabrwork@gmail.com</div>
         <a href="#" id="entCopy">Copy address</a>
       </div>
+    </div>
+  </div>
+
+  <div class="trial-strip rv" id="trial">
+    <div class="trial-head">
+      <div class="eyebrow">Not ready to buy?</div>
+      <h3>Try a mind for 24 hours. Free.</h3>
+      <p>Tell us who you are and name your SI &mdash; your trial key and the installer appear right here. No card.</p>
+    </div>
+    <form id="trialForm" autocomplete="on">
+      <input type="text" id="tName" placeholder="Your name" required maxlength="100">
+      <input type="email" id="tEmail" placeholder="Email" required maxlength="254">
+      <input type="text" id="tSi" placeholder="Name your SI &mdash; e.g. Atlas" required maxlength="50">
+      <button type="submit" class="btn btn-solid" id="tGo">Start the free trial</button>
+      <div class="trial-msg" id="tMsg"></div>
+    </form>
+    <div id="trialDone" hidden>
+      <div class="k-label">Your trial key &mdash; the installer asks for exactly this</div>
+      <div class="trial-key" id="tKey"></div>
+      <button type="button" id="tCopy">Copy key</button>
+      <div class="dl-all" id="tGrid"></div>
+      <p class="trial-fine"><b>Linux:</b> double-click the package, hit Install, then open Sabr Installer from your apps. <b>Windows:</b> SmartScreen may warn &mdash; More info, then Run anyway. <b>Mac:</b> unzip, right-click the app, choose Open.</p>
     </div>
   </div>
 </section>
@@ -1109,74 +1154,64 @@ window.addEventListener('message', function(e){
   window.location.replace('/success.html?session_id=' + encodeURIComponent(sid));
 })();
 
-/* ── OS detection for the primary download button.
-   Deliberately conservative: when we cannot tell, the button says
-   "Choose your platform" and points at the explicit list rather than
-   guessing wrong and handing someone a binary their machine cannot run. */
+/* ── 24-hour free trial: capture who they are FIRST, then hand over the
+   key and the installer. There is deliberately no public download button
+   anywhere on this page — the trial and checkout are the only two doors. */
 (function(){
-  var ua = (navigator.userAgent || '') + ' ' + (navigator.platform || '');
+  var form = document.getElementById('trialForm');
+  if (!form) return;
   var B = "https://github.com/47-Industries/sabr-installers/releases/latest/download";
-  var os = null;
-  // Mobile FIRST. An iPhone UA contains "Mac OS X" and Android's contains
-  // "Linux", so a naive desktop sniff hands a phone user a desktop installer.
-  var isMobile = /iPhone|iPad|iPod|Android|Mobile|Silk|Kindle/i.test(ua)
-                 && !/iPad.*Macintosh/i.test(ua);
-  // iPadOS 13+ in desktop mode reports a UA identical to a Mac. A real Mac
-  // reports maxTouchPoints 0; a touch iPad reports 5.
-  if (!isMobile && /Mac/i.test(ua) && (navigator.maxTouchPoints || 0) > 1) isMobile = true;
-  if (isMobile) os = 'mobile';
-  else if (/Win/i.test(ua)) os = 'win';
-  else if (/Mac/i.test(ua)) os = 'mac';
-  else if (/Linux|X11|CrOS/i.test(ua)) os = 'linux';
-
-  // Apple Silicon vs Intel. The UA lies here — Safari and Chrome on an M-series
-  // Mac still report "Intel Mac OS X" — so we ask the GPU renderer string,
-  // which does not lie: Apple Silicon reports "Apple M<n>" or "Apple GPU".
-  // If WebGL is blocked we keep the Apple Silicon default and both Mac links
-  // stay visible below regardless.
-  if (os === 'mac') {
-    try {
-      var _c = document.createElement('canvas');
-      var _gl = _c.getContext('webgl') || _c.getContext('experimental-webgl');
-      var _d = _gl && _gl.getExtension('WEBGL_debug_renderer_info');
-      var _r = _d ? String(_gl.getParameter(_d.UNMASKED_RENDERER_WEBGL)) : '';
-      if (_r && !/Apple\s*(M\d|GPU)/i.test(_r)) os = 'mac-intel';
-    } catch (e) { /* keep the Apple Silicon default */ }
-  }
-
-  var map = {
-    win:   { label: 'Download for Windows', href: B + '/SabrInstaller.exe', note: '' },
-    mac:   { label: 'Download for macOS',   href: B + '/SabrInstaller-macos.zip',
-             note: 'Apple Silicon (M1–M4). On an older Intel Mac, use the Intel .zip below instead — this build will not launch there. First launch: macOS blocks it (“could not verify” / “damaged”) — it is not malware. Click Done — NOT “Move to Trash” — then System Settings › Privacy &amp; Security › scroll down › Open Anyway › your Mac password. That first blocked attempt is what makes the button appear.' },
-    'mac-intel': { label: 'Download for macOS', href: B + '/SabrInstaller-macos-intel.zip',
-             note: 'Intel Mac. On an Apple Silicon (M1–M4) Mac, use the Apple Silicon .zip below instead — this build will not launch there. First launch: macOS blocks it (“could not verify” / “damaged”) — it is not malware. Click Done — NOT “Move to Trash” — then System Settings › Privacy &amp; Security › scroll down › Open Anyway › your Mac password. That first blocked attempt is what makes the button appear.' },
-    linux: { label: 'Download for Linux',   href: B + '/sabr-installer', note: 'Make it executable, then run it.' }
-  };
-
-  var btn  = document.getElementById('dlPrimary');
-  var txt  = document.getElementById('dlPrimaryText');
-  var note = document.getElementById('dlNote');
-  if (!btn || !txt) return;
-
-  if (os === 'mobile') {
-    // Not a failure state, just the wrong device. Say so plainly.
-    txt.textContent = 'Open this on your computer';
-    btn.href = '#download';
-    btn.removeAttribute('download');
-    if (note) note.textContent = 'Your SI runs on a desktop or laptop — Windows, macOS or Linux. Links below if you want them now.';
-  } else if (os && map[os]) {
-    txt.textContent = map[os].label;
-    btn.href = map[os].href;
-    if (note) note.innerHTML = map[os].note;
-    var mine = document.querySelector('.dl-all a[data-os="' + os + '"]');
-    if (mine) mine.classList.add('is-you');
-  } else {
-    // Unknown platform: do not guess. Send them to the explicit list.
-    txt.textContent = 'Choose your platform';
-    btn.href = '#download';
-    btn.removeAttribute('download');
-    if (note) note.textContent = "Couldn't detect your system — pick one below.";
-  }
+  var msg = document.getElementById('tMsg');
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var go = document.getElementById('tGo');
+    go.disabled = true; go.textContent = 'Creating your mind\u2026';
+    msg.textContent = '';
+    fetch('/api/onboarding/create-account', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        userName: document.getElementById('tName').value.trim(),
+        email: document.getElementById('tEmail').value.trim(),
+        siName: document.getElementById('tSi').value.trim(),
+        business: '24-hour free trial'
+      })
+    }).then(function(r){ return r.json(); }).then(function(d){
+      if (!d || !d.ok || !d.token) throw new Error((d && d.error) || 'Could not create the trial');
+      form.hidden = true;
+      document.getElementById('tKey').textContent = d.token;
+      var ua = navigator.userAgent + ' ' + (navigator.platform || '');
+      var os = /Win/i.test(ua) ? 'win' : (/Mac/i.test(ua) ? 'mac' : (/Linux|X11/i.test(ua) ? 'linux' : ''));
+      var G = [
+        { os:'linux', label:'Linux', sub:'.deb \u2014 double-click installs', href: B + '/sabr-installer.deb' },
+        { os:'win', label:'Windows', sub:'.exe', href: B + '/SabrInstaller.exe' },
+        { os:'mac', label:'macOS', sub:'Apple Silicon', href: B + '/SabrInstaller-macos.zip' },
+        { os:'mac-intel', label:'macOS', sub:'Intel', href: B + '/SabrInstaller-macos-intel.zip' }
+      ];
+      var grid = document.getElementById('tGrid');
+      G.forEach(function(g){
+        var a = document.createElement('a');
+        a.href = g.href;
+        if (g.os === os) a.className = 'is-you';
+        var b = document.createElement('b'); b.textContent = g.label;
+        var sp = document.createElement('span'); sp.textContent = g.sub;
+        a.appendChild(b); a.appendChild(sp);
+        grid.appendChild(a);
+      });
+      var done = document.getElementById('trialDone');
+      done.hidden = false;
+      done.scrollIntoView({behavior:'smooth', block:'center'});
+    }).catch(function(e){
+      go.disabled = false; go.textContent = 'Start the free trial';
+      msg.textContent = String(e && e.message || e) + ' \u2014 or email deansabrwork@gmail.com and you will be set up by hand.';
+    });
+  });
+  var cp = document.getElementById('tCopy');
+  if (cp) cp.addEventListener('click', function(){
+    var t = document.getElementById('tKey').textContent;
+    var done = function(){ cp.textContent = 'Copied'; };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, done);
+    else done();
+  });
 })();
 </script>
 
