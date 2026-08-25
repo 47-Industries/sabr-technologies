@@ -431,11 +431,28 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 .trial-card .dl-all{ grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; max-width:none; }
 .trial-fine{ margin-top:16px; font-size:12px; line-height:1.7; color:var(--ink-3); }
 .trial-fine b{ color:var(--ink-2); }
-/* keep "/ month" together when the 4-col cards get narrow */
+/* keep "/ month" together */
 #pricing .pr span{ white-space:nowrap; }
-/* two plans across on mid screens (1080px media already stacks to one);
-   #pricing id keeps this winning over the base .plans rule regardless of order */
-@media (max-width:1300px) and (min-width:1081px){ #pricing .plans{ grid-template-columns:repeat(2,1fr); } }
+/* ── horizontal plan rows: identity left, pitch middle, details right.
+   Trial rides first via flex order so it is the FIRST thing seen. ── */
+#trial{ order:-1; }
+#pricing .plan{ display:grid; grid-template-columns:230px 1.05fr 1.2fr;
+  column-gap:36px; align-items:start; }
+#pricing .plan .pn{ grid-column:1; }
+#pricing .plan .pr{ grid-column:1; }
+#pricing .plan .pk{ grid-column:1; }
+#pricing .plan .pd{ grid-column:2; grid-row:1 / span 3; }
+#pricing .plan .pcc{ grid-column:2; grid-row:4; justify-self:start; }
+#pricing .plan .buyMsg{ grid-column:2; grid-row:5; }
+#pricing .plan #entBox{ grid-column:2; grid-row:6; }
+#pricing .plan ul{ grid-column:3; grid-row:1 / span 6; margin-top:0; }
+#pricing .plan #trialForm{ grid-column:3; grid-row:1 / span 6; margin-top:0; }
+#pricing .plan #trialDone{ grid-column:3; grid-row:1 / span 6; }
+/* the id rule #trialForm{display:grid} was overriding the hidden attribute,
+   so the form stayed visible above the minted key — never again */
+#trialForm[hidden]{ display:none; }
+/* small screens: back to the classic stacked card */
+@media (max-width:1080px){ #pricing .plan{ display:flex; flex-direction:column; } }
 /* nav CTA glows on its own — no hover required, hover just lifts it */
 @keyframes ctaGlow{
   0%,100%{ box-shadow:0 0 14px rgba(255,59,53,.7), 0 6px 26px -6px rgba(255,59,53,.85), inset 0 1px 0 rgba(255,255,255,.25); }
@@ -471,7 +488,7 @@ section{ position:relative; padding:clamp(90px, 12vw, 160px) var(--pad); max-wid
 }
 .toggle button.on{ color:#fff; background:linear-gradient(180deg, #FF3B35, #F01E17);
   box-shadow:0 4px 16px -6px rgba(255,59,53,.7); }
-.plans{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:36px; align-items:stretch; }
+.plans{ display:flex; flex-direction:column; gap:16px; margin-top:36px; }
 .plan{
   display:flex; flex-direction:column; padding:40px 36px; border-radius:var(--radius);
   background:var(--glass); border:1px solid var(--line);
