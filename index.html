@@ -544,6 +544,18 @@ footer{
   .dl-all{ grid-template-columns:1fr 1fr; }
   .btn{ padding:15px 26px; font-size:14.5px; }
   .hero{ padding-top:120px; }
+  /* ── mobile pass 2026-08-26: real finger sizes, no visual change ──
+     Inline text links measured 16-19px tall on a 390px viewport — half a
+     fingertip. Pad the hit box and pull the padding back out with negative
+     margin so nothing moves; the tap area grows, the paint does not. */
+  .hero-note a, .wild-link a, .dl-gate-fine a{
+    display:inline-block; padding:12px 6px; margin:-12px -6px; }
+  .nav-47{ padding:10px; margin:-10px; }
+  .foot-col a{ padding:9px 0; }
+  /* iOS Safari zooms the whole page when a focused input is under 16px.
+     The trial form sat at 14px, so tapping "Your name" lurched the layout.
+     16px kills the auto-zoom; the visual size barely shifts. */
+  #trialForm input{ font-size:16px; }
 }
 </style>
 </head>

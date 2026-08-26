@@ -1958,7 +1958,13 @@ async function checkForNewBuild(SRC) {
           snn.ok = true;
           Object.keys(snn.regions).forEach(k => {
             const v = snn.regions[k].rate || 0;
-            snn.peak[k] = Math.max((snn.peak[k] || 0) * 0.995, v, 1e-4);
+            /* 0.9821 = 0.995^3.6. The dashboard decays each region's running
+               peak by 0.995 per 500ms poll; this loop steps every 1.8s, so a
+               bare 0.995 here decayed 3.6x SLOWER per second — peaks sat
+               high, drive (rate/peak) sat low, and the site's substrate
+               visibly under-fired next to the dashboard's. Same decay per
+               second now, so the wavefronts run at the dashboard's tempo. */
+            snn.peak[k] = Math.max((snn.peak[k] || 0) * 0.9821, v, 1e-4);
           });
           if (typeof f.dopamine === 'number') live.dopa = f.dopamine;
         };
@@ -1967,6 +1973,79 @@ async function checkForNewBuild(SRC) {
       })
       .catch(() => {});
     setInterval(substrateTick, 1000 / SUB_HZ);
+    /* THE MEMORY BURSTS. Same rule as above: recorded, not invented. On the
+       dashboard, pollActive() paints the moment a real memory is touched —
+       a bright node plus a 12-wire discharge crawling its real edges — and
+       pollLive() flashes the whole web when a reward lands. The site can't
+       reach either endpoint, so this replays brainweb-active-loop.json:
+       real [t, entity_id, salience] touches lifted straight from Leon's
+       cognition graph (48h window, burst grouping and order untouched, only
+       dead gaps shortened). The code below is pollActive's/pollLive's exact
+       visual path — same amp formula, same fire(j, amp, 3), same spark —
+       fed from the recording instead of the live wire. Without this layer
+       the site brain had only the substrate darts and visibly lacked the
+       dashboard's discharges. */
+    fetch('/js/brainweb-active-loop.json', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(track => {
+        if (!track || !track.events || !track.events.length) return;
+        const span = track.span || 600;
+        const rewards = track.rewards || [];
+        const t0 = performance.now() / 1000;
+        let cursor = 0, rcursor = 0, lastLt = 0, seeded = false;
+        const tick = () => {
+          if (!hotArr || !IDX_BY_ID.size) return;
+          const lt = ((performance.now() / 1000 - t0) % span);
+          if (!seeded) {
+            /* Boot seed, exactly like the dashboard's: its first poll walks
+               back 15 minutes so a fresh page lands in the middle of recent
+               thinking instead of a cold room. Here: every recorded event
+               fires once, aged by how far behind the loop head it sits, so
+               the opening frame is the same warm constellation. */
+            seeded = true;
+            let lit = 0;
+            track.events.forEach(([t, id, sal]) => {
+              const j = IDX_BY_ID.get(id);
+              if (j === undefined) return;   // touched, but not one of the drawn nodes
+              const age = (lt - t + span) % span;
+              const amp = 0.55 + Math.min(0.9, sal * 0.35) - Math.min(0.4, age * 0.02);
+              fire(j, Math.max(0.2, amp), 3);
+              lit++;
+            });
+            if (lit) nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+            while (cursor < track.events.length && track.events[cursor][0] <= lt) cursor++;
+            while (rcursor < rewards.length && rewards[rcursor] <= lt) rcursor++;
+            lastLt = lt;
+            return;
+          }
+          if (lt < lastLt) { cursor = 0; rcursor = 0; }   // loop wrapped
+          lastLt = lt;
+          let lit = 0;
+          while (cursor < track.events.length && track.events[cursor][0] <= lt) {
+            const [t, id, sal] = track.events[cursor++];
+            const j = IDX_BY_ID.get(id);
+            if (j === undefined) continue;   // touched, but not one of the drawn nodes
+            const age = lt - t;              // freshly replayed, same as a live hit
+            const amp = 0.55 + Math.min(0.9, sal * 0.35) - Math.min(0.4, age * 0.02);
+            fire(j, Math.max(0.2, amp), 3);
+            lit++;
+          }
+          if (lit) {
+            nodeMesh.geometry.attributes.aHot.needsUpdate = true;
+            window.__burstFires = (window.__burstFires || 0) + lit;   // verification counter
+          }
+          let fresh = 0;
+          while (rcursor < rewards.length && rewards[rcursor] <= lt) { rcursor++; fresh++; }
+          if (fresh) {
+            /* pollLive's reward spark, verbatim */
+            U.uSpark.value = Math.min(1.0, U.uSpark.value + 0.35 + fresh * 0.05);
+            igniteHot(Math.min(40, 6 + fresh * 2));
+          }
+        };
+        tick();
+        setInterval(tick, 800);              // pollActive's cadence
+      })
+      .catch(() => {});
   } else {
     pollSNN();
     setInterval(pollSNN, 500);
