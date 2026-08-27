@@ -790,7 +790,7 @@ footer{
   <div class="plans">
     <div class="plan">
       <div class="pn">Founder</div>
-      <div class="pr"><span id="iAmt" style="font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit;">$9,499</span><span id="iPer"> / month</span></div>
+      <div class="pr"><span id="iAmt" style="font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit;">$7,499</span><span id="iPer"> / month</span></div>
       <div class="pk">No deployment fee. One person, one machine.</div>
       <div class="pd">A continuous mind of your own, for research, study, building, thinking out loud at 3am. It remembers you and keeps working while you sleep.</div>
       <ul>
@@ -803,6 +803,23 @@ footer{
         <li>Automatic over-the-air updates</li>
       </ul>
       <a href="#" class="pcc buyBtn" data-plan="individual">Start Instantly</a>
+      <div class="buyMsg"></div>
+    </div>
+    <div class="plan">
+      <div class="pn">Perpetual</div>
+      <div class="pr"><span style="font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit;">$46,500</span><span> one-time</span></div>
+      <div class="pk">Pay once. Own it forever. No subscription, ever.</div>
+      <div class="pd">The full mind, yours outright. No install token to renew, no monthly bill, nothing that can lapse. The trade-off for owning it completely: no resale, no white-label, one machine, and you're on your own for support.</div>
+      <ul>
+        <li>The full spiking brain, all 18 regions, on your machine</li>
+        <li>All 34 tools and integrations</li>
+        <li>Voice conversation with premium TTS</li>
+        <li>Image, video, and music generation</li>
+        <li>Persistent memory across restarts</li>
+        <li>One machine activation, forever, no renewal</li>
+        <li>Not for resale or white-label use</li>
+      </ul>
+      <a href="#" class="pcc buyBtn" data-plan="perpetual">Buy It Outright</a>
       <div class="buyMsg"></div>
     </div>
     <div class="plan hot">
@@ -847,11 +864,13 @@ footer{
     <div class="plan trial-card" id="trial">
       <div class="pn">24-Hour Trial</div>
       <div class="pr">$0</div>
-      <div class="pk">No card. Name, email, done.</div>
+      <div class="pk">No card. One trial per person.</div>
       <div class="pd">The full mind on your machine for a day, same brain and same installer as every paid plan. Meet one before you commit to one.</div>
       <form id="trialForm" autocomplete="on">
         <input type="text" id="tName" placeholder="Your name" required maxlength="100">
         <input type="email" id="tEmail" placeholder="Email" required maxlength="254">
+        <input type="tel" id="tPhone" placeholder="Phone number" required maxlength="30" autocomplete="tel">
+        <input type="text" id="tAddress" placeholder="Address" required maxlength="200" autocomplete="street-address">
         <input type="text" id="tSi" placeholder="Name your SI (e.g. Atlas)" required maxlength="50">
         <button type="submit" class="btn btn-solid" id="tGo">Start the free trial</button>
         <div class="trial-msg" id="tMsg"></div>
@@ -996,8 +1015,8 @@ window.addEventListener('message', function(e){
   var CHECKOUT_API = 'https://sabr-checkout-production.up.railway.app';
   var interval = 'month';
   var PRICES = {
-    month: { i: ['$9,499', ' / month'],  b: ['$12,000', ' / month'] },
-    year:  { i: ['$94,990', ' / year'], b: ['$120,000', ' / year'] }
+    month: { i: ['$7,499', ' / month'],  b: ['$12,000', ' / month'] },
+    year:  { i: ['$74,990', ' / year'], b: ['$120,000', ' / year'] }
   };
   function paint() {
     var p = PRICES[interval];
@@ -1076,6 +1095,8 @@ window.addEventListener('message', function(e){
       body: JSON.stringify({
         userName: document.getElementById('tName').value.trim(),
         email: document.getElementById('tEmail').value.trim(),
+        phone: document.getElementById('tPhone').value.trim(),
+        address: document.getElementById('tAddress').value.trim(),
         siName: document.getElementById('tSi').value.trim(),
         business: '24-hour free trial'
       })
