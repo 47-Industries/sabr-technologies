@@ -151,7 +151,11 @@ banner(){
   else
     say "\033[2m${tag}\033[0m"
   fi
-  say "\033[2m   a Sabr company · 47 Industries\033[0m"
+  # The holdco name here is VENDOR BRANDING on the installer banner, the same
+  # class as "Dean Sabr" in LICENSE — a customer is supposed to see who they
+  # bought from. It is not a project the SI thinks it owns. The marker must
+  # sit on the offending line itself; gate 11 filters line by line.
+  say "\033[2m   a Sabr company · 47 Industries\033[0m"  # owner-string-ok
   echo ""
 }
 banner
@@ -166,7 +170,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="6c89a8e3801cb6ca157ffcfc511a756fc3e740137df0b8da3521204e4937f94b"
+EXPECTED_RELEASE_SHA256="75ba084aa66d5abf85d65e0a7c12e0c7eec25aa3bb0ac323ca8001f41eeb723a"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -894,6 +898,30 @@ if [ -d "$INSTALL_DIR" ]; then
         || say "  ${Y}[WARN]${N} could not carry $keep forward"
     fi
   done
+  # ── Purge legacy owner seeds from the memory we just carried forward ──
+  # The carry-forward above is what makes the owner-seed leak permanent:
+  # releases before 2026-08-18 wrote his personal facts into every
+  # knowledge.db (core_fact_seed / dean_bio_seed / client_seed v1) plus
+  # brain_state/core_facts.md, knowledge_store marks those sources durable so
+  # they never decay, and this loop hands them to the next install. So a
+  # customer reinstalling TO FIX the SI that dreams about things they have
+  # never owned was carrying the cause across with them.
+  #
+  # Runs on the STAGED copy, before the swap: if it goes wrong the original
+  # brain_state is still untouched at $INSTALL_DIR and the rollback path
+  # below restores it. The module is stdlib-only and gates itself on
+  # brain/origin.py (owner_facts.py absent == shipped build == client), which
+  # resolves from the staged tree because we cd into it. The si_name check is
+  # the second belt: bootstrap only ever knows the SI's name from the .env it
+  # just carried over.
+  if [ -f "$STAGE_DIR/leon-brain/brain/purge_owner_seeds.py" ] && [ -n "${PY:-}" ]; then
+    _SI_NAME_CARRIED="$(grep -E '^LEON_SI_NAME=' "$STAGE_DIR/leon-brain/.env" 2>/dev/null \
+                        | tail -1 | cut -d= -f2- | tr -d '"'"'"'[:space:]')"
+    if [ "$(printf '%s' "$_SI_NAME_CARRIED" | tr 'A-Z' 'a-z')" != "leon" ]; then
+      ( cd "$STAGE_DIR/leon-brain" && "$PY" -m brain.purge_owner_seeds ) 2>/dev/null \
+        || say "  ${Y}[WARN]${N} owner-seed purge skipped (non-fatal)"
+    fi
+  fi
   BACKUP_DIR="$HOME/.leon-brain-previous.$$"
   rm -rf "$BACKUP_DIR"
   mv "$INSTALL_DIR" "$BACKUP_DIR" || {
