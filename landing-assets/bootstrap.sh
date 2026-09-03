@@ -958,6 +958,14 @@ fi
 say "${G}[OK]${N} Installed to ~/leon-brain/"
 cd "$INSTALL_DIR" || die "Install dir missing after swap"
 
+# Bind the dashboard to loopback on customer machines (audit SI-SEC-006).
+# run.py falls back to 0.0.0.0 — a server assumption; on a laptop that is a
+# LAN-exposed dashboard plus a firewall prompt a non-technical owner should
+# never see. Only add it when absent so an owner's own setting wins.
+if ! grep -qE '^LEON_HOST=' .env 2>/dev/null; then
+  echo "LEON_HOST=127.0.0.1" >> .env
+fi
+
 # ── Tenant identity ────────────────────────────────────────────
 # A buyer's install command carries these as an env prefix:
 #   curl -fsSL .../bootstrap.sh | SABR_TENANT_TOKEN=... SABR_LEASE_VERIFY_KEY=... bash
