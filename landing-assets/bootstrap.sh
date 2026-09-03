@@ -170,7 +170,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="ea7b8b7d9ec35acd60d171985e9d41594787fa71e87ced9d0e549a694a9990f8"
+EXPECTED_RELEASE_SHA256="73d12f8e8f917e455fc393dcd8a5f7cf73093724d818e59c88dff966f40ee68d"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -1014,10 +1014,30 @@ fi
 # docs so a client machine never carries his personal life on disk. The
 # brain already refuses to load these for client SIs; this clears the raw
 # files too. Runs every install, so it survives any tarball rebuild.
-rm -f leon_notes.txt BUILD_PLAN_EMBODIMENT.md NEXT_SESSION.md OWNERSHIP.md brain/owner_facts.py \
-      GOTCHAS.md BRAIN_REDESIGN.md 2>/dev/null || true
-# One client's deployment scaffold must never ship to another client's box.
-rm -rf gio-landscaping 2>/dev/null || true
+# ONE manifest, every path (2026-09-02): scrub_list.txt ships at the tree root
+# and is the same list install_client.py and the GUI installer apply.
+# "!client-only" entries are load-bearing for the owner's own SI, so they go
+# only when this is a customer install (a tenant token, or a carried-over
+# .env naming a different SI).
+_SCRUB_CLIENT=""
+if [ -n "${SABR_TENANT_TOKEN:-}" ]; then _SCRUB_CLIENT="1"; fi
+_SCRUB_NAME="$(grep -E '^LEON_SI_NAME=' .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"'"'"'[:space:]' | tr 'A-Z' 'a-z')"
+if [ -n "$_SCRUB_NAME" ] && [ "$_SCRUB_NAME" != "leon" ]; then _SCRUB_CLIENT="1"; fi
+if [ -f scrub_list.txt ]; then
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    _line="${_line%%$'\r'}"
+    case "$_line" in ''|'#'*) continue ;; esac
+    case "$_line" in
+      '!client-only '*) [ -n "$_SCRUB_CLIENT" ] || continue; _line="${_line#!client-only }" ;;
+    esac
+    case "$_line" in /*|*..*) continue ;; esac   # never leave the tree
+    rm -rf -- "./$_line" 2>/dev/null || true
+  done < scrub_list.txt
+else
+  # Tarball older than the manifest: the irreducible minimum.
+  rm -f leon_notes.txt brain/owner_facts.py 2>/dev/null || true
+  rm -rf gio-landscaping 2>/dev/null || true
+fi
 
 # ── Create venv (the PEP 668-safe path) ──
 say ""
