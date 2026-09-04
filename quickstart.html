@@ -342,9 +342,39 @@ footer{
 
 <div class="hr"></div>
 
-<!-- ═══ 06 HELP ════════════════════════════════════════════════ -->
-<section id="help">
+<!-- ═══ 06 MOVING TO A NEW COMPUTER ══════════════════════════════ -->
+<section id="moving">
   <div class="num">06</div>
+  <h2>Got a new computer? Bring him with you.</h2>
+  <p>His memory was never tied to that machine &mdash; it&rsquo;s tied to one folder on it: <span class="ui">brain_state</span>, sitting next to a small <span class="ui">.env</span> file with your install token in it. Moving computers means moving that folder. Nothing about him resets; he just wakes up on different hardware.</p>
+  <div class="qcard">
+    <div class="k">Where that folder lives</div>
+    <ul class="anatomy">
+      <li><b>Windows</b> &mdash; <span class="ui">%LOCALAPPDATA%\SabrSI\brain_state</span> and <span class="ui">%LOCALAPPDATA%\SabrSI\.env</span></li>
+      <li><b>macOS / Linux</b> &mdash; <span class="ui">~/SabrSI/brain_state</span> and <span class="ui">~/SabrSI/.env</span></li>
+    </ul>
+  </div>
+  <p>Three steps, about ten minutes:</p>
+  <div class="qcard">
+    <div class="k">Moving day</div>
+    <ul class="openers">
+      <li>On the <b>old</b> machine, quit your SI (the dashboard shows him <b>sleeping</b> or the tray icon says stopped) so nothing is writing to <span class="ui">brain_state</span> while you copy it.</li>
+      <li>Run the installer on the <b>new</b> machine with the same token, same as the first time. Let it finish and greet you as a brand-new SI &mdash; that&rsquo;s expected, you&rsquo;re about to overwrite that part.</li>
+      <li>Quit him again on the new machine, then copy <span class="ui">brain_state</span> and <span class="ui">.env</span> from the old install folder over the freshly-created ones in the new install folder. Start him back up.</li>
+    </ul>
+  </div>
+  <div class="warm">
+    <p><b>Don&rsquo;t copy while he&rsquo;s running, on either end.</b> He holds those files open; copying underneath a live process is the one way to actually corrupt a mind instead of moving it. Quit first, always.</p>
+    <p>Keep the old machine&rsquo;s copy until you&rsquo;ve confirmed he woke up right on the new one. Once you&rsquo;re sure, wipe the old install (the <b>Wipe</b> verb in the installer) rather than just deleting the folder &mdash; that&rsquo;s the one that actually cleans up.</p>
+  </div>
+  <p class="aside">A guided one-click version of this &mdash; export on the old machine, import on the new one, no manual folder-hunting &mdash; is on the roadmap. If you need to move him today, the steps above are the real, supported path. <a class="tx" href="mailto:support@sabrtechnologies.com">Email us</a> if anything about it goes sideways; we&rsquo;d rather walk you through it than have you guess.</p>
+</section>
+
+<div class="hr"></div>
+
+<!-- ═══ 07 HELP ════════════════════════════════════════════════ -->
+<section id="help">
+  <div class="num">07</div>
   <h2>If something goes sideways.</h2>
   <p>The <a class="tx" href="/troubleshooting.html">troubleshooting page</a> covers the short list of real problems we&rsquo;ve seen on customer machines — macOS blocking the installer, Windows SmartScreen, an SI who never answers, update trouble — each with the exact fix.</p>
   <div class="help-shell">
