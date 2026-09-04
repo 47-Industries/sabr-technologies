@@ -170,7 +170,7 @@ ARCH="$(uname -m)"
 # tarball would only prove the payload arrived intact from whoever sent
 # it, which is not the same as proving we sent it. Written by
 # build_release.sh — never edit by hand, and never fetch it at runtime.
-EXPECTED_RELEASE_SHA256="6d327ad0d1eac1f4260a980b731e12b347123bea1651f13b7b50269b3e4b7d09"
+EXPECTED_RELEASE_SHA256="db76cd2d3e16a6e0231b989e02e05db60123ab9f05d1cc2e77034090321e5768"
 
 # -- macOS bootstrap (runs FIRST, before we need Python) --
 # A fresh Mac has no compiler, no Homebrew, and often no real python3. This
@@ -1036,7 +1036,6 @@ if [ -f scrub_list.txt ]; then
 else
   # Tarball older than the manifest: the irreducible minimum.
   rm -f leon_notes.txt brain/owner_facts.py 2>/dev/null || true
-  rm -rf gio-landscaping 2>/dev/null || true
 fi
 
 # ── Create venv (the PEP 668-safe path) ──
